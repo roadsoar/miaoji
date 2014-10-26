@@ -30,3 +30,6 @@ if __name__ == "__main__":
   print("file threads used: %d" % int(mj_cf.get("global","process_file_threads")))
   print("xiecheng travelogue name: %s" % mj_cf.get("xiecheng_travelogue","name"))
   print("xiecheng travelogue file path: %s" % mj_cf.get("xiecheng_travelogue","file_path"))
+ 
+  if mj_cf.set("xiecheng_travelogue","test_key1","tval1"):
+     print "set successfully"
