@@ -13,5 +13,8 @@ BOT_NAME = 'MJTravel'
 SPIDER_MODULES = ['MJTravel.spiders']
 NEWSPIDER_MODULE = 'MJTravel.spiders'
 
+ITEM_PIPELINES = {
+ 'MJTravel.pipelines.JsonWriterPipeline': 800,
+}
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'MJTravel (+http://www.yourdomain.com)'
