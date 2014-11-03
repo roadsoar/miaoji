@@ -1,6 +1,7 @@
-#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
 
 import ConfigParser
+from MJTravel.lib.common import remove_str
 
 class ConfigMiaoJI:
   def __init__(self,config_path):
@@ -12,9 +13,10 @@ class ConfigMiaoJI:
     starturls = ""
     starturls_tuple=()
     try:
-     starturls = self.cfMJ.get(field, key)
-     starturls_tuple = set(starturls.split(','))
+     starturls = remove_str(self.cfMJ.get(field, key))
+     starturls_tuple = set(eval(starturls))
     except Exception as e: 
+      print e
       starturls_tuple = () 
     return starturls_tuple
 
