@@ -18,7 +18,6 @@ class MjctripSpider(scrapy.Spider):
        title = response.xpath("//div[@class='ctd_head_left']/h2/text()").extract()
        if len(title) >= 1:  title = remove_str(title[0],'[\r\n\s]')
        b_count = response.xpath("//a[@class='link_browse']/span/text()").extract()
-       print '++++++++++++++++++++++++++',b_count
        if len(b_count) >= 1: b_count = remove_str(b_count[0])
        c_count = response.xpath("//a[@class='link_comment ']/span/text()").extract()
        if len(c_count) >= 1: c_count = remove_str(c_count[0])
