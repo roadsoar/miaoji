@@ -24,4 +24,7 @@ class JsonWriterPipeline(object):
 
   def open_file(self, file_num, spider):
     file_name = "_".join([spider.name, today_str(), str(file_num)]) + ".json"
-    self.file = codecs.open(file_name, 'w', encoding='utf-8')
+    try:
+      self.file = codecs.open(file_name, 'w', encoding='utf-8')
+    finally:
+      pass

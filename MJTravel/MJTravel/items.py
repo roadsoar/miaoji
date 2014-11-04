@@ -5,9 +5,13 @@
 # See documentation in:
 # http://doc.scrapy.org/en/latest/topics/items.html
 
-import scrapy
+from scrapy import Item, Field
 
 
-class MjtravelItem(scrapy.Item):
-    name = scrapy.Field()
-    content = scrapy.Field()
+class MjctripItem(Item):
+    travel_link = Field()
+    travel_title = Field()
+    travel_content = Field()
+    browse_count = Field()
+    comment_count = Field()
+    comment_content = Field()
