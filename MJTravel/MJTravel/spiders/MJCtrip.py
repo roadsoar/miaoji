@@ -27,7 +27,7 @@ class MjctripSpider(scrapy.Spider):
          all_ctrip_p += remove_str(remove_str(ctrip_p),'\s{2,}')
 
        all_comments = ""
-       for comment in response.xpath("//div[@class='textarea_box fr']/p[@class='ctd_comments_text']/text()").extract():
+       for comment in response.xpath("//p[@class='ctd_comments_text']/text()").extract():
          all_ctrip_p += remove_str(comment)
 
        return MjctripItem(travel_link=link, travel_title=title, travel_content=all_ctrip_p, browse_count=b_count, comment_count=c_count, comment_content=all_comments)
