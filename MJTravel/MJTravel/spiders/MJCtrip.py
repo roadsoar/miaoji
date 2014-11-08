@@ -14,15 +14,16 @@ mj_cf = ConfigMiaoJI("./spider_settings.cfg")
 
 class MjctripSpider(CrawlSpider):
     name = "MJCtrip"
-    allowed_domains = ["ctrip.com"]
+    allowed_domains = ["you.ctrip.com"]
     start_urls = mj_cf.get_starturls('ctrip_spider','start_urls')
     print 'urls:::', start_urls
 
     rules = [
-             Rule(LxmlLinkExtractor(allow='travels/haikou37/\w+', process_value='process_value'),
+             Rule(LxmlLinkExtractor(allow='travels/haikou\d*/\d+', process_value='process_value'),
+#             Rule(LxmlLinkExtractor(process_value='process_value'),
              callback='parse_item',
              follow=True),
-             Rule(LxmlLinkExtractor(allow='travels/zhangjiajie23/\w+', process_value='process_value'),
+             Rule(LxmlLinkExtractor(allow='travels/sanya\d*/\d+', process_value='process_value'),
              callback='parse_item',
              follow=True)
             ]
@@ -30,6 +31,7 @@ class MjctripSpider(CrawlSpider):
     def process_value(value):
       m = re.search("javascript:;", value)
       if m:
+        print "group============",m.group(1)
         return m.group(1)
 
     def parse_item(self, response):
@@ -38,6 +40,7 @@ class MjctripSpider(CrawlSpider):
        # 游记链接
        link = response.url
 
+       print "+++++++++++++",link
        # 游记标题
        title = response.xpath("//div[@class='ctd_head_left']/h2/text()").extract()
        title = remove_str(title[0],'[\r\n\s]') if len(title) >= 1 else ''
