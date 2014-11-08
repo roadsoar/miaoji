@@ -14,15 +14,15 @@ mj_cf = ConfigMiaoJI("./spider_settings.cfg")
 
 class MjctripSpider(CrawlSpider):
     name = "MJCtrip"
-    allowed_domains = ["you.ctrip.com"]
+    allowed_domains = ["ctrip.com"]
     start_urls = mj_cf.get_starturls('ctrip_spider','start_urls')
     print 'urls:::', start_urls
 
     rules = [
-             Rule(LxmlLinkExtractor(allow='you\.ctrip\.com/travels/haikou37/\w+', process_value='process_value'),
+             Rule(LxmlLinkExtractor(allow='travels/haikou37/\w+', process_value='process_value'),
              callback='parse_item',
              follow=True),
-             Rule(LxmlLinkExtractor(allow='you\.ctrip\.com/travels/zhangjiajie23/\w+', process_value='process_value'),
+             Rule(LxmlLinkExtractor(allow='travels/zhangjiajie23/\w+', process_value='process_value'),
              callback='parse_item',
              follow=True)
             ]

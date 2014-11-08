@@ -29,3 +29,5 @@ class CSDNBlogCrawlSpider(CrawlSpider):
    item['blog_name'] = [n.encode('utf-8') for n in blog_name]
    item['blog_url'] = blog_url.encode('utf-8')
    yield item  
+           'http://you.ctrip.com/travels/haikou37.html',
+            'http://you.ctrip.com/travels/sanya61.html',
