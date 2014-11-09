@@ -36,6 +36,7 @@ class MjctripSpider(CrawlSpider):
        
        # 游记链接
        link = response.url
+       print link, "[Fetched]"
 
        # 游记标题
        title = response.xpath("//div[@class='ctd_head_left']/h2/text()").extract()
