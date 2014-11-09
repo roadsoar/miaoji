@@ -18,10 +18,10 @@ class MjctripSpider(CrawlSpider):
     start_urls = mj_cf.get_starturls('ctrip_spider','start_urls')
 
     rules = [
-             Rule(LxmlLinkExtractor(allow='travels/haikou\d*/\d+'),
+             Rule(LxmlLinkExtractor(allow='travels/haikou\d*/\d+', process_value='process_value'),
              callback='parse_item',
              follow=True),
-             Rule(LxmlLinkExtractor(allow='travels/sanya\d*/\d+'),
+             Rule(LxmlLinkExtractor(allow='travels/sanya\d*/\d+', process_value='process_value'),
              callback='parse_item',
              follow=True)
             ]
