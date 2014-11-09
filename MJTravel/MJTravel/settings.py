@@ -17,4 +17,17 @@ ITEM_PIPELINES = {
  'MJTravel.pipelines.JsonWriterPipeline': 800,
 }
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'MJTravel (+http://www.yourdomain.com)'
+#USER_AGENT = 'MJTravel (+http://you.crtip.com)'
+
+#DOWNLOAD_HANDLERS = {
+#    'http': 'MJTravel.scrapyjs.dhandler.WebkitDownloadHandler',
+#    'https': 'MJTravel.scrapyjs.dhandler.WebkitDownloadHandler',
+#}
+
+USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.66 Safari/537.36'
+
+WEBKIT_DOWNLOADER=['MJCtrip']
+DOWNLOADER_MIDDLEWARES = {
+#    'MJTravel.scrapyjs.middleware.WebkitDownloader': 1,
+     'MJTravel.downloader.WebkitDownloader': 543,
+}
