@@ -7,8 +7,11 @@ from MJTravel.lib.common import remove_str
 from scrapy.selector import Selector
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.contrib.linkextractors.lxmlhtml import LxmlLinkExtractor
+from scrapy.http import Request
 import codecs
 import scrapy
+
+import re
 
 mj_cf = ConfigMiaoJI("./spider_settings.cfg")
 
@@ -18,11 +21,11 @@ class MjctripSpider(CrawlSpider):
     start_urls = mj_cf.get_starturls('ctrip_spider','start_urls')
 
     rules = [
-             Rule(LxmlLinkExtractor(allow='travels/haikou\d*/\d+', process_value='process_value'),
-             callback='parse_item',
+             Rule(LxmlLinkExtractor(process_value='process_value'),
+             callback='parse',
              follow=True),
-             Rule(LxmlLinkExtractor(allow='travels/sanya\d*/\d+', process_value='process_value'),
-             callback='parse_item',
+             Rule(LxmlLinkExtractor(process_value='process_value'),
+             callback='parse',
              follow=True)
             ]
 
@@ -30,6 +33,39 @@ class MjctripSpider(CrawlSpider):
       m = re.search("javascript:(.*?)", value)
       if m:
         return m.group(1)
+
+    def parse(self,response):
+        """获得下一页地址"""
+        req = []
+
+        re_travels_count = re.compile('>\s*\d+-(\d+)\s*/\s*(\d+)')
+        print "url: --------------", response.url
+        #travels_num = response.xpath('//div[@class="ttd2_background"]/div[@class="content cf"]//div[@class="normalbox"]//div[@class="journalslist cf"]//@href').extract()
+        # 获取游记总页数
+        travels_pages = 0
+        travels_count_html = response.xpath('//div[@class="ttd2_background"]/div[@class="content cf"]//div[@class="normalbox"]//div[@class="journalslist cf"]').extract()
+        if travels_count_html:
+          m = re_travels_count.search(travels_count_html[0])
+          if m:
+            records_per_page = int(m.group(1))
+            travels_count = int(m.group(2))
+            pages = travels_count / records_per_page
+            travels_pages = pages if travels_count % records_per_page == 0 else pages + 1
+
+        # 下一页地址
+        page_url_prefix = ''
+        for domain_name in self.allowed_domains:
+          if domain_name in response.url:
+             page_url_prefix = response.url[0:-5]
+             break
+
+        for page_index in range(1, travels_pages + 1):
+            url = ''.join([page_url_prefix,'/s3-p',str(page_index), '.html'])
+            r = Request(url, callback=self.parse_item)
+            req.append(r)
+
+        print req
+        # return req
 
     def parse_item(self, response):
        item = MjctripItem()
