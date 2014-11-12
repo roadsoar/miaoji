@@ -39,7 +39,6 @@ class MjctripSpider(CrawlSpider):
         req = []
 
         re_travels_count = re.compile('>\s*\d+-(\d+)\s*/\s*(\d+)')
-        print "url: --------------", response.url
         #travels_num = response.xpath('//div[@class="ttd2_background"]/div[@class="content cf"]//div[@class="normalbox"]//div[@class="journalslist cf"]//@href').extract()
         # 获取游记总页数
         travels_pages = 0
@@ -64,8 +63,7 @@ class MjctripSpider(CrawlSpider):
             r = Request(url, callback=self.parse_item)
             req.append(r)
 
-        print req
-        # return req
+        return req
 
     def parse_item(self, response):
        item = MjctripItem()
