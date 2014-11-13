@@ -24,10 +24,11 @@ ITEM_PIPELINES = {
 #    'https': 'MJTravel.scrapyjs.dhandler.WebkitDownloadHandler',
 #}
 
-USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.66 Safari/537.36'
+#USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.66 Safari/537.36'
 
 WEBKIT_DOWNLOADER=['MJCtrip']
-#DOWNLOADER_MIDDLEWARES = {
-#    'MJTravel.scrapyjs.middleware.WebkitDownloader': 1,
-#     'MJTravel.downloader.WebkitDownloader': 543,
-#}
+
+DOWNLOADER_MIDDLEWARES = {
+    #'MJTravel.scrapyjs.middleware.WebkitDownloader': 1,
+     'MJTravel.downloader.WebkitDownloader': 3,
+}

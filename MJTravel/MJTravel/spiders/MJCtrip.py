@@ -21,22 +21,17 @@ class MjctripSpider(CrawlSpider):
     start_urls = mj_cf.get_starturls('ctrip_spider','start_urls')
 
     rules = [
-             Rule(LxmlLinkExtractor(),
+             Rule(LxmlLinkExtractor('/travels/'),
              callback='parse_next_pages',
              follow=True),
             ]
-
-    def process_value(value):
-      m = re.search("javascript:(.*?)", value)
-      if m:
-        return m.group(1)
 
     def parse_next_pages(self,response):
         """获得下一页地址"""
         req = []
 
         re_travels_count = re.compile('>\s*\d+-(\d+)\s*/\s*(\d+)')
-        #travels_num = response.xpath('//div[@class="ttd2_background"]/div[@class="content cf"]//div[@class="normalbox"]//div[@class="journalslist cf"]//@href').extract()
+
         # 获取游记总页数
         travels_pages = 0
         travels_count_html = response.xpath('//div[@class="ttd2_background"]/div[@class="content cf"]//div[@class="normalbox"]//div[@class="journalslist cf"]').extract()
@@ -48,7 +43,6 @@ class MjctripSpider(CrawlSpider):
             pages = travels_count / records_per_page
             travels_pages = pages if travels_count % records_per_page == 0 else pages + 1
 
-        print "page+++++",travels_pages
         # 下一页地址
         page_url_prefix = self.get_url_prefix(response)
 
@@ -57,7 +51,6 @@ class MjctripSpider(CrawlSpider):
             r = Request(url, callback=self.parse_travel_pages)
             req.append(r)
 
-        print "next +++++++++++++++++",req
         return req
 
     def get_url_prefix(self, response, splice_http=False):
@@ -133,6 +126,5 @@ class MjctripSpider(CrawlSpider):
        if item['travel_content'] == '':
          return None
 
-       print link, "[Fetched]"
        return item
 
