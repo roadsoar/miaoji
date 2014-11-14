@@ -8,11 +8,13 @@ from scrapy.selector import Selector
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.contrib.linkextractors.lxmlhtml import LxmlLinkExtractor
 from scrapy.http import Request
+from scrapy import log
 import codecs
 import scrapy
 
 import re
 
+log.start(loglevel=log.INFO)
 mj_cf = ConfigMiaoJI("./spider_settings.cfg")
 
 class MjctripSpider(CrawlSpider):
@@ -113,7 +115,7 @@ class MjctripSpider(CrawlSpider):
        # 游记评论
        all_comment = []
        for comment in response.xpath("//div[@class='ctd_comments_box cf']//p[@class='ctd_comments_text']/text()").extract():
-         all_comment.append(move_str(remove_str(comment),'\s{2,}'))
+         all_comment.append(remove_str(remove_str(comment),'\s{2,}'))
 
        item['travel_link'] = link
        item['travel_title'] = title

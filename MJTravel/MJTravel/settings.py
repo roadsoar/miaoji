@@ -13,6 +13,8 @@ BOT_NAME = 'MJTravel'
 SPIDER_MODULES = ['MJTravel.spiders']
 NEWSPIDER_MODULE = 'MJTravel.spiders'
 
+LOG_FILE = '/home/chunchen/scrapy/log/mj_travel.log'
+
 ITEM_PIPELINES = {
  'MJTravel.pipelines.JsonWriterPipeline': 800,
 }

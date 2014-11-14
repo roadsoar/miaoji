@@ -20,6 +20,9 @@ class ConfigMiaoJI:
       starturls_tuple = () 
     return starturls_tuple
 
+  def get_str(self, field, key):
+      return self.cfMJ.get(field, key)
+
   def set(self, field, key, value):
      try:
        self.cfMJ.set(field, key, value)
