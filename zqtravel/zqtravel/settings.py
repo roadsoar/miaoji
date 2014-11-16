@@ -13,15 +13,15 @@ BOT_NAME = 'zqtravel'
 SPIDER_MODULES = ['zqtravel.spiders']
 NEWSPIDER_MODULE = 'zqtravel.spiders'
 
-LOG_FILE = '/home/fedr17/log/mj_travel.log'
+LOG_FILE = '/home/fedr17/log/zqtravel.log'
 
 ITEM_PIPELINES = {
  'zqtravel.pipelines.JsonWriterPipeline': 800,
 }
 
 #DOWNLOAD_HANDLERS = {
-#    'http': 'MJTravel.scrapyjs.dhandler.WebkitDownloadHandler',
-#    'https': 'MJTravel.scrapyjs.dhandler.WebkitDownloadHandler',
+#    'http': 'zqtravel.scrapyjs.dhandler.WebkitDownloadHandler',
+#    'https': 'zqtravel.scrapyjs.dhandler.WebkitDownloadHandler',
 #}
 
 #USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.66 Safari/537.36'
@@ -29,7 +29,7 @@ ITEM_PIPELINES = {
 WEBKIT_DOWNLOADER=['mafengwo', 'ctrip']
 
 #DOWNLOADER_MIDDLEWARES = {
-    #'MJTravel.scrapyjs.middleware.WebkitDownloader': 1,
+    #'zqtravel.scrapyjs.middleware.WebkitDownloader': 1,
 #     'zqtravel.downloader.WebkitDownloader': 3,
 #}
 

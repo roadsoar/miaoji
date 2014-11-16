@@ -21,12 +21,12 @@ class MafengwoItem(Item):
     '''蚂蜂窝的景点游记条目'''
 
     province = Field()                 # 景点所在省
-    link = Field()                     # 省的官网？
+    link = Field()                     # 省市攻略的链接
     area = Field()                     # 
-    abstract = Field()                 #
+    abstract = Field()                 # 省市概况
     num_days = Field()                 #
-    weather = Field()                  #
-    language = Field()                 #
+    weather = Field()                  # 穿衣指南
+    language = Field()                 # 地方语言特色简介
     best_traveling_time = Field()      # 景点最佳旅游时间
     helpful_num = Field()              # 
     scenicspot_intro = Field()         # 景点的简介
