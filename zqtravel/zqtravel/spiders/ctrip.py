@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from zqtravel.items import CtripItem
-from zqtravel.manufacture import ConfigMiaoJI
+from zqtravel.lib.manufacture import ConfigMiaoJI
 from zqtravel.lib.common import remove_str
 
 from scrapy.selector import Selector

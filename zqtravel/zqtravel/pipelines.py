@@ -11,7 +11,7 @@ import json
 import codecs
 from scrapy import log
 
-from zqtravel.manufacture import ConfigMiaoJI
+from zqtravel.lib.manufacture import ConfigMiaoJI
 from zqtravel.lib.common import remove_str, today_str
 
 mj_cf = ConfigMiaoJI("./spider_settings.cfg")
