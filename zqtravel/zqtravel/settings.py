@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Scrapy settings for MJTravel project
+# Scrapy settings for zqtravel project
 #
 # For simplicity, this file contains only the most important settings by
 # default. All the other settings are documented here:
@@ -8,18 +8,16 @@
 #     http://doc.scrapy.org/en/latest/topics/settings.html
 #
 
-BOT_NAME = 'MJTravel'
+BOT_NAME = 'zqtravel'
 
-SPIDER_MODULES = ['MJTravel.spiders']
-NEWSPIDER_MODULE = 'MJTravel.spiders'
+SPIDER_MODULES = ['zqtravel.spiders']
+NEWSPIDER_MODULE = 'zqtravel.spiders'
 
 LOG_FILE = '/home/fedr17/log/mj_travel.log'
 
 ITEM_PIPELINES = {
- 'MJTravel.pipelines.JsonWriterPipeline': 800,
+ 'zqtravel.pipelines.JsonWriterPipeline': 800,
 }
-# Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'MJTravel (+http://you.crtip.com)'
 
 #DOWNLOAD_HANDLERS = {
 #    'http': 'MJTravel.scrapyjs.dhandler.WebkitDownloadHandler',
@@ -28,9 +26,12 @@ ITEM_PIPELINES = {
 
 #USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.66 Safari/537.36'
 
-WEBKIT_DOWNLOADER=['MJCtrip']
+WEBKIT_DOWNLOADER=['mafengwo', 'ctrip']
 
-DOWNLOADER_MIDDLEWARES = {
+#DOWNLOADER_MIDDLEWARES = {
     #'MJTravel.scrapyjs.middleware.WebkitDownloader': 1,
-     'MJTravel.downloader.WebkitDownloader': 3,
-}
+#     'zqtravel.downloader.WebkitDownloader': 3,
+#}
+
+# Crawl responsibly by identifying yourself (and your website) on the user-agent
+#USER_AGENT = 'zqtravel (+http://www.yourdomain.com)'
