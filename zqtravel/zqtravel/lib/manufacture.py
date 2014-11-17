@@ -20,6 +20,13 @@ class ConfigMiaoJI:
       starturls_tuple = () 
     return starturls_tuple
 
+  def get_allow_cities(self, field, allow_cities, disallow_cities):
+      all_allow_cities = set(eval(remove_str(self.cfMJ.get(field, allow_cities))))
+      all_disallow_cities = set(eval(remove_str(self.cfMJ.get(field, disallow_cities))))
+      cities = all_allow_cities - all_disallow_cities
+
+      return cities
+
   def get_str(self, field, key):
       return self.cfMJ.get(field, key)
 

@@ -14,7 +14,7 @@ import scrapy
 
 import re
 
-log.start(loglevel=log.INFO)
+log.start(loglevel=log.DEBUG)
 mj_cf = ConfigMiaoJI("./spider_settings.cfg")
 
 class CtripSpider(CrawlSpider):
@@ -22,8 +22,14 @@ class CtripSpider(CrawlSpider):
     allowed_domains = ["you.ctrip.com"]
     start_urls = mj_cf.get_starturls('ctrip_spider','start_urls')
 
+    cities = '|'.join(mj_cf.get_allow_cities('ctrip_spider', 'allow_cities', 'disallow_cities'))
+    city_rules = ''.join(['/travels/(', cities, ')\d+.html'])
+    journey_rules = ''.join(['/travels/(', cities, ')\d+/\d+.html'])
     rules = [
-             Rule(LxmlLinkExtractor('/travels/'),
+             Rule(LxmlLinkExtractor(city_rules),
+             callback='parse_next_pages',
+             follow=True),
+             Rule(LxmlLinkExtractor(journey_rules),
              callback='parse_next_pages',
              follow=True),
             ]

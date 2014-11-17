@@ -25,7 +25,10 @@ class JsonWriterPipeline(object):
     self.open_file(self.file_num, spider)
     dict_item = dict(item)
     line = json.dumps(dict_item) + "\n"
-    self.file.write(line.decode('unicode_escape'))
+    try:
+        self.file.write(line.decode('unicode_escape'))
+    except Exception ,e:
+        log.msg('Failed to write travel records to file', level=log.ERROR)
     self.file_num += 1
     return item
 
@@ -35,7 +38,10 @@ class JsonWriterPipeline(object):
     try:
       self.file = codecs.open(file_name, 'w', encoding='utf-8')
     except Exception, e:
-      log.msg('Failed to write travel records to file: ' + file_name, level=log.ERROR)
+      log.msg('Failed to open file: ' + file_name, level=log.ERROR)
     finally:
       pass
 
+def spider_closed(self, spider):  
+    if not self.file:
+        self.file.close()
