@@ -15,7 +15,7 @@ class CtripItem(Item):
     travel_content = Field()  # 游记内容
     browse_count = Field()    # 游记浏览数量
     comment_count = Field()   # 游记评论数量
-    comment_content = Field() # 游记评论内容
+#    comment_content = Field() # 游记评论内容
 
 class MafengwoItem(Item):
     '''蚂蜂窝的景点游记条目'''
