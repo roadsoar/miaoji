@@ -13,7 +13,7 @@ BOT_NAME = 'zqtravel'
 SPIDER_MODULES = ['zqtravel.spiders']
 NEWSPIDER_MODULE = 'zqtravel.spiders'
 
-LOG_FILE = '/home/fedr17/log/zqtravel.log'
+LOG_FILE = '/home/scrapy/log/zqtravel.log'
 
 ITEM_PIPELINES = {
  'zqtravel.pipelines.JsonWriterPipeline': 800,
