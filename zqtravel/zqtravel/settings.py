@@ -28,10 +28,10 @@ ITEM_PIPELINES = {
 
 WEBKIT_DOWNLOADER=['mafengwo', 'ctrip']
 
-#DOWNLOADER_MIDDLEWARES = {
+DOWNLOADER_MIDDLEWARES = {
     #'zqtravel.scrapyjs.middleware.WebkitDownloader': 1,
-#     'zqtravel.downloader.WebkitDownloader': 3,
-#}
+     'zqtravel.downloader.WebkitDownloader': 3,
+}
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'zqtravel (+http://www.yourdomain.com)'

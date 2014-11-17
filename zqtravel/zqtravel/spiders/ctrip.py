@@ -119,16 +119,16 @@ class CtripSpider(CrawlSpider):
        c_count = remove_str(c_count[0]) if len(c_count) >= 1 else '0'
 
        # 游记评论
-       all_comment = []
-       for comment in response.xpath("//div[@class='ctd_comments_box cf']//p[@class='ctd_comments_text']/text()").extract():
-         all_comment.append(remove_str(remove_str(comment),'\s{2,}'))
+#       all_comment = []
+#       for comment in response.xpath("//div[@class='ctd_comments_box cf']//p[@class='ctd_comments_text']/text()").extract():
+#         all_comment.append(remove_str(remove_str(comment),'\s{2,}'))
 
        item['travel_link'] = link
        item['travel_title'] = title
        item['travel_content'] = all_content
        item['browse_count'] = b_count
        item['comment_count'] = c_count
-       item['comment_content'] = '|'.join(all_comment)
+#       item['comment_content'] = '|'.join(all_comment)
 
        # 丢弃游记内容是空的
        if item['travel_content'] == '':
