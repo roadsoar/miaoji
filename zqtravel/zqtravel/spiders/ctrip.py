@@ -14,7 +14,7 @@ import scrapy
 
 import re
 
-log.start(loglevel=log.DEBUG)
+log.start(loglevel=log.DEBUG, logstdout=True)
 mj_cf = ConfigMiaoJI("./spider_settings.cfg")
 
 class CtripSpider(CrawlSpider):
@@ -86,6 +86,9 @@ class CtripSpider(CrawlSpider):
 
         page_url_prefix = self.get_url_prefix(response, splice_http=True)
         for href in href_list:
+            #tmp = response.xpath('//div[@class="ttd2_background"]/div[@class="content cf"]//div[@class="normalbox"]//div[@class="journalslist cf"]//a[@class="/journal-item cf" and @href="' + href + '"]/ul[@class="item-infor"]').extract()
+            tmp = response.xpath('//div[@class="ttd2_background"]/div[@class="content cf"]//div[@class="normalbox"]//div[@class="journalslist cf"]/a[@href and text()]').extract()
+            log.msg(str(tmp.append('============')))
             m = re_travel_href.match(href)
             if m:
                 url = ''.join([page_url_prefix, href])
