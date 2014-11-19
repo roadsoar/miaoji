@@ -86,13 +86,12 @@ class CtripSpider(CrawlSpider):
 
         page_url_prefix = self.get_url_prefix(response, splice_http=True)
         for href in href_list:
-            #tmp = response.xpath('//div[@class="ttd2_background"]/div[@class="content cf"]//div[@class="normalbox"]//div[@class="journalslist cf"]//a[@class="/journal-item cf" and @href="' + href + '"]/ul[@class="item-infor"]').extract()
-            tmp = response.xpath('//div[@class="ttd2_background"]/div[@class="content cf"]//div[@class="normalbox"]//div[@class="journalslist cf"]/a[@href and text()]').extract()
-            log.msg(str(tmp.append('============')))
             m = re_travel_href.match(href)
             if m:
+                numview = response.xpath('//div[@class="ttd2_background"]/div[@class="content cf"]//div[@class="normalbox"]//div[@class="journalslist cf"]//a[@href="' + href +'"]//i[@class="numview"]/text()').extract()
+                numreply = response.xpath('//div[@class="ttd2_background"]/div[@class="content cf"]//div[@class="normalbox"]//div[@class="journalslist cf"]//a[@href="' + href +'"]//i[@class="numreply"]/text()').extract()
                 url = ''.join([page_url_prefix, href])
-                r = Request(url, callback=self.parse_item)
+                r = Request(url, callback=self.parse_item,meta={"numreply":numreply, "numview":numview})
                 req.append(r)
                
         print req
@@ -100,6 +99,7 @@ class CtripSpider(CrawlSpider):
 
     def parse_item(self, response):
        item = CtripItem()
+       meta = response.meta
        
        # 游记链接
        link = response.url
@@ -114,12 +114,12 @@ class CtripSpider(CrawlSpider):
          all_content += remove_str(remove_str(content,'\r'),'\s{2,}')
 
        # 游记浏览数
-       b_count = response.xpath("//a[@class='link_browse']/span/text()").extract()
-       b_count = remove_str(b_count[0]) if len(b_count) >= 1 else '0'
+#       b_count = response.xpath("//a[@class='link_browse']/span/text()").extract()
+       b_count = remove_str(meta['numview'][0]) if len(meta['numview']) >= 1 else '0'
 
        # 游记评论数
-       c_count = response.xpath("//a[@class='link_comment ']/span/text()").extract()
-       c_count = remove_str(c_count[0]) if len(c_count) >= 1 else '0'
+#       c_count = response.xpath("//a[@class='link_comment ']/span/text()").extract()
+       c_count = remove_str(meta['numreply'][0]) if len(meta['numreply']) >= 1 else '0'
 
        # 游记评论
 #       all_comment = []
