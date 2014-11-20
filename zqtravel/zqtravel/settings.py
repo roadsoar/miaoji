@@ -16,7 +16,7 @@ NEWSPIDER_MODULE = 'zqtravel.spiders'
 LOG_FILE = '/home/scrapy/log/zqtravel.log'
 
 ITEM_PIPELINES = {
- 'zqtravel.pipelines.JsonWriterPipeline': 800,
+ 'zqtravel.pipelines.JsonPipeline': 800,
 }
 
 #DOWNLOAD_HANDLERS = {

@@ -16,7 +16,7 @@ from zqtravel.lib.common import remove_str, today_str
 
 mj_cf = ConfigMiaoJI("./spider_settings.cfg")
 
-class JsonWriterPipeline(object):
+class JsonPipeline(object):
   def __init__(self):
     self.file_num = 1
     self.file = None
@@ -42,6 +42,6 @@ class JsonWriterPipeline(object):
     finally:
       pass
 
-def spider_closed(self, spider):  
+  def spider_closed(self, spider):  
     if not self.file:
         self.file.close()

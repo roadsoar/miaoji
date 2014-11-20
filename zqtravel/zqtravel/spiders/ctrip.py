@@ -106,7 +106,7 @@ class CtripSpider(CrawlSpider):
 
        # 游记标题
        title = response.xpath("//div[@class='ctd_head_left']/h2/text()").extract()
-       title = remove_str(title[0],'[\r\n\s]') if len(title) >= 1 else ''
+       title = remove_str(''.join(title).strip(),'[\r\n\s]')
 
        # 游记内容
        all_content = ""
@@ -115,11 +115,11 @@ class CtripSpider(CrawlSpider):
 
        # 游记浏览数
 #       b_count = response.xpath("//a[@class='link_browse']/span/text()").extract()
-       b_count = remove_str(meta['numview'][0]) if len(meta['numview']) >= 1 else '0'
+       b_count = remove_str(''.join(meta['numview']).strip())
 
        # 游记评论数
 #       c_count = response.xpath("//a[@class='link_comment ']/span/text()").extract()
-       c_count = remove_str(meta['numreply'][0]) if len(meta['numreply']) >= 1 else '0'
+       c_count = remove_str(''.join(meta['numreply']).strip())
 
        # 游记评论
 #       all_comment = []

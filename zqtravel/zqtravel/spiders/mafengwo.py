@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from zqtravel.items import CtripItem
+from zqtravel.items import MafengwoItem, ScenicspotItem
 from zqtravel.lib.manufacture import ConfigMiaoJI
 from zqtravel.lib.common import remove_str
 
@@ -14,7 +14,7 @@ import scrapy
 
 import re
 
-log.start(loglevel=log.DEBUG, logstdout=True)
+#log.start(loglevel=log.DEBUG, logstdout=True)
 mj_cf = ConfigMiaoJI("./spider_settings.cfg")
 
 class MafengwoSpider(CrawlSpider):
@@ -22,44 +22,67 @@ class MafengwoSpider(CrawlSpider):
     allowed_domains = ["mafengwo.cn"]
     start_urls = mj_cf.get_starturls('mafengwo_spider','start_urls')
 
-    cities = '|'.join(mj_cf.get_allow_cities('ctrip_spider', 'allow_cities', 'disallow_cities'))
-    city_rules = ''.join(['/travels/(', cities, ')\d+.html'])
-    journey_rules = ''.join(['/travels/(', cities, ')\d+/\d+.html'])
+    #cities = '|'.join(mj_cf.get_allow_cities('ctrip_spider', 'allow_cities', 'disallow_cities'))
+    #city_rules = ''.join(['/travels/(', cities, ')\d+.html'])
+    #journey_rules = ''.join(['/travels/(', cities, ')\d+/\d+.html'])
     rules = [
-             Rule(LxmlLinkExtractor(city_rules),
+             Rule(LxmlLinkExtractor('/mdd'),
+             callback='parse_scenic_spots',
+             follow=True),
+             Rule(LxmlLinkExtractor('travel-scenic-spot/mafengwo/\d+.html'),
              callback='parse_next_pages',
              follow=True),
-             Rule(LxmlLinkExtractor(journey_rules),
+             Rule(LxmlLinkExtractor('baike/info-\d+.html'),
+             callback='parse_next_pages',
+             follow=True),
+             Rule(LxmlLinkExtractor('yj/\d+/[\d-]+.html'),
              callback='parse_next_pages',
              follow=True),
             ]
 
-    def parse_next_pages(self,response):
-        """获得下一页地址"""
+    def parse_scenic_spots(self,response):
+        """获得景点"""
+
         req = []
+        scenicspot_item = ScenicspotItem()
 
-        re_travels_count = re.compile('>\s*\d+-(\d+)\s*/\s*(\d+)')
+        #re_travels_count = re.compile('>\s*\d+-(\d+)\s*/\s*(\d+)')
+        province = remove_str(''.join(response.xpath('//div[@class="nav-item"][2]//dt/text()').extract()))
+        scenicspot_item['province'] = province
+        #log.msg(str(response.xpath('//div[@class="nav-item"][2]//h3/text()').extract()))
+        scenicspot_hrefs = response.xpath('//div[@class="nav-item"][2]//@href').extract()
 
-        # 获取游记总页数
-        travels_pages = 0
-        travels_count_html = response.xpath('//div[@class="ttd2_background"]/div[@class="content cf"]//div[@class="normalbox"]//div[@class="journalslist cf"]').extract()
-        if travels_count_html:
-          m = re_travels_count.search(travels_count_html[0])
-          if m:
-            records_per_page = int(m.group(1))
-            travels_count = int(m.group(2))
-            pages = travels_count / records_per_page
-            travels_pages = pages if travels_count % records_per_page == 0 else pages + 1
+        url_prefix = self.get_url_prefix(response, True)
 
-        # 下一页地址
-        page_url_prefix = self.get_url_prefix(response)
-
-        for page_index in range(1, travels_pages + 1):
-            url = ''.join([page_url_prefix,'/s3-p',str(page_index), '.html'])
-            r = Request(url, callback=self.parse_travel_pages)
+        # 景点url
+        for href in scenicspot_hrefs:
+            url = ''.join([url_prefix,href])
+            r = Request(url, callback=self.parse_travel_next_pages, meta={'scenicspot_item':scenicspot_item})
             req.append(r)
 
         return req
+
+    def parse_travel_next_pages(self,response):
+        """获得游记下一页地址"""
+        req = []
+
+        travel_pages = response.xpath('//div[@class="wrapper"]//div[@class="page-hotel"]/span[@class="count"]/span[1]/text()').extract()
+        travel_pages = int(''.join(travel_pages).strip())
+        # 游记每一页url
+        scenicspot_id = response.url[response.url.rfind('/')+1:-5]
+        url_prefix = self.get_url_prefix(response, True)
+        for page_index in range(1, travel_pages + 1):
+            url = ''.join([url_prefix, '/yj/', scenicspot_id, '/2-0-', str(page_index), '.html'])
+            yield  Request(url, callback=self.parse_travel_pages)
+            #req.append(r)
+        
+        # 景点信息url
+        url_info = ''.join([url_prefix, 'baike/info-', scenicspot_id, '.html'])
+        yield Request(url_info, callback=self.parse_scenicspot_info, meta=response.meta)
+
+        #return req
+    def parse_scenicspot_info(self, response):
+        pass
 
     def get_url_prefix(self, response, splice_http=False):
         page_url_prefix = ''
@@ -98,7 +121,7 @@ class MafengwoSpider(CrawlSpider):
         return req
 
     def parse_item(self, response):
-       item = CtripItem()
+       item = MafengwoItem()
        meta = response.meta
 
        # 游记链接

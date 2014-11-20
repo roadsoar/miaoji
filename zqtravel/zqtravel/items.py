@@ -18,7 +18,18 @@ class CtripItem(Item):
 #    comment_content = Field() # 游记评论内容
 
 class MafengwoItem(Item):
-    '''蚂蜂窝的景点游记条目'''
+    '''蚂蜂窝的游记条目'''
+
+    travels_praisenum = Field()        # 游记被赞的数量
+    travels_viewnum = Field()          # 游记的浏览数量
+    travels_commentnum = Field()       # 游记的评论数量
+    travels_title = Field()            # 游记的标题
+    travels_time = Field()             # 游记创建的时间
+    travels_link = Field()             # 游记的链接
+    travels_content = Field()          # 游记的内容
+
+class ScenicspotItem(Item):
+    '''景点条目'''
 
     province = Field()                 # 景点所在省
     link = Field()                     # 省市攻略的链接
@@ -38,10 +49,4 @@ class MafengwoItem(Item):
     scenicspot_usedtime = Field()      # 
     scenicspot_grade = Field()         # 景点的等级,如：3A,4A,5A...
     scenicspot_commentnum = Field()    # 对景点的评论数量
-    travels_praisenum = Field()        # 游记被赞的数量
-    travels_viewnum = Field()          # 游记的浏览数量
-    travels_commentnum = Field()       # 游记的评论数量
-    travels_title = Field()            # 游记的标题
-    travels_time = Field()             # 游记创建的时间
-    travels_link = Field()             # 游记的链接
-    travels_content = Field()          # 游记的内容
+
