@@ -30,13 +30,13 @@ class MafengwoSpider(CrawlSpider):
              callback='parse_scenic_spots',
              follow=True),
              Rule(LxmlLinkExtractor('travel-scenic-spot/mafengwo/\d+.html'),
-             callback='parse_next_pages',
+             callback='parse_travel_next_pages',
              follow=True),
              Rule(LxmlLinkExtractor('baike/info-\d+.html'),
-             callback='parse_next_pages',
+             callback='parse_scenicspot_info',
              follow=True),
              Rule(LxmlLinkExtractor('yj/\d+/[\d-]+.html'),
-             callback='parse_next_pages',
+             callback='parse_scenicspot_item',
              follow=True),
             ]
 
@@ -66,8 +66,10 @@ class MafengwoSpider(CrawlSpider):
         """获得游记下一页地址"""
         req = []
 
+        # 游记的总页数
         travel_pages = response.xpath('//div[@class="wrapper"]//div[@class="page-hotel"]/span[@class="count"]/span[1]/text()').extract()
         travel_pages = int(''.join(travel_pages).strip())
+
         # 游记每一页url
         scenicspot_id = response.url[response.url.rfind('/')+1:-5]
         url_prefix = self.get_url_prefix(response, True)
@@ -78,11 +80,21 @@ class MafengwoSpider(CrawlSpider):
         
         # 景点信息url
         url_info = ''.join([url_prefix, 'baike/info-', scenicspot_id, '.html'])
-        yield Request(url_info, callback=self.parse_scenicspot_info, meta=response.meta)
+         ## 追加景点名称
+        scenicspot_name = response.xpath('//div[@class="p-top clearfix"]/div[@class="mdd-title"]/h1/text()').extract()[0]
+        scenicspot_item = response.meta['scenicspot_item']
+        scenicspot_item['scenicspot_name'] = scenicspot_name
+        yield Request(url_info, callback=self.parse_scenicspot_info, meta={'scenicspot_item':scenicspot_item})
 
         #return req
     def parse_scenicspot_info(self, response):
-        pass
+        '''解析景点信息'''
+        scenicspot_item = response.meta['scenicspot_item']
+        
+        helpful_num = response.xpath('//div[@class="content"]/div[@class="m-title clearfix"]/div[@class="count"]/span@class="num-view"]/text()').extract()
+        scenicspot_item['helpful_num'] = ''.join(helpful_num).strip()
+        return scenicspot_item
+
 
     def get_url_prefix(self, response, splice_http=False):
         page_url_prefix = ''
@@ -104,7 +116,7 @@ class MafengwoSpider(CrawlSpider):
 
         req = []
 
-        href_list = response.xpath('//div[@class="ttd2_background"]/div[@class="content cf"]//div[@class="normalbox"]//div[@class="journalslist cf"]//@href').extract()
+        href_list = response.xpath('//div[@class="post-list"]/ul/div[@class="post-item clearfix"]//h2[@class="post-title yahei"]//@href').extract()
         re_travel_href = re.compile('/[a-zA-Z]+/\w+/\d+\.html')
 
         page_url_prefix = self.get_url_prefix(response, splice_http=True)
@@ -120,7 +132,7 @@ class MafengwoSpider(CrawlSpider):
         print req
         return req
 
-    def parse_item(self, response):
+    def parse_scenicspot_item(self, response):
        item = MafengwoItem()
        meta = response.meta
 

@@ -40,6 +40,7 @@ class ScenicspotItem(Item):
     language = Field()                 # 地方语言特色简介
     best_traveling_time = Field()      # 景点最佳旅游时间
     helpful_num = Field()              # 
+    scenicspot_name = Field()          # 景点名称
     scenicspot_intro = Field()         # 景点的简介
     scenicspot_address = Field()       # 景点的地址
     scenicspot_tel = Field()           # 景点的电话
