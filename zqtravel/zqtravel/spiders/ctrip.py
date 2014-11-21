@@ -94,7 +94,6 @@ class CtripSpider(CrawlSpider):
                 r = Request(url, callback=self.parse_item,meta={"numreply":numreply, "numview":numview})
                 req.append(r)
                
-        print req
         return req
 
     def parse_item(self, response):
