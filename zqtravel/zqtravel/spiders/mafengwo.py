@@ -85,7 +85,7 @@ class MafengwoSpider(CrawlSpider):
             yield Request(url, callback=self.parse_scenicspot_travel_pages)
         
         # 景点信息url
-        url_info = ''.join([url_prefix, 'baike/info-', scenicspot_id, '.html'])
+        url_info = ''.join([url_prefix, '/baike/info-', scenicspot_id, '.html'])
          ## 追加景点名称
         scenicspot_name = response.xpath('//div[@class="p-top clearfix"]/div[@class="mdd-title"]/h1/text()').extract()[0]
         scenicspot_item = response.meta.get('scenicspot_item')
@@ -121,6 +121,15 @@ class MafengwoSpider(CrawlSpider):
 
         req = []
 
+        # 景点所在地
+        scenicspot_locus = response.xpath('//div[@class="p-top clearfix"]//div[@class=crumb]//div[@class="item"][last()-2]//span[@class="hd"]//a/text()').extract()
+        scenicspot_locus = ''.join(scenicspot_locus).strip()
+
+        # 景点名称
+        scenicspot_name = response.xpath('//div[@class="p-top clearfix"]//div[@class=crumb]//div[@class="item"][last()-1]//span[@class="hd"]//a/text()').extract()
+        scenicspot_name = ''.join(scenicspot_name).strip()
+
+        # 所有游记链接
         href_list = response.xpath('//div[@class="post-list"]/ul/li[@class="post-item clearfix"]/h2[@class="post-title yahei"]//@href').extract()
         #log.msg(str(href_list))
         re_travel_href = re.compile('/i/\d+\.html')
@@ -139,7 +148,12 @@ class MafengwoSpider(CrawlSpider):
                 numreply = numview_numreply[num_index+1]
                 num_index += 2 # 以及上面numview_numreply的输出格式，每次的步数为2
                 url = ''.join([url_prefix, href])
-                yield Request(url, callback=self.parse_scenicspot_item,meta={"numreply":numreply, "numview":numview})
+                meta_data = {"numreply":numreply, \
+                             "numview":numview, \
+                             "scenicspot_locus":scenicspot_locus, \
+                             "scenicspot_name":scenicspot_name \ 
+                            }
+                yield Request(url, callback=self.parse_scenicspot_item,meta=meta_data)
 
 
     def parse_scenicspot_item(self, response):
@@ -182,6 +196,9 @@ class MafengwoSpider(CrawlSpider):
                                          ).extract()
        travels_praisenum = ''.join(travels_praisenum).strip()
 
+       # 景点名称
+       scenicspot_name = response.xpath('//div[@class="post-hd"]//div[@class=')
+
        item['travels_praisenum'] = travels_praisenum
        item['travels_time'] = travels_time
        item['travels_link'] = link
@@ -189,6 +206,8 @@ class MafengwoSpider(CrawlSpider):
        item['travels_content'] = all_content
        item['travels_viewnum'] = b_count
        item['travels_commentnum'] = c_count
+       item['scenicspot_locus'] = meta['scenicspot_locus']
+       item['scenicspot_name'] = meta['scenicspot_name']
 
        # 丢弃游记内容是空的
        if item['travels_content'] == '':

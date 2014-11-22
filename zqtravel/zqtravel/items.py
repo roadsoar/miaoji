@@ -27,6 +27,9 @@ class MafengwoItem(Item):
     travels_time = Field()             # 游记创建的时间
     travels_link = Field()             # 游记的链接
     travels_content = Field()          # 游记的内容
+    scenicspot_name = Field()          # 景点名称
+    scenicspot_locus = Field()         # 景点所在地，即所在的省/市/县
+                                       # scenicspot_name和scenicspot_locus，是为了区分游记文件的路径
 
 class ScenicspotItem(Item):
     '''景点条目'''
