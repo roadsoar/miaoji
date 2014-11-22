@@ -25,13 +25,13 @@ class MafengwoSpider(CrawlSpider):
     #cities = '|'.join(mj_cf.get_allow_cities('ctrip_spider', 'allow_cities', 'disallow_cities'))
     #city_rules = ''.join(['/travels/(', cities, ')\d+.html'])
     #journey_rules = ''.join(['/travels/(', cities, ')\d+/\d+.html'])
-#    rules = [
+    rules = [
 #             Rule(LxmlLinkExtractor('/mdd/$'),
 #            callback='parse_scenic_spots',
 #            follow=True),
-#             Rule(LxmlLinkExtractor('/travel-scenic-spot/mafengwo/\d+.html'),
-#             callback='parse_scenic_spots',
-#             follow=True),
+             Rule(LxmlLinkExtractor('/travel-scenic-spot/mafengwo/\d+.html'),
+             callback='parse_travel_next_pages',
+             follow=True),
 #             Rule(LxmlLinkExtractor('/baike/info-\d+.html'),
 #             callback='parse_scenic_spots',
 #             follow=True),
@@ -41,7 +41,7 @@ class MafengwoSpider(CrawlSpider):
 #             Rule(LxmlLinkExtractor('/i/\d+\.html'),
 #             callback='parse_scenicspot_item',
 #             follow=False),
-#            ]
+            ]
 
     def parse_scenic_spots(self, response):
         self.parse(response)
