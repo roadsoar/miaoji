@@ -73,10 +73,10 @@ class MafengwoSpider(CrawlSpider):
         travel_pages = int(''.join(travel_pages).strip()) if len(travel_pages) >= 1 else 1
 
         # 游记每一页url
-        scenicspot_id = response.url[response.url.rfind('/')+1:-5]
+        travel_id = response.url[response.url.rfind('/')+1:-5]
         url_prefix = self.get_url_prefix(response, True)
         for page_index in range(1, travel_pages + 1):
-            url = ''.join([url_prefix, '/yj/', scenicspot_id, '/2-0-', str(page_index), '.html'])
+            url = ''.join([url_prefix, '/yj/', travel_id, '/2-0-', str(page_index), '.html'])
             yield Request(url, callback=self.parse_scenicspot_travel_pages)
         
         # 景点url
@@ -110,7 +110,8 @@ class MafengwoSpider(CrawlSpider):
         for href in href_list:
             m = re_href.match(href)
             if m:
-                url = ''.join([url_prefix, href, '#comment_header'])
+                scenicspot_id = href[href.rfind('/') : -5]
+                url = ''.join([url_prefix, '/poi/info-',scenicspot_id, '.html#comment_header'])
                 yield Request(url, callback=self.parse_scenicspot_item)
 
     def parse_scenicspot_item(self, response):
