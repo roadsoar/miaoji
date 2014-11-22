@@ -15,7 +15,7 @@ def remove_str(s_str, mj_re='[\n\r]'):
 def today_str():
   return datetime.date.today().strftime('%Y%m%d')
 
-def get_file_name_from_spider_item(file_num, item, spider):
+def get_dir_name_from_spider_item(item, spider):
   '''由spider.name和file_num构成文件名，存放在/path/to/item[scenicspot_locus]/item[scenicspot_name]'''
      
   dict_item = dict(item)
@@ -26,7 +26,7 @@ def get_file_name_from_spider_item(file_num, item, spider):
   if not os.path.isdir(file_path):
     os.makedirs(file_path)
   
-  file_name = "_".join([spider.name, today_str(), str(file_num)]) + ".json"
-  absolute_path_file = os.path.join(file_path, file_name)
+  #file_name = "_".join([spider.name, today_str(), str(file_num)]) + ".json"
+  #absolute_path_file = os.path.join(file_path, file_name)
   
-  return absolute_path_file
+  return file_path

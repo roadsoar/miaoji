@@ -50,12 +50,10 @@ class MafengwoSpider(CrawlSpider):
         """获得景点"""
 
         req = []
-        scenicspot_item = ScenicspotItem()
+    #    scenicspot_item = ScenicspotItem()
 
-        #re_travels_count = re.compile('>\s*\d+-(\d+)\s*/\s*(\d+)')
-        province = remove_str(''.join(response.xpath('//div[@class="nav-item"][2]//dt/text()').extract()))
-        scenicspot_item['province'] = province
-        #log.msg(str(response.xpath('//div[@class="nav-item"][2]//h3/text()').extract()))
+    #    province = remove_str(''.join(response.xpath('//div[@class="nav-item"][2]//dt/text()').extract()))
+    #    scenicspot_item['province'] = province
         scenicspot_hrefs = response.xpath('//div[@class="nav-item"][2]//@href').extract()
 
         url_prefix = self.get_url_prefix(response, True)
@@ -63,10 +61,7 @@ class MafengwoSpider(CrawlSpider):
         # 景点url
         for href in scenicspot_hrefs:
             url = ''.join([url_prefix,href])
-            yield Request(url, callback=self.parse_travel_next_pages, meta={'scenicspot_item':scenicspot_item})
-       #     req.append(r)
-
-       # return req
+            yield Request(url, callback=self.parse_travel_next_pages)
 
     def parse_travel_next_pages(self,response):
         """获得游记下一页地址"""
@@ -87,17 +82,42 @@ class MafengwoSpider(CrawlSpider):
         # 景点信息url
         url_info = ''.join([url_prefix, '/baike/info-', scenicspot_id, '.html'])
          ## 追加景点名称
-        scenicspot_name = response.xpath('//div[@class="p-top clearfix"]/div[@class="mdd-title"]/h1/text()').extract()[0]
-        scenicspot_item = response.meta.get('scenicspot_item')
-        scenicspot_item['scenicspot_name'] = scenicspot_name
-        #yield Request(url_info, callback=self.parse_scenicspot_info, meta={'scenicspot_item':scenicspot_item})
+        #scenicspot_name = response.xpath('//div[@class="p-top clearfix"]/div[@class="mdd-title"]/h1/text()').extract()[0]
+        #scenicspot_item = response.meta.get('scenicspot_item')
+        #scenicspot_item['scenicspot_name'] = scenicspot_name
+        yield Request(url_info, callback=self.parse_scenicspot_info)
 
     def parse_scenicspot_info(self, response):
         '''解析景点信息'''
-        scenicspot_item = response.meta['scenicspot_item']
+
+        scenicspot_item = ScenicspotItem()
         
+        # 景点概况被认为有用的数量
         helpful_num = response.xpath('//div[@class="content"]//div[@class="m-title clearfix"]//div[@class="count"]//span[@class="num-view"]/text()').extract()
-        scenicspot_item['helpful_num'] = ''.join(helpful_num).strip()
+        helpful_num = ''.join(helpful_num).strip()
+
+        # 景点所在地
+        scenicspot_locus = response.xpath('//div[@class="p-top clearfix"]//div[@class="crumb"]//div[@class="item"][last()-2]//span[@class="hd"]//a/text()').extract()
+        scenicspot_locus = ''.join(scenicspot_locus).strip()
+
+        # 景点名称
+        scenicspot_name = response.xpath('//div[@class="p-top clearfix"]//div[@class="crumb"]//div[@class="item"][last()-1]//span[@class="hd"]//a/text()').extract()
+        scenicspot_name = ''.join(scenicspot_name).strip()
+
+        # 景点当地天气
+        weather = response.xpath('//div[@class="top-info clearfix"]/div[@class="weather"]/text()').extract()
+        weather = remove_str(''.join(weather).strip(),'[:]')
+
+        # 景点简介
+        scenicspot_intro = response.xpath('//div[@class="content"]//div[@class="m-txt"][1]//p/text()').extract()
+        scenicspot_intro = ''.join(scenicspot_intro).strip()
+
+        scenicspot_item['helpful_num'] = helpful_num
+        scenicspot_item['scenicspot_locus'] = scenicspot_locus
+        scenicspot_item['scenicspot_name'] = scenicspot_name
+        scenicspot_item['weather'] = weather
+        scenicspot_item['scenicspot_intro'] = scenicspot_intro
+
         return scenicspot_item
 
 

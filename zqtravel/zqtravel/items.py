@@ -34,7 +34,7 @@ class MafengwoItem(Item):
 class ScenicspotItem(Item):
     '''景点条目'''
 
-    province = Field()                 # 景点所在省
+    scenicspot_locus = Field()         # 景点所在地，即所在的省/市/县
     link = Field()                     # 省市攻略的链接
     area = Field()                     # 
     abstract = Field()                 # 省市概况
