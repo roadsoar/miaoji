@@ -90,13 +90,13 @@ class MafengwoSpider(CrawlSpider):
         scenicspot_name = response.xpath('//div[@class="p-top clearfix"]/div[@class="mdd-title"]/h1/text()').extract()[0]
         scenicspot_item = response.meta.get('scenicspot_item')
         scenicspot_item['scenicspot_name'] = scenicspot_name
-        yield Request(url_info, callback=self.parse_scenicspot_info, meta={'scenicspot_item':scenicspot_item})
+        #yield Request(url_info, callback=self.parse_scenicspot_info, meta={'scenicspot_item':scenicspot_item})
 
     def parse_scenicspot_info(self, response):
         '''解析景点信息'''
         scenicspot_item = response.meta['scenicspot_item']
         
-        helpful_num = response.xpath('//div[@class="content"]/div[@class="m-title clearfix"]/div[@class="count"]/span@class="num-view"]/text()').extract()
+        helpful_num = response.xpath('//div[@class="content"]//div[@class="m-title clearfix"]//div[@class="count"]//span[@class="num-view"]/text()').extract()
         scenicspot_item['helpful_num'] = ''.join(helpful_num).strip()
         return scenicspot_item
 
@@ -122,11 +122,11 @@ class MafengwoSpider(CrawlSpider):
         req = []
 
         # 景点所在地
-        scenicspot_locus = response.xpath('//div[@class="p-top clearfix"]//div[@class=crumb]//div[@class="item"][last()-2]//span[@class="hd"]//a/text()').extract()
+        scenicspot_locus = response.xpath('//div[@class="p-top clearfix"]//div[@class="crumb"]//div[@class="item"][last()-1]//span[@class="hd"]//a/text()').extract()
         scenicspot_locus = ''.join(scenicspot_locus).strip()
 
         # 景点名称
-        scenicspot_name = response.xpath('//div[@class="p-top clearfix"]//div[@class=crumb]//div[@class="item"][last()-1]//span[@class="hd"]//a/text()').extract()
+        scenicspot_name = response.xpath('//div[@class="p-top clearfix"]//div[@class="crumb"]//div[@class="item"][last()]//span[@class="hd"]//a/text()').extract()
         scenicspot_name = ''.join(scenicspot_name).strip()
 
         # 所有游记链接
@@ -151,7 +151,7 @@ class MafengwoSpider(CrawlSpider):
                 meta_data = {"numreply":numreply, \
                              "numview":numview, \
                              "scenicspot_locus":scenicspot_locus, \
-                             "scenicspot_name":scenicspot_name \ 
+                             "scenicspot_name":scenicspot_name \
                             }
                 yield Request(url, callback=self.parse_scenicspot_item,meta=meta_data)
 
@@ -196,8 +196,6 @@ class MafengwoSpider(CrawlSpider):
                                          ).extract()
        travels_praisenum = ''.join(travels_praisenum).strip()
 
-       # 景点名称
-       scenicspot_name = response.xpath('//div[@class="post-hd"]//div[@class=')
 
        item['travels_praisenum'] = travels_praisenum
        item['travels_time'] = travels_time
