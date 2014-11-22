@@ -224,9 +224,9 @@ class MafengwoSpider(CrawlSpider):
        scenicspot_name = ''.join(scenicspot_name).strip()[:-4]
 
        # 如果设置并开启了爬取的开始时间，则将早于开始时间的游记丢弃
-       enable_start_crawling_time = mj_cf.get_starturls('mafengwo_spider','enable_start_crawling_time')
+       enable_start_crawling_time = mj_cf.get_str('mafengwo_spider','enable_start_crawling_time')
        if enable_start_crawling_time == 'True':
-          start_crawling_time = mj_cf.get_starturls('mafengwo_spider','start_crawling_time')
+          start_crawling_time = mj_cf.get_str('mafengwo_spider','start_crawling_time')
           if travels_time < start_crawling_time:
              return None
 

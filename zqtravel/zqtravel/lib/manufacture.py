@@ -28,7 +28,8 @@ class ConfigMiaoJI:
       return cities
 
   def get_str(self, field, key):
-      return self.cfMJ.get(field, key)
+      field_value = ''.join(self.cfMJ.get(field, key))
+      return field_value
 
   def set(self, field, key, value):
      try:
