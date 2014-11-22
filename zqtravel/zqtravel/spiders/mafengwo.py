@@ -204,7 +204,7 @@ class MafengwoSpider(CrawlSpider):
        item['travels_content'] = all_content
        item['travels_viewnum'] = b_count
        item['travels_commentnum'] = c_count
-       item['scenicspot_locus'] = meta['scenicspot_locus']
+       item['scenicspot_locus'] = meta['scenicspot_locus'] if meta['scenicspot_locus'] != u'中国' else meta['scenicspot_name']
        item['scenicspot_name'] = meta['scenicspot_name']
 
        # 丢弃游记内容是空的
