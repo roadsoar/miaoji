@@ -106,7 +106,7 @@ class MafengwoSpider(CrawlSpider):
 
         # 景点当地天气
         weather = response.xpath('//div[@class="top-info clearfix"]/div[@class="weather"]/text()').extract()
-        weather = remove_str(''.join(weather).strip(),'[:]')
+        weather = remove_str(''.join(weather).strip(),u'：')
 
         # 景点简介
         scenicspot_intro = response.xpath('//div[@class="content"]//div[@class="m-txt"][1]//p/text()').extract()
@@ -151,7 +151,6 @@ class MafengwoSpider(CrawlSpider):
 
         # 所有游记链接
         href_list = response.xpath('//div[@class="post-list"]/ul/li[@class="post-item clearfix"]/h2[@class="post-title yahei"]//@href').extract()
-        #log.msg(str(href_list))
         re_travel_href = re.compile('/i/\d+\.html')
 
         numview_numreply = response.xpath('//div[@class="post-list"]/ul/li[@class="post-item clearfix"]/span[@class="status"]/text()').extract()
@@ -216,6 +215,24 @@ class MafengwoSpider(CrawlSpider):
                                          ).extract()
        travels_praisenum = ''.join(travels_praisenum).strip()
 
+       # 景点所在地
+       scenicspot_locus = response.xpath('//div[@class="post-hd"]//div[@class="crumb"]//strong[last()-2]//a/text()').extract()
+       scenicspot_locus = ''.join(scenicspot_locus).strip()[:-2]
+
+       # 景点名称
+       scenicspot_name = response.xpath('//div[@class="post-hd"]//div[@class="crumb"]//strong[last()-1]//a/text()').extract()
+       scenicspot_name = ''.join(scenicspot_name).strip()[:-4]
+
+       # 如果设置并开启了爬取的开始时间，则将早于开始时间的游记丢弃
+       enable_start_crawling_time = mj_cf.get_starturls('mafengwo_spider','enable_start_crawling_time')
+       if enable_start_crawling_time == 'True':
+          start_crawling_time = mj_cf.get_starturls('mafengwo_spider','start_crawling_time')
+          if travels_time < start_crawling_time:
+             return None
+
+       # 丢弃游记内容是空的
+       if all_content == '':
+         return None
 
        item['travels_praisenum'] = travels_praisenum
        item['travels_time'] = travels_time
@@ -224,12 +241,14 @@ class MafengwoSpider(CrawlSpider):
        item['travels_content'] = all_content
        item['travels_viewnum'] = b_count
        item['travels_commentnum'] = c_count
-       item['scenicspot_locus'] = meta['scenicspot_locus'] if meta['scenicspot_locus'] != u'中国' else meta['scenicspot_name']
-       item['scenicspot_name'] = meta['scenicspot_name']
-
-       # 丢弃游记内容是空的
-       if item['travels_content'] == '':
-         return None
+       
+       # 如果从游记页不能取到景点，才使用总游记页中的获取到的景点
+       if '' == scenicspot_locus or '' == scenicspot_name:
+          item['scenicspot_locus'] = meta['scenicspot_locus'] if meta['scenicspot_locus'] != u'中国' else meta['scenicspot_name']
+          item['scenicspot_name'] = meta['scenicspot_name']
+       else:
+          item['scenicspot_locus'] = scenicspot_locus
+          item['scenicspot_name'] = scenicspot_name
 
        return item
 

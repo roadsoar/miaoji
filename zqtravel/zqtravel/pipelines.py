@@ -10,6 +10,7 @@ import sys, os
 import json
 import codecs
 from scrapy import log
+from scrapy.exceptions import DropItem
 
 #from zqtravel.lib.manufacture import ConfigMiaoJI
 from zqtravel.lib.common import get_dir_name_from_spider_item, today_str
@@ -29,8 +30,14 @@ class JsonPipeline(object):
     try:
         if dict_item.get('scenicspot_intro') and not os.path.isfile(self.scenicspot_file):
            self.scenicspot_file.write(line.decode('unicode_escape'))
+           self.file_num += 1
+           return item
+        #else:
+        #   raise DropItem()
         else:
            self.travel_file.write(line.decode('unicode_escape'))
+           self.file_num += 1
+           return item
     except Exception ,e:
         log.msg('Failed to write travel records to file', level=log.ERROR)
     self.file_num += 1
