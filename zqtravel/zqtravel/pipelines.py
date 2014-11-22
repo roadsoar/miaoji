@@ -9,6 +9,7 @@
 import sys, os
 import json
 import codecs
+import random
 from scrapy import log
 from scrapy.exceptions import DropItem
 
@@ -17,27 +18,25 @@ from zqtravel.lib.common import get_dir_name_from_spider_item, today_str
 
 class TravelPipeline(object):
   def __init__(self):
-    self.file_num = 1
     self.travel_file = None
 
   def process_item(self, item, spider):
-    self.open_file(self.file_num, item, spider)
+    self.open_file(item, spider)
     dict_item = dict(item)
     line = json.dumps(dict_item) + "\n"
     try:
         if dict_item.get('travels_content'):
            self.travel_file.write(line.decode('unicode_escape'))
-           self.file_num += 1
            return item
         else:
            return item
     except Exception ,e:
         log.msg('Failed to write travel records to file', level=log.ERROR)
 
-  def open_file(self, file_num, item, spider):
+  def open_file(self, item, spider):
     file_path = get_dir_name_from_spider_item(item, spider)
     # 保存游记的文件
-    travel_file = "_".join([spider.name, today_str(), str(file_num)]) + ".json"
+    travel_file = "_".join([spider.name, today_str(), str(random.randint(1,sys.maxint))]) + ".json"
 
     path_travel_file = os.path.join(file_path, travel_file)
 
