@@ -49,10 +49,9 @@ class MafengwoSpider(CrawlSpider):
     def parse(self,response):
         """获得景点"""
 
-    #    scenicspot_item = ScenicspotItem()
-
-    #    province = remove_str(''.join(response.xpath('//div[@class="nav-item"][2]//dt/text()').extract()))
-    #    scenicspot_item['province'] = province
+        # 得到页面中景点的href
+        # 目前只抓取国内的,http://www.mafengwo.cn/mdd/页中的nav-item第2条对应国内
+        # 如果不区分国内外，抓取全部的景点，则获取所有nav-item的href即可,xpath='//div[@class="nav-item"]//@href'
         scenicspot_hrefs = response.xpath('//div[@class="nav-item"][2]//@href').extract()
 
         url_prefix = self.get_url_prefix(response, True)
@@ -126,7 +125,7 @@ class MafengwoSpider(CrawlSpider):
         scenicspot_item = response.meta['scenicspot_item']
         
         # 景点概况被认为有用的数量
-        helpful_num = response.xpath('//div[@class="content"]//div[@class="m-title clearfix"]//div[@class="count"]//span[@class="num-view"]/text()').extract()
+        helpful_num = response.xpath('//div[@class="col-main"]//div[@class="poi-info poi-base tab-div"]//div[@class="hd"]//span[@class="s-view"]/text()').extract()
         helpful_num = ''.join(helpful_num).strip()
 
         # 景点所在地
@@ -147,10 +146,16 @@ class MafengwoSpider(CrawlSpider):
         weather = response.xpath('//div[@class="top-info clearfix"]/div[@class="weather"]/text()').extract()
         weather = remove_str(remove_str(''.join(weather).strip(),u'：'),'\s+')
 
-        # 景点简介
-        scenicspot_intro = response.xpath('//div[@class="content"]//div[@class="m-txt"][1]//p/text()').extract()
-        scenicspot_intro = ''.join(scenicspot_intro).strip()
+        # 景点门票价格
+        scenicspot_ticket = response.xpath('//div[@class="m-box m-piao"]//div[@class="bd"]//li[@class="clearfix"]//span[@class="c3"]/text()').extract()
+        scenicspot_ticket = u'￥' + ''.join(scenicspot_ticket).strip() + u'起'
 
+        # 景点简介相关信息 
+        scenicspot_info_item_title = response.xpath('//div[@class="col-main"]//div[@class="poi-info poi-base tab-div"]//div[@class="bd"]//h3/text()').extract()
+        scenicspot_info_item_content = response.xpath('//div[@class="col-main"]//div[@class="poi-info poi-base tab-div"]//div[@class="bd"]//p/text()').extract()
+        log.msg(str(scenicspot_info_item_content) + str(scenicspot_info_item_title))
+
+        scenicspot_item['scenicspot_ticket'] = scenicspot_ticket
         scenicspot_item['helpful_num'] = helpful_num
         scenicspot_item['scenicspot_locus'] = scenicspot_locus
         scenicspot_item['scenicspot_name'] = scenicspot_name
@@ -232,6 +237,7 @@ class MafengwoSpider(CrawlSpider):
        travels_time = ''.join(travels_time).strip()
 
        # 游记内容
+       # 蚂蜂窝的游记页面使用了多种模板，所以对照的写了些xpath
        all_content = response.xpath('//div[@class="post_item"]//div[@id="pnl_contentinfo"]//p/text() |\
                                      //div[@class="post_item"]//div[@id="pnl_contentinfo"]/text() |\
                                      //div[@class="post_item"]//div[@id="pnl_contentinfo"]//br/text() |\
