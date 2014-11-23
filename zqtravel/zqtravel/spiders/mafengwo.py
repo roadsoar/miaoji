@@ -116,12 +116,12 @@ class MafengwoSpider(CrawlSpider):
 
         # 景点所在地
         scenicspot_locus = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][last()-2]//span[@class="hd"]//a/text()').extract()
-        # 如果还是获取到省，则获取下一级别的市县
-        if scenicspot_item['scenicspot_province'] in scenicspot_locus or \
-           scenicspot_locus in scenicspot_item['scenicspot_province'] or \
-           scenicspot_locus == u'中国':
-           scenicspot_locus = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][last()-1]//span[@class="hd"]//a/text()').extract()
         scenicspot_locus = ''.join(scenicspot_locus).strip()
+        # 如果还是获取到省，则获取下一级别的市县
+        province = scenicspot_item['scenicspot_province']
+        if province in scenicspot_locus or scenicspot_locus in province or scenicspot_locus == u'中国':
+           scenicspot_locus = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][last()-1]//span[@class="hd"]//a/text()').extract()
+           scenicspot_locus = ''.join(scenicspot_locus).strip()
 
         # 景点名称
         scenicspot_name = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item cur"]//strong/text()').extract()
@@ -156,6 +156,7 @@ class MafengwoSpider(CrawlSpider):
            content.append(''.join(scenicspot_info_item_content[:2]))
            content.extend(scenicspot_info_item_content[2:])
            scenicspot_info_item_content = content
+           content_item_num = len(scenicspot_info_item_content)
 
         # 生成title对应内容的字典，如：u'地址' : u'北京东城区景山前街4号'
         dict_title_to_content = dict(zip(scenicspot_info_item_title, scenicspot_info_item_content))
