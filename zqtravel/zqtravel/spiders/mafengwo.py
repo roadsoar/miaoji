@@ -14,33 +14,19 @@ import scrapy
 
 import re
 
-#log.start(loglevel=log.DEBUG, logstdout=True)
 mj_cf = ConfigMiaoJI("./spider_settings.cfg")
 
 class MafengwoSpider(CrawlSpider):
+    '''爬取蚂蜂窝的游记和对应景点信息'''
+
     name = "mafengwo"
     allowed_domains = ["mafengwo.cn"]
     start_urls = mj_cf.get_starturls('mafengwo_spider','start_urls')
 
-    #cities = '|'.join(mj_cf.get_allow_cities('ctrip_spider', 'allow_cities', 'disallow_cities'))
-    #city_rules = ''.join(['/travels/(', cities, ')\d+.html'])
-    #journey_rules = ''.join(['/travels/(', cities, ')\d+/\d+.html'])
     rules = [
-#             Rule(LxmlLinkExtractor('/mdd/$'),
-#            callback='parse_scenic_spots',
-#            follow=True),
              Rule(LxmlLinkExtractor('/travel-scenic-spot/mafengwo/\d+.html'),
              callback='parse_travel_next_pages',
              follow=True),
-#             Rule(LxmlLinkExtractor('/baike/info-\d+.html'),
-#             callback='parse_scenic_spots',
-#             follow=True),
-#             Rule(LxmlLinkExtractor('/yj/\d+/2-0-\d+.html'),
-#             callback='parse_scenic_spots',
-#             follow=True),
-#             Rule(LxmlLinkExtractor('/i/\d+\.html'),
-#             callback='parse_scenicspot_travel_item',
-#             follow=False),
             ]
 
     def parse_scenic_spots(self, response):
