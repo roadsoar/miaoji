@@ -82,7 +82,7 @@ class MafengwoSpider(CrawlSpider):
         if u'中国' in scenicspot_province:
            scenicspot_province = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][last()-1]//span[@class="hd"]//a/text()').extract()
         scenicspot_province = ''.join(scenicspot_province).strip()
-        scenicspot_item['scenicspot_province'] = scenicspot_province
+        scenicspot_item['scenicspot_province'] = scenicspot_province.rstrip(u'市')
 
         # 景点每一页url
         url_prefix = response.url[:response.url.rfind('/')]
@@ -116,13 +116,12 @@ class MafengwoSpider(CrawlSpider):
 
         # 景点所在地
         scenicspot_locus = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][last()-2]//span[@class="hd"]//a/text()').extract()
-        scenicspot_locus = ''.join(scenicspot_locus).strip()
-           # 如果还是获取到省，则获取下一级别的市县
+        # 如果还是获取到省，则获取下一级别的市县
         if scenicspot_item['scenicspot_province'] in scenicspot_locus or \
            scenicspot_locus in scenicspot_item['scenicspot_province'] or \
-           scenicspot_locus == u'中国': # 如果获取到的是“中国”，重新获取
+           scenicspot_locus == u'中国':
            scenicspot_locus = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][last()-1]//span[@class="hd"]//a/text()').extract()
-           scenicspot_locus = ''.join(scenicspot_locus).strip()
+        scenicspot_locus = ''.join(scenicspot_locus).strip()
 
         # 景点名称
         scenicspot_name = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item cur"]//strong/text()').extract()
@@ -133,8 +132,13 @@ class MafengwoSpider(CrawlSpider):
         weather = remove_str(remove_str(''.join(weather).strip(),u'：'),'\s+')
 
         # 景点门票价格
-        scenicspot_ticket = response.xpath('//div[@class="m-box m-piao"]//div[@class="bd"]//li[@class="clearfix"]//span[@class="c3"]/text()').extract()
-        scenicspot_ticket = u'￥' + ''.join(scenicspot_ticket).strip() + u'起' if scenicspot_ticket else ''
+        scenicspot_tickets = response.xpath('//div[@class="m-box m-piao"]//div[@class="bd"]//li[@class="clearfix"]//span[@class="c3"]/text()').extract()
+        scenicspot_ticket = ''
+        if scenicspot_tickets:
+           ticket_list = []
+           for ticket in scenicspot_tickets:
+               ticket_list.append(''.join([u'￥', ticket, u'起']))
+               scenicspot_ticket = ','.join(ticket_list)
 
         # 景点简介相关信息 
         scenicspot_info_item_title = response.xpath('//div[@class="col-main"]//div[@class="poi-info poi-base tab-div"]//div[@class="bd"]//h3/text()').extract()
@@ -142,6 +146,17 @@ class MafengwoSpider(CrawlSpider):
                                '//div[@class="col-main"]//div[@class="poi-info poi-base tab-div"]//div[@class="bd"]//p/text() |\
                               //div[@class="col-main"]//div[@class="poi-info poi-base tab-div"]//div[@class="bd"]//p/a/text()' \
                                                      ).extract()
+
+        # 避免title和content错位
+        title_item_num = len(scenicspot_info_item_title)
+        content_item_num = len(scenicspot_info_item_content)
+        re_tel = re.compile('\d{2,}-?\d{6,}')
+        while content_item_num > title_item_num and not re_tel.match(scenicspot_info_item_content[2]) and content_item_num > 2:
+           content = []
+           content.append(''.join(scenicspot_info_item_content[:2]))
+           content.extend(scenicspot_info_item_content[2:])
+           scenicspot_info_item_content = content
+
         # 生成title对应内容的字典，如：u'地址' : u'北京东城区景山前街4号'
         dict_title_to_content = dict(zip(scenicspot_info_item_title, scenicspot_info_item_content))
 
@@ -151,7 +166,7 @@ class MafengwoSpider(CrawlSpider):
         scenicspot_item['scenicspot_tel'] = dict_title_to_content.get(u'电话')
         scenicspot_item['scenicspot_ticket'] = scenicspot_ticket
         scenicspot_item['helpful_num'] = helpful_num
-        scenicspot_item['scenicspot_locus'] = scenicspot_locus
+        scenicspot_item['scenicspot_locus'] = scenicspot_locus.rstrip(u'市')
         scenicspot_item['scenicspot_name'] = scenicspot_name
         scenicspot_item['weather'] = weather
         scenicspot_item['link'] = response.url
@@ -212,7 +227,7 @@ class MafengwoSpider(CrawlSpider):
 
 
     def parse_scenicspot_travel_item(self, response):
-       item = MafengwoItem()
+       travel_item = MafengwoItem()
        meta = response.meta
 
        # 游记链接
@@ -271,21 +286,21 @@ class MafengwoSpider(CrawlSpider):
        if all_content == '':
          return None
 
-       item['travels_praisenum'] = travels_praisenum
-       item['travels_time'] = travels_time
-       item['travels_link'] = link
-       item['travels_title'] = title
-       item['travels_content'] = all_content
-       item['travels_viewnum'] = b_count
-       item['travels_commentnum'] = c_count
+       travel_item['travels_praisenum'] = travels_praisenum
+       travel_item['travels_time'] = travels_time
+       travel_item['travels_link'] = link
+       travel_item['travels_title'] = title
+       travel_item['travels_content'] = all_content
+       travel_item['travels_viewnum'] = b_count
+       travel_item['travels_commentnum'] = c_count
        
        # 如果从游记页不能取到景点，才使用总游记页中的获取到的景点
        if '' == scenicspot_locus or '' == scenicspot_name:
-          item['scenicspot_locus'] = meta['scenicspot_locus'] if meta['scenicspot_locus'] != u'中国' else meta['scenicspot_name']
-          item['scenicspot_name'] = meta['scenicspot_name']
+          travel_item['scenicspot_locus'] = meta['scenicspot_locus'].rstrip(u'市') if meta['scenicspot_locus'] != u'中国' else meta['scenicspot_name'].rstrip(u'市')
+          travel_item['scenicspot_name'] = meta['scenicspot_name']
        else:
-          item['scenicspot_locus'] = scenicspot_locus
-          item['scenicspot_name'] = scenicspot_name
+          travel_item['scenicspot_locus'] = scenicspot_locus.rstrip(u'市')
+          travel_item['scenicspot_name'] = scenicspot_name
 
-       return item
+       return travel_item
 
