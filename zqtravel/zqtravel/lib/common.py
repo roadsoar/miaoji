@@ -21,7 +21,12 @@ def get_dir_name_from_spider_item(item, spider):
   dict_item = dict(item)
   mj_cf = manufacture.ConfigMiaoJI("./spider_settings.cfg")
   data_root_dir = mj_cf.get_str('global','spider_data_dir')
-  file_path = os.path.join(data_root_dir, dict_item.get("scenicspot_locus"), dict_item.get("scenicspot_name"))
+  dir1 = dict_item.get("scenicspot_locus")
+  dir2 = dict_item.get("scenicspot_name")
+  if 'scenicspot_province' in dict_item:
+     dir1 = dict_item.get("scenicspot_province")
+     dir2 = dict_item.get("scenicspot_locus")
+  file_path = os.path.join(data_root_dir, dir1, dir2)
   
   if not os.path.isdir(file_path):
     os.makedirs(file_path)

@@ -39,7 +39,7 @@ class MafengwoSpider(CrawlSpider):
 #             callback='parse_scenic_spots',
 #             follow=True),
 #             Rule(LxmlLinkExtractor('/i/\d+\.html'),
-#             callback='parse_scenicspot_item',
+#             callback='parse_scenicspot_travel_item',
 #             follow=False),
             ]
 
@@ -49,7 +49,6 @@ class MafengwoSpider(CrawlSpider):
     def parse(self,response):
         """获得景点"""
 
-        req = []
     #    scenicspot_item = ScenicspotItem()
 
     #    province = remove_str(''.join(response.xpath('//div[@class="nav-item"][2]//dt/text()').extract()))
@@ -65,7 +64,6 @@ class MafengwoSpider(CrawlSpider):
 
     def parse_travel_next_pages(self,response):
         """获得游记下一页地址"""
-        req = []
 
         # 游记的总页数
         travel_pages = response.xpath('//div[@class="wrapper"]//div[@class="page-hotel"]/span[@class="count"]/span[1]/text()').extract()
@@ -90,14 +88,22 @@ class MafengwoSpider(CrawlSpider):
 
         # 景点的总页数
         scenicspot_pages = response.xpath('//div[@class="m-recList"]//div[@class="page-hotel"]/span[@class="count"]/span[1]/text()').extract()
-          ## 如果没有获取到页数，则说明只有一页的游记
+          ## 如果没有获取到页数，则说明只有一页的景点
         scenicspot_pages = int(''.join(scenicspot_pages).strip()) if len(scenicspot_pages) >= 1 else 1
+
+        scenicspot_item = ScenicspotItem()
+        # 景点所在省份
+        scenicspot_province = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][last()-2]//span[@class="hd"]//a/text()').extract()
+        if u'中国' in scenicspot_province:
+           scenicspot_province = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][last()-1]//span[@class="hd"]//a/text()').extract()
+        scenicspot_province = ''.join(scenicspot_province).strip()
+        scenicspot_item['scenicspot_province'] = scenicspot_province
 
         # 景点每一页url
         url_prefix = response.url[:response.url.rfind('/')]
-        for page_index in range(1, travel_pages + 1):
+        for page_index in range(1, scenicspot_pages + 1):
             url = ''.join([url_prefix, '/0-0-0-0-0-', str(page_index), '.html'])
-            yield Request(url, callback=self.parse_scenicspot_pages)
+            yield Request(url, callback=self.parse_scenicspot_pages, meta={'scenicspot_item':scenicspot_item})
 
     def parse_scenicspot_pages(self, response):
         '''获得每个景点的地址'''
@@ -110,30 +116,36 @@ class MafengwoSpider(CrawlSpider):
         for href in href_list:
             m = re_href.match(href)
             if m:
-                scenicspot_id = href[href.rfind('/') : -5]
+                scenicspot_id = href[href.rfind('/')+1 : -5]
                 url = ''.join([url_prefix, '/poi/info-',scenicspot_id, '.html#comment_header'])
-                yield Request(url, callback=self.parse_scenicspot_item)
+                yield Request(url, callback=self.parse_scenicspot_info_item, meta=response.meta)
 
-    def parse_scenicspot_item(self, response):
+    def parse_scenicspot_info_item(self, response):
         '''解析景点信息'''
 
-        scenicspot_item = ScenicspotItem()
+        scenicspot_item = response.meta['scenicspot_item']
         
         # 景点概况被认为有用的数量
         helpful_num = response.xpath('//div[@class="content"]//div[@class="m-title clearfix"]//div[@class="count"]//span[@class="num-view"]/text()').extract()
         helpful_num = ''.join(helpful_num).strip()
 
         # 景点所在地
-        scenicspot_locus = response.xpath('//div[@class="p-top clearfix"]//div[@class="crumb"]//div[@class="item"][last()-2]//span[@class="hd"]//a/text()').extract()
+        scenicspot_locus = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][last()-2]//span[@class="hd"]//a/text()').extract()
         scenicspot_locus = ''.join(scenicspot_locus).strip()
+           # 如果还是获取到省，则获取下一级别的市县
+        if scenicspot_item['scenicspot_province'] in scenicspot_locus or \
+           scenicspot_locus in scenicspot_item['scenicspot_province'] or \
+           scenicspot_locus == u'中国': # 如果获取到的是“中国”，重新获取
+           scenicspot_locus = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][last()-1]//span[@class="hd"]//a/text()').extract()
+           scenicspot_locus = ''.join(scenicspot_locus).strip()
 
         # 景点名称
-        scenicspot_name = response.xpath('//div[@class="p-top clearfix"]//div[@class="crumb"]//div[@class="item"][last()-1]//span[@class="hd"]//a/text()').extract()
+        scenicspot_name = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item cur"]//strong/text()').extract()
         scenicspot_name = ''.join(scenicspot_name).strip()
 
         # 景点当地天气
         weather = response.xpath('//div[@class="top-info clearfix"]/div[@class="weather"]/text()').extract()
-        weather = remove_str(''.join(weather).strip(),u'：')
+        weather = remove_str(remove_str(''.join(weather).strip(),u'：'),'\s+')
 
         # 景点简介
         scenicspot_intro = response.xpath('//div[@class="content"]//div[@class="m-txt"][1]//p/text()').extract()
@@ -197,10 +209,10 @@ class MafengwoSpider(CrawlSpider):
                              "scenicspot_locus":scenicspot_locus, \
                              "scenicspot_name":scenicspot_name \
                             }
-                yield Request(url, callback=self.parse_scenicspot_item,meta=meta_data)
+                yield Request(url, callback=self.parse_scenicspot_travel_item,meta=meta_data)
 
 
-    def parse_scenicspot_item(self, response):
+    def parse_scenicspot_travel_item(self, response):
        item = MafengwoItem()
        meta = response.meta
 

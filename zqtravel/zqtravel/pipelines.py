@@ -21,13 +21,13 @@ class TravelPipeline(object):
     self.travel_file = None
 
   def process_item(self, item, spider):
-    self.open_file(item, spider)
-    dict_item = dict(item)
-    line = json.dumps(dict_item) + "\n"
     try:
+      if item:
+        self.open_file(item, spider)
+        dict_item = dict(item)
+        line = json.dumps(dict_item) + "\n"
         if dict_item.get('travels_content'):
            self.travel_file.write(line.decode('unicode_escape'))
-           return item
         else:
            return item
     except Exception ,e:
@@ -57,22 +57,23 @@ class ScenicspotPipeline(object):
     self.scenicspot_file = None
 
   def process_item(self, item, spider):
-    self.open_file(item, spider)
-    dict_item = dict(item)
-    line = json.dumps(dict_item) + "\n"
     try:
-        if dict_item.get('scenicspot_intro'):
-           self.scenicspot_file.write(line.decode('unicode_escape'))
-           return item
-        else:
-           return item
+        if item:
+          self.open_file(item, spider)
+          dict_item = dict(item)
+          line = json.dumps(dict_item) + "\n"
+          if 'scenicspot_intro' in dict_item:
+             self.scenicspot_file.write(line.decode('unicode_escape'))
+          else:
+             return item
     except Exception ,e:
         log.msg('Failed to write travel records to file', level=log.ERROR)
 
   def open_file(self, item, spider):
     file_path = get_dir_name_from_spider_item(item, spider)
     # 保存景点信息的文件
-    scenicspot_info_file = "scenicspot_info.txt"
+    dict_item = dict(item)
+    scenicspot_info_file = "scenicspot_" + dict_item.get('scenicspot_name') + '.txt'
 
     path_scenicspot_info_file = os.path.join(file_path, scenicspot_info_file)
 
@@ -85,4 +86,5 @@ class ScenicspotPipeline(object):
 
   def spider_closed(self, spider):  
     if not self.file:
-       self.scenicspot_file.close() 
+      # self.scenicspot_file.close() 
+      pass
