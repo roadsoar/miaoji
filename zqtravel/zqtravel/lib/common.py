@@ -16,22 +16,22 @@ def today_str():
   return datetime.date.today().strftime('%Y%m%d')
 
 def get_dir_name_from_spider_item(item, spider):
-  '''由spider.name和file_num构成文件名，存放在/path/to/item[scenicspot_locus]/item[scenicspot_name]'''
+  ''''''
      
   dict_item = dict(item)
   mj_cf = manufacture.ConfigMiaoJI("./spider_settings.cfg")
   data_root_dir = mj_cf.get_str('global','spider_data_dir')
-  dir1 = dict_item.get("scenicspot_locus")
-  dir2 = dict_item.get("scenicspot_name")
-  if 'scenicspot_province' in dict_item:
-     dir1 = dict_item.get("scenicspot_province")
-     dir2 = dict_item.get("scenicspot_locus")
-  file_path = os.path.join(data_root_dir, dir1, dir2)
+  file_path = data_root_dir
+
+  dir1 = dict_item.get("scenicspot_province")
+  dir2 = dict_item.get("scenicspot_locus")
+  dir3 = dict_item.get("scenicspot_name")
+  if '' == dir2 or dir2 == dir3:
+     dir3 = ''
+
+  file_path = os.path.join(data_root_dir,spider.name, dir1, dir2, dir3)
   
   if not os.path.isdir(file_path):
     os.makedirs(file_path)
-  
-  #file_name = "_".join([spider.name, today_str(), str(file_num)]) + ".json"
-  #absolute_path_file = os.path.join(file_path, file_name)
   
   return file_path

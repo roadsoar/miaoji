@@ -10,10 +10,12 @@ import sys, os
 import json
 import codecs
 import random
-from scrapy import log
-from scrapy.exceptions import DropItem
 
 from zqtravel.lib.common import get_dir_name_from_spider_item, today_str
+
+from scrapy import log
+from scrapy.exceptions import DropItem
+from scrapy.contrib.pipeline.images import ImagesPipeline
 
 
 class TravelPipeline(object):
@@ -36,7 +38,10 @@ class TravelPipeline(object):
   def open_file(self, item, spider):
     file_path = get_dir_name_from_spider_item(item, spider)
     # 保存游记的文件
-    travel_file = "_".join([spider.name, today_str(), str(random.randint(1,sys.maxint))]) + ".json"
+    dict_item = dict(item)
+    link = dict_item.get('travels_link')
+    link_id = link[link.rfind('/')+1:-5]
+    travel_file = "_".join([dict_item.get('travels_praisenum'),dict_item.get('travels_viewnum'), dict_item.get('travels_commentnum'), link_id, 'json'])
 
     path_travel_file = os.path.join(file_path, travel_file)
 
@@ -73,7 +78,11 @@ class ScenicspotPipeline(object):
     file_path = get_dir_name_from_spider_item(item, spider)
     # 保存景点信息的文件
     dict_item = dict(item)
-    scenicspot_info_file = "scenicspot_" + dict_item.get('scenicspot_name') + '.txt'
+    if 'scenicspot_grade' in dict_item:
+        scenicspot_grade = dict_item.get('scenicspot_grade')
+        scenicspot_info_file = '_'.join([scenicspot_grade, dict_item.get('scenicspot_name'), 'txt'])
+    else:
+        scenicspot_info_file = '_'.join([dict_item.get('scenicspot_name'), 'txt'])
 
     path_scenicspot_info_file = os.path.join(file_path, scenicspot_info_file)
 
@@ -88,3 +97,18 @@ class ScenicspotPipeline(object):
     if not self.file:
       # self.scenicspot_file.close() 
       pass
+
+
+class ImagesStorePipeline(ImagesPipeline):
+
+    def get_media_requests(self, item, info):
+        for image_url in item['image_urls']:
+            yield scrapy.Request(image_url)
+
+    def item_completed(self, results, item, info):
+        image_paths = [x['path'] for ok, x in results if ok]
+        if not image_paths:
+            raise DropItem("Item contains no images")
+        item['image_paths'] = image_paths
+        return item
+

@@ -16,9 +16,15 @@ NEWSPIDER_MODULE = 'zqtravel.spiders'
 LOG_FILE = '/home/scrapy/log/zqtravel.log'
 
 ITEM_PIPELINES = {
- 'zqtravel.pipelines.TravelPipeline': 900,
+ 
+ 'zqtravel.pipelines.TravelPipeline': 802,
  'zqtravel.pipelines.ScenicspotPipeline': 801,
+ 'zqtravel.pipelines.ImagesStorePipeline': 800,
 }
+
+IMAGES_MIN_HEIGHT = 110
+IMAGES_MIN_WIDTH = 110
+MAGES_STORE = '/home/scrapy/data'
 
 #DOWNLOAD_HANDLERS = {
 #    'http': 'zqtravel.scrapyjs.dhandler.WebkitDownloadHandler',
@@ -29,10 +35,20 @@ ITEM_PIPELINES = {
 
 WEBKIT_DOWNLOADER=['mafengwo', 'ctrip']
 
-#DOWNLOADER_MIDDLEWARES = {
-    #'zqtravel.scrapyjs.middleware.WebkitDownloader': 1,
+DOWNLOADER_MIDDLEWARES = {
+#    'zqtravel.scrapyjs.middleware.WebkitDownloader': 1,
+    'scrapy.contrib.downloadermiddleware.useragent.UserAgentMiddleware': None,
+    'zqtravel.middleware.rotate_useragent.RotateUserAgentMiddleware': 300
 #     'zqtravel.downloader.WebkitDownloader': 3,
-#}
+}
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'zqtravel (+http://www.yourdomain.com)'
+
+# 启用AutoThrottle扩展
+AUTOTHROTTLE_ENABLED = True
+# 是否启用cookies middleware。如果关闭，cookies将不会发送给web server。
+COOKIES_ENABLED = False
+# 单位是妙。下载器在下载同一个网站下一个页面前需要等待的时间。该选项可以用来限制爬取速度， 减轻服务器压力。同时也支持小数
+DOWNLOAD_DELAY = 10
+
