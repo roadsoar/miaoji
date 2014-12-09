@@ -24,7 +24,7 @@ ITEM_PIPELINES = {
 
 IMAGES_MIN_HEIGHT = 110
 IMAGES_MIN_WIDTH = 110
-MAGES_STORE = '/home/scrapy/data'
+IMAGES_STORE = '/home/scrapy/data'
 
 #DOWNLOAD_HANDLERS = {
 #    'http': 'zqtravel.scrapyjs.dhandler.WebkitDownloadHandler',
