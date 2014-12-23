@@ -399,6 +399,7 @@ class MafengwoSpider(CrawlSpider):
                 travel_item['scenicspot_locus'] = scenicspot_locus
                 travel_item['scenicspot_name'] = scenicspot_name
                 yield travel_item
+                #return travel_item
                # 抓取游记内容的时候使用下面的yield回调
                # meta_data = {"numreply":numreply, \
                #              "numview":numview, \
