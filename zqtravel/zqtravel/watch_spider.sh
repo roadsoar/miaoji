@@ -11,7 +11,7 @@
 
 spider_start_home=/home/chunchen/Music/.miaoji/back/zqtravel/zqtravel
 spider_log='/home/scrapy/log/zqtravel.log'
-err_threshold=8
+err_threshold=6
 warn_threshold=3
 SLEEP_TIME=60 #单位：秒
 
@@ -21,7 +21,7 @@ while [ "True" ]
 do
 warn1_count=$(grep -i "Filtered offsite request" $spider_log | wc -l)
 err_500_count=$(grep -i "Internal Server Error" $spider_log | wc -l)
-err2_count=$(grep "ERROR" $spider_log | wc -l)
+err2_count=$(grep -i "ERROR" $spider_log | wc -l)
 
 if [ ${err_500_count} -ge $err_threshold -o $err2_count -ge $err_threshold -o $warn1_count -ge $warn_threshold ];
 then
@@ -35,7 +35,9 @@ then
   if [ ${err_500_count} -lt $err_threshold ];
   then
     sleep $SLEEP_TIME
-    if [ ! `ps -ef |grep scrapy |grep mafengwo |grep -v grep` ];
+    ps -ef |grep scrapy |grep mafengwo |grep -v grep
+    res=`echo $?`
+    if [ $res -ne 0 ];
     then
       cd $spider_start_home
       nohup scrapy crawl mafengwo -s JOBDIR=/home/scrapy/data/m1412231 &
