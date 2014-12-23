@@ -66,7 +66,8 @@ class MafengwoSpider(CrawlSpider):
     
     def parse_province_and_scenicspot(self, response):
     #def parse_1(self, response):
-        ''''''
+        '''response.url like http://www.mafengwo.cn/travel-scenic-spot/mafengwo/10035.html'''
+
         province_info_url = response.xpath('//div[@class="nav-bg"]//div[@class="nav-inner"]//li[@class="nav-item nav-drop"]/a[@class="drop-hd"]/@href').extract()
         province_info_url = ''.join(province_info_url).strip()
 
@@ -85,8 +86,9 @@ class MafengwoSpider(CrawlSpider):
         yield Request(url_prefix + scenicspot_url, callback=self.parse_cities, meta={'province_name':province_name})
 
     def parse_cities(self, response):
-        ''''''
-        all_city_scenicspot = response.xpath('//div[@class="content"]//div[@class="m-recList"]//div[@class="bd"]//dl[@class="clearfix"]//dd//@href').extract()
+        '''reponse.url like http://www.mafengwo.cn/jd/14407/gonglve.html'''
+
+        all_city_scenicspot = response.xpath('//div[@class="content"]//div[@class="m-recList"]//div[@class="bd"]//dl[@class="clearfix"][2]//dd//@href').extract()
         url_prefix = self.get_url_prefix(response, True)
 
         city_meta = response.meta
@@ -121,7 +123,8 @@ class MafengwoSpider(CrawlSpider):
            url_prefix = self.get_url_prefix(response, True)
            url_medium = first_href[:first_href.rfind('-')+1]
            for page_index in range(1, scenicspot_pages + 1):
-               url = ''.join([url_prefix,url_medium,str(page_index), '.html'])
+               #url = ''.join([url_prefix,url_medium,str(page_index), '.html'])
+               url = ''.join([response.url,url_medium,str(page_index), '.html'])
                yield Request(url, callback=self.parse_scenicspot_next_page, meta=response.meta)
         else:
            yield Request(response.url, callback=self.parse_scenicspot_next_page, meta=response.meta)
