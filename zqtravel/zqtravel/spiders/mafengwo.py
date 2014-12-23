@@ -30,19 +30,26 @@ class MafengwoSpider(CrawlSpider):
              Rule(LxmlLinkExtractor('/poi/\d+.html'),
              callback='parse_scenic_spots',
              follow=True),
-             Rule(LxmlLinkExtractor('/i/\d+.html'),
-             callback='parse_scenic_spots',
-             follow=True),
+        #     Rule(LxmlLinkExtractor('/i/\d+.html'),
+        #     callback='parse_scenic_spots',
+        #     follow=True),
             ]
 
     def parse_scenic_spots(self, response):
         self.parse(response)
+       # self.parse_scenicspot_travel_pages(response)
 
     def parse(self,response):
         """获得景点"""
 
-        # 得到页面中景点的href
-        # 目前只抓取国内的
+#        if 'travel-scenic-spot' in response.url:
+#           province_name = response.xpath('//div[@class="p-top clearfix"]//div[@class="crumb"]//div[@class="item"][3]//span[@class="hd"]/a/text()').extract()
+#           province_name = ''.join(province_name).strip()
+#           yield Request(response.url, callback=self.parse_province_and_scenicspot, meta={'province_name':province_name})
+
+#        else:
+           # 得到页面中景点的href
+           # 目前只抓取国内的
         province_hrefs = response.xpath('//div[@id="Mcon"]//div[@class="content"]//div[@class="MddLi"]//dl[2]//dd//@href').extract()
         province_names= response.xpath('//div[@id="Mcon"]//div[@class="content"]//div[@class="MddLi"]//dl[2]//dd//a/text()').extract()
         href_to_name = zip(province_hrefs,province_names)
@@ -56,9 +63,9 @@ class MafengwoSpider(CrawlSpider):
             if province_id not in disallow_cities:
                province_url = ''.join([url_prefix,'/travel-scenic-spot/mafengwo/', province_id, '.html'])
                yield Request(province_url, callback=self.parse_province_and_scenicspot, meta={'province_name':name.strip()})
-#               yield Request(province_url, callback=self.parse_travel_next_pages, meta={'province_name':name.strip()})
     
     def parse_province_and_scenicspot(self, response):
+    #def parse_1(self, response):
         ''''''
         province_info_url = response.xpath('//div[@class="nav-bg"]//div[@class="nav-inner"]//li[@class="nav-item nav-drop"]/a[@class="drop-hd"]/@href').extract()
         province_info_url = ''.join(province_info_url).strip()
@@ -68,8 +75,14 @@ class MafengwoSpider(CrawlSpider):
 
         url_prefix = self.get_url_prefix(response, True)
 
-        yield Request(url_prefix + province_info_url, callback=self.parse_locus_info, meta=response.meta)
-        yield Request(url_prefix + scenicspot_url, callback=self.parse_cities, meta=response.meta)
+        #yield Request(url_prefix + province_info_url, callback=self.parse_locus_info, meta=response.meta)
+        #yield Request(url_prefix + scenicspot_url, callback=self.parse_cities, meta=response.meta)
+        
+        # if not start from province, please use above two yield
+        province_name = response.xpath('//div[@class="p-top clearfix"]//div[@class="crumb"]//div[@class="item"][3]//span[@class="hd"]/a/text()').extract()
+        province_name = ''.join(province_name).strip()
+        yield Request(url_prefix + province_info_url, callback=self.parse_locus_info, meta={'province_name':province_name})
+        yield Request(url_prefix + scenicspot_url, callback=self.parse_cities, meta={'province_name':province_name})
 
     def parse_cities(self, response):
         ''''''
@@ -361,6 +374,8 @@ class MafengwoSpider(CrawlSpider):
        # href_list = response.xpath('//div[@class="post-list"]/ul/li[@class="post-item clearfix"]/h2[@class="post-title yahei"]//@href').extract()
         youji_pre_xpath = '//div[@class="wrapper"]//div[@class="col-main"]//div[@class="poi-travelnote tab-div"]//ul[@class="post-list"]//li[@class="post-item clearfix"]//'
         href_list = response.xpath(youji_pre_xpath + 'h2[@class="post-title yahei"]/a/@href').extract()
+        href_title_list = response.xpath(youji_pre_xpath + 'h2[@class="post-title yahei"]/a/text()').extract()
+        href_title_group = zip(href_list, href_title_list)
 
         re_travel_href = re.compile('/i/\d+\.html')
 
@@ -370,22 +385,28 @@ class MafengwoSpider(CrawlSpider):
         ## [u'2824', u'13',  u'2462', u'27',   u'9594', u'24', u'2326', u'22', u'2345', u'7'] 
         ## 浏览数和评论数的对数跟页面中游记连接条数是一致的, 如：http://www.mafengwo.cn/yj/10219/2-0-42.html
         url_prefix = self.get_url_prefix(response, splice_http=True)
+        travel_item = MafengwoItem()
         num_index = 0
-        for href in href_list:
+        for href, title in href_title_group:
             m = re_travel_href.match(href)
             if m:
                 numview = numview_numreply[num_index]
                 numreply = numview_numreply[num_index+1]
                 num_index += 2 # 以及上面numview_numreply的输出格式，每次的步数为2
                 url = ''.join([url_prefix, href])
-                meta_data = {"numreply":numreply, \
-                             "numview":numview, \
-                             "scenicspot_province":scenicspot_province, \
-                             "scenicspot_locus":scenicspot_locus, \
-                             "scenicspot_name":scenicspot_name \
-                            }
-                yield Request(url, callback=self.parse_scenicspot_travel_item,meta=meta_data)
-
+                travel_item['travels_link'] = url 
+                travel_item['scenicspot_province'] =scenicspot_province
+                travel_item['scenicspot_locus'] = scenicspot_locus
+                travel_item['scenicspot_name'] = scenicspot_name
+                yield travel_item
+               # 抓取游记内容的时候使用下面的yield回调
+               # meta_data = {"numreply":numreply, \
+               #              "numview":numview, \
+               #              "scenicspot_province":scenicspot_province, \
+               #              "scenicspot_locus":scenicspot_locus, \
+               #              "scenicspot_name":scenicspot_name \
+               #             }
+               # yield Request(url, callback=self.parse_scenicspot_travel_item,meta=meta_data)
 
     def parse_scenicspot_travel_item(self, response):
        travel_item = MafengwoItem()
@@ -428,6 +449,11 @@ class MafengwoSpider(CrawlSpider):
                                          ).extract()
        travels_praisenum = ''.join(travels_praisenum).strip()
 
+       # 游记中的图片
+       image_urls = response.xpath('//div[@class="post_item"]//div[@id="pnl_contentinfo"]//a//img/@src |\
+                                    //div[@class="view clearfix"]//div[@class="vc_article"]//div[@class="va_con"]//a//img/@src'\
+                                  ).extract()
+
        # 游记所在省
 #       scenicspot_province = response.xpath('//div[@class="post-hd"]//div[@class="crumb"]//strong[2]//a/text()').extract()
  #      scenicspot_province = ''.join(scenicspot_locus).strip()[:-2]
@@ -461,7 +487,14 @@ class MafengwoSpider(CrawlSpider):
        travel_item['scenicspot_province'] = meta.get('scenicspot_province')
        travel_item['scenicspot_locus'] = meta.get('scenicspot_locus')
        travel_item['scenicspot_name'] = meta.get('scenicspot_name')
+       #travel_item['image_urls'] = image_urls
        
+#       image_item = ImageItem()
+
+#       image_item['scenicspot_province'] = meta.get('scenicspot_province')
+#       image_item['scenicspot_locus'] = meta.get('scenicspot_locus')
+#       image_item['scenicspot_name'] = meta.get('scenicspot_name')
+#       image_item['image_urls'] = image_urls
        # 如果从游记页不能取到景点，才使用总游记页中的获取到的景点
        #if '' == scenicspot_locus or '' == scenicspot_name:
         #  travel_item['scenicspot_locus'] = meta['scenicspot_locus'].rstrip(u'市') if meta['scenicspot_locus'] != u'中国' else meta['scenicspot_name'].rstrip(u'市')

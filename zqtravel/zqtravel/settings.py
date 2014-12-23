@@ -17,14 +17,17 @@ LOG_FILE = '/home/scrapy/log/zqtravel.log'
 
 ITEM_PIPELINES = {
  
- 'zqtravel.pipelines.TravelPipeline': 802,
+# 'zqtravel.pipelines.TravelPipeline': 802,
  'zqtravel.pipelines.ScenicspotPipeline': 801,
- 'zqtravel.pipelines.ImagesStorePipeline': 800,
+# 'zqtravel.pipelines.ImagesStorePipeline': 1,
+ 'zqtravel.pipelines.TravelLinkPipeline': 803
+# 'scrapy.contrib.pipeline.images.ImagesPipeline': 1,
 }
 
 IMAGES_MIN_HEIGHT = 110
 IMAGES_MIN_WIDTH = 110
-IMAGES_STORE = '/home/scrapy/data'
+IMAGES_EXPIRES = 90   # 90天的图片失效期限
+IMAGES_STORE = '/home/scrapy/data/mafengwo/'
 
 #DOWNLOAD_HANDLERS = {
 #    'http': 'zqtravel.scrapyjs.dhandler.WebkitDownloadHandler',
@@ -48,7 +51,7 @@ DOWNLOADER_MIDDLEWARES = {
 # 启用AutoThrottle扩展
 AUTOTHROTTLE_ENABLED = True
 # 是否启用cookies middleware。如果关闭，cookies将不会发送给web server。
-COOKIES_ENABLED = False
+COOKIES_ENABLED = True
 # 单位是妙。下载器在下载同一个网站下一个页面前需要等待的时间。该选项可以用来限制爬取速度， 减轻服务器压力。同时也支持小数
-DOWNLOAD_DELAY = 10
+DOWNLOAD_DELAY = 0.6
 
