@@ -17,10 +17,10 @@ LOG_FILE = '/home/scrapy/log/zqtravel.log'
 
 ITEM_PIPELINES = {
  
-# 'zqtravel.pipelines.TravelPipeline': 802,
+ 'zqtravel.pipelines.TravelPipeline': 802,
  'zqtravel.pipelines.ScenicspotPipeline': 801,
 # 'zqtravel.pipelines.ImagesStorePipeline': 1,
- 'zqtravel.pipelines.TravelLinkPipeline': 803
+# 'zqtravel.pipelines.TravelLinkPipeline': 803
 # 'scrapy.contrib.pipeline.images.ImagesPipeline': 1,
 }
 
@@ -41,7 +41,7 @@ WEBKIT_DOWNLOADER=['mafengwo', 'ctrip']
 DOWNLOADER_MIDDLEWARES = {
 #    'zqtravel.scrapyjs.middleware.WebkitDownloader': 1,
     'scrapy.contrib.downloadermiddleware.useragent.UserAgentMiddleware': None,
-    'zqtravel.middleware.rotate_useragent.RotateUserAgentMiddleware': 300
+    'zqtravel.middleware.rotate_useragent.RotateUserAgentMiddleware': 300,
 #     'zqtravel.downloader.WebkitDownloader': 3,
 }
 
@@ -53,5 +53,7 @@ AUTOTHROTTLE_ENABLED = True
 # 是否启用cookies middleware。如果关闭，cookies将不会发送给web server。
 COOKIES_ENABLED = True
 # 单位是妙。下载器在下载同一个网站下一个页面前需要等待的时间。该选项可以用来限制爬取速度， 减轻服务器压力。同时也支持小数
-DOWNLOAD_DELAY = 0.6
+DOWNLOAD_DELAY = 2
 
+# 让爬取的质量更高，使用宽度优先的策略
+SCHEDULER_ORDER = 'BFO'

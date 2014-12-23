@@ -30,9 +30,9 @@ class MafengwoSpider(CrawlSpider):
              Rule(LxmlLinkExtractor('/poi/\d+.html'),
              callback='parse_scenic_spots',
              follow=True),
-        #     Rule(LxmlLinkExtractor('/i/\d+.html'),
-        #     callback='parse_scenic_spots',
-        #     follow=True),
+             Rule(LxmlLinkExtractor('/i/\d+.html'),
+             callback='parse_scenic_spots',
+             follow=True),
             ]
 
     def parse_scenic_spots(self, response):
@@ -394,20 +394,20 @@ class MafengwoSpider(CrawlSpider):
                 numreply = numview_numreply[num_index+1]
                 num_index += 2 # 以及上面numview_numreply的输出格式，每次的步数为2
                 url = ''.join([url_prefix, href])
-                travel_item['travels_link'] = url 
-                travel_item['scenicspot_province'] =scenicspot_province
-                travel_item['scenicspot_locus'] = scenicspot_locus
-                travel_item['scenicspot_name'] = scenicspot_name
-                yield travel_item
+                #travel_item['travels_link'] = url 
+                #travel_item['scenicspot_province'] =scenicspot_province
+                #travel_item['scenicspot_locus'] = scenicspot_locus
+                #travel_item['scenicspot_name'] = scenicspot_name
+                #yield travel_item
                 #return travel_item
                # 抓取游记内容的时候使用下面的yield回调
-               # meta_data = {"numreply":numreply, \
-               #              "numview":numview, \
-               #              "scenicspot_province":scenicspot_province, \
-               #              "scenicspot_locus":scenicspot_locus, \
-               #              "scenicspot_name":scenicspot_name \
-               #             }
-               # yield Request(url, callback=self.parse_scenicspot_travel_item,meta=meta_data)
+                meta_data = {"numreply":numreply, \
+                             "numview":numview, \
+                             "scenicspot_province":scenicspot_province, \
+                             "scenicspot_locus":scenicspot_locus, \
+                             "scenicspot_name":scenicspot_name \
+                            }
+                yield Request(url, callback=self.parse_scenicspot_travel_item,meta=meta_data)
 
     def parse_scenicspot_travel_item(self, response):
        travel_item = MafengwoItem()
