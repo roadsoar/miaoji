@@ -88,7 +88,7 @@ class MafengwoSpider(CrawlSpider):
     def parse_cities(self, response):
         '''reponse.url like http://www.mafengwo.cn/jd/14407/gonglve.html'''
 
-        all_city_scenicspot = response.xpath('//div[@class="content"]//div[@class="m-recList"]//div[@class="bd"]//dl[@class="clearfix"][2]//dd//@href').extract()
+        all_city_scenicspot = response.xpath('//div[@class="content"]//div[@class="m-recList"]//div[@class="bd"]//dl[@class="clearfix"]//dd//@href').extract()
         url_prefix = self.get_url_prefix(response, True)
 
         city_meta = response.meta
