@@ -66,7 +66,7 @@ class MafengwoSpider(CrawlSpider):
     
     def parse_province_and_scenicspot(self, response):
     #def parse_1(self, response):
-        '''response.url like http://www.mafengwo.cn/travel-scenic-spot/mafengwo/10035.html'''
+        '''省或直辖市的response.url => http://www.mafengwo.cn/travel-scenic-spot/mafengwo/10035.html'''
 
         province_info_url = response.xpath('//div[@class="nav-bg"]//div[@class="nav-inner"]//li[@class="nav-item nav-drop"]/a[@class="drop-hd"]/@href').extract()
         province_info_url = ''.join(province_info_url).strip()
@@ -86,9 +86,9 @@ class MafengwoSpider(CrawlSpider):
         yield Request(url_prefix + scenicspot_url, callback=self.parse_cities, meta={'province_name':province_name})
 
     def parse_cities(self, response):
-        '''reponse.url like http://www.mafengwo.cn/jd/14407/gonglve.html'''
+        '''省或直辖市的reponse.url => http://www.mafengwo.cn/jd/14407/gonglve.html'''
 
-        all_city_scenicspot = response.xpath('//div[@class="content"]//div[@class="m-recList"]//div[@class="bd"]//dl[@class="clearfix"]//dd//@href').extract()
+        all_city_scenicspot = response.xpath('//div[@class="content"]//div[@class="m-recList"]//div[@class="bd"]//dl[@class="clearfix"][2]//dd//@href').extract()
         url_prefix = self.get_url_prefix(response, True)
 
         city_meta = response.meta
@@ -111,23 +111,28 @@ class MafengwoSpider(CrawlSpider):
                yield Request(url_prefix + href, callback=self.parse_city_scenicspot,meta=city_meta)
 
     def parse_city_scenicspot(self, response):
-        ''''''       
+        '''省下面的市或县的response.url => http://www.mafengwo.cn/jd/10163/'''       
 
-        scenicspot_pages = response.xpath('//div[@class="m-recList"]//div[@class="page-hotel"]/span[@class="count"]/span[1]/text()').extract()
-        scenicspot_pages = ''.join(scenicspot_pages).strip()
+#        scenicspot_pages = response.xpath('//div[@class="m-recList"]//div[@class="page-hotel"]/span[@class="count"]/span[1]/text()').extract()
+ #       scenicspot_pages = ''.join(scenicspot_pages).strip()
 
-        if scenicspot_pages:
-           scenicspot_pages = int(scenicspot_pages)
-           first_href = response.xpath('//div[@class="m-recList"]//div[@class="page-hotel"]/a[@class="ti"][1]/@href').extract()
-           first_href = ''.join(first_href).strip()
-           url_prefix = self.get_url_prefix(response, True)
-           url_medium = first_href[:first_href.rfind('-')+1]
-           for page_index in range(1, scenicspot_pages + 1):
+#        if scenicspot_pages:
+#          scenicspot_pages = int(scenicspot_pages)
+#           first_href = response.xpath('//div[@class="m-recList"]//div[@class="page-hotel"]/a[@class="ti"][1]/@href').extract()
+#           first_href = ''.join(first_href).strip()
+#           url_prefix = self.get_url_prefix(response, True)
+#           url_medium = first_href[:first_href.rfind('-')+1]
+#         for page_index in range(1, scenicspot_pages + 1):
                #url = ''.join([url_prefix,url_medium,str(page_index), '.html'])
-               url = ''.join([response.url,url_medium,str(page_index), '.html'])
-               yield Request(url, callback=self.parse_scenicspot_next_page, meta=response.meta)
-        else:
-           yield Request(response.url, callback=self.parse_scenicspot_next_page, meta=response.meta)
+#             url = ''.join([response.url,url_medium,str(page_index), '.html'])
+#             yield Request(url, callback=self.parse_scenicspot_next_page, meta=response.meta)
+#        else:
+#           yield Request(response.url, callback=self.parse_scenicspot_next_page, meta=response.meta)
+           # 上面是马蜂窝页面升级前的逻辑
+        first_href = response.xpath('//div[@class="m-recList"]//div[@class="page-hotel"]/a[@class="ti"][1]/@href').extract()
+        first_href = ''.join(first_href).strip()
+        url = ''.join([response.url, first_href])
+        yield Request(url, callback=self.parse_scenicspot_next_page, meta=response.meta)
 
     def parse_locus_info(self,response):
         '''获得省市的相关信息'''
@@ -213,7 +218,7 @@ class MafengwoSpider(CrawlSpider):
         #yield Request(scenicspot_page_url, callback=self.parse_scenicspot_next_page)
 
     def parse_scenicspot_next_page(self, response):
-        """获得景点下一页地址"""
+        """获得城市景点的页地址, response.url => http://www.mafengwo.cn/jd/10163/0-0-0-0-0-2.html"""
 
         # 景点的总页数
         scenicspot_pages = response.xpath('//div[@class="m-recList"]//div[@class="page-hotel"]/span[@class="count"]/span[1]/text()').extract()
@@ -245,7 +250,7 @@ class MafengwoSpider(CrawlSpider):
             yield Request(url, callback=self.parse_scenicspot_pages, meta={'scenicspot_item':scenicspot_item})
 
     def parse_scenicspot_pages(self, response):
-        '''获得每个景点的地址'''
+        '''获得每页景点的地址'''
 
         # 所有景点链接
         href_list = response.xpath('//div[@class="wrapper"]//div[@class="content"]//ul[@class="poi-list"]//li[@class="item clearfix"]//div[@class="title"]//@href').extract()
