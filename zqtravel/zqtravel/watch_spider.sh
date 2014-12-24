@@ -13,13 +13,17 @@ spider_start_home=/home/chunchen/Music/.miaoji/back/zqtravel/zqtravel
 spider_log='/home/scrapy/log/zqtravel.log'
 err_threshold=8
 warn_threshold=3
-SLEEP_TIME=60 #单位：秒
+SLEEP_TIME=23 #单位：秒
+
+cat /dev/null > $spider_log
+cd $spider_start_home
+nohup scrapy crawl mafengwo -s JOBDIR=/home/scrapy/data/m1412231 &
 
 killed_spider=1
 while [ "True" ]
 do
 warn1_count=$(grep -i "Filtered offsite request" $spider_log | wc -l)
-err_500_count=$(grep -i "Internal Server Error" $spider_log | wc -l)
+err_500_count=$(grep -i -e "Internal Server Error" -e "DNS lookup failed" $spider_log | wc -l)
 err2_count=$(grep -i -e "ERROR" -e "Errno" $spider_log | wc -l)
 
 spider_mafengwo_pid=$(ps -ef |grep scrapy |grep mafengwo |grep -v grep |awk '{print $2}')
