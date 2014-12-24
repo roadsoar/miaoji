@@ -20,7 +20,7 @@ while [ "True" ]
 do
 warn1_count=$(grep -i "Filtered offsite request" $spider_log | wc -l)
 err_500_count=$(grep -i "Internal Server Error" $spider_log | wc -l)
-err2_count=$(grep -i "ERROR" $spider_log | wc -l)
+err2_count=$(grep -i -e "ERROR" -e "Errno" $spider_log | wc -l)
 
 spider_mafengwo_pid=$(ps -ef |grep scrapy |grep mafengwo |grep -v grep |awk '{print $2}')
 
