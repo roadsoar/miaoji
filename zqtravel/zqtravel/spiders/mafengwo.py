@@ -76,14 +76,14 @@ class MafengwoSpider(CrawlSpider):
 
         url_prefix = self.get_url_prefix(response, True)
 
-        #yield Request(url_prefix + province_info_url, callback=self.parse_locus_info, meta=response.meta)
-        #yield Request(url_prefix + scenicspot_url, callback=self.parse_cities, meta=response.meta)
+        yield Request(url_prefix + province_info_url, callback=self.parse_locus_info, meta=response.meta)
+        yield Request(url_prefix + scenicspot_url, callback=self.parse_cities, meta=response.meta)
         
         # if not start from province, please use above two yield
-        province_name = response.xpath('//div[@class="p-top clearfix"]//div[@class="crumb"]//div[@class="item"][3]//span[@class="hd"]/a/text()').extract()
-        province_name = ''.join(province_name).strip()
-        yield Request(url_prefix + province_info_url, callback=self.parse_locus_info, meta={'province_name':province_name})
-        yield Request(url_prefix + scenicspot_url, callback=self.parse_cities, meta={'province_name':province_name})
+        #province_name = response.xpath('//div[@class="p-top clearfix"]//div[@class="crumb"]//div[@class="item"][3]//span[@class="hd"]/a/text()').extract()
+        #province_name = ''.join(province_name).strip()
+        #yield Request(url_prefix + province_info_url, callback=self.parse_locus_info, meta={'province_name':province_name})
+        #yield Request(url_prefix + scenicspot_url, callback=self.parse_cities, meta={'province_name':province_name})
 
     def parse_cities(self, response):
         '''省或直辖市的reponse.url => http://www.mafengwo.cn/jd/14407/gonglve.html'''
@@ -103,10 +103,10 @@ class MafengwoSpider(CrawlSpider):
                yield Request(baike_info_url, callback=self.parse_locus_info, meta=city_meta)
                yield Request(url_prefix + href, callback=self.parse_scenicspot_next_page, meta=city_meta)
             else:
-               xpath = '//div[@class="content"]//div[@class="m-recList"]//div[@class="bd"]//dl[@class="clearfix"]//dd//a[@href="' + href + '"]/h2/text()'
-               city = response.xpath(xpath).extract()
-               city = ''.join(city).strip()
-               city_meta['city'] = city
+#               xpath = '//div[@class="content"]//div[@class="m-recList"]//div[@class="bd"]//dl[@class="clearfix"]//dd//a[@href="' + href + '"]/h2/text()'
+#               city = response.xpath(xpath).extract()
+#               city = ''.join(city).strip()
+#               city_meta['city'] = city
                yield Request(baike_info_url, callback=self.parse_locus_info,meta=city_meta)
                yield Request(url_prefix + href, callback=self.parse_city_scenicspot,meta=city_meta)
 
@@ -129,10 +129,14 @@ class MafengwoSpider(CrawlSpider):
 #        else:
 #           yield Request(response.url, callback=self.parse_scenicspot_next_page, meta=response.meta)
            # 上面是马蜂窝页面升级前的逻辑
+        city_meta = response.meta 
+        scenicspot_locus = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][4]//span[@class="hd"]//a/text()').extract()
+        scenicspot_locus = ''.join(scenicspot_locus).strip()
+        city_meta['city'] = scenicspot_locus
         first_href = response.xpath('//div[@class="m-recList"]//div[@class="page-hotel"]/a[@class="ti"][1]/@href').extract()
         first_href = ''.join(first_href).strip()
         url = ''.join([response.url, first_href])
-        yield Request(url, callback=self.parse_scenicspot_next_page, meta=response.meta)
+        yield Request(url, callback=self.parse_scenicspot_next_page, meta=city_meta)
 
     def parse_locus_info(self,response):
         '''获得省市的相关信息'''
