@@ -9,12 +9,13 @@
 # nohup scrapy crawl mafengwo -s JOBDIR=$spider_job_dir_home/$job_dir_name &
 # ******
 
+##
 spider_start_home=$(pwd)
 spider_job_dir_home='/home/scrapy/data'
 spider_log='/home/scrapy/log/zqtravel.log'
 err_threshold=8
 warn_threshold=3
-SLEEP_TIME=12 #单位：秒
+SLEEP_TIME=6 #单位：秒
 
 if [ $# -ne 1 ];
 then
@@ -28,7 +29,7 @@ job_dir_name=$1
 
 cat /dev/null > $spider_log
 cd $spider_start_home
-nohup scrapy crawl mafengwo -s JOBDIR=$spider_job_dir_home/$job_dir_name &
+scrapy crawl mafengwo -s JOBDIR=$spider_job_dir_home/$job_dir_name &
 
 _exit()
 {
@@ -37,7 +38,7 @@ _exit()
   exit 0
 }
 
-trap '_exit' TERM INT KILL
+trap '_exit' TERM INT
 
 killed_spider=1
 while [ "True" ]
@@ -59,22 +60,23 @@ then
     echo "<`date`> 请更换IP（eg: 重启路由），再启动爬虫程序！" > $spider_log
     echo -e "错误统计:\nFiltered offsite request: $warn1_count次, Internal Server Error: ${err_500_count}次, ERROR: $err2_count次">>$spider_log
   fi
+fi
 
-  # 如果不是被网站封禁，则重启爬虫
-  if [ ${err_500_count} -lt 3 ];
+# 如果不是被网站封禁，则重启爬虫
+if [ ${err_500_count} -lt 3 ];
+then
+  ps -ef |grep scrapy |grep mafengwo |grep -v grep
+  res=`echo $?`
+  if [ $res -ne 0 ];
   then
-    ps -ef |grep scrapy |grep mafengwo |grep -v grep
-    res=`echo $?`
-    if [ $res -ne 0 ];
-    then
-      cd $spider_start_home
-      nohup scrapy crawl mafengwo -s JOBDIR=$spider_job_dir_home/$job_dir_name &
-      killed_spider=1
-    fi
-    sleep $SLEEP_TIME
-  else
-    break
+    cd $spider_start_home
+    echo $spider_start_home $spider_job_dir_home/$job_dir_name
+    nohup scrapy crawl mafengwo -s JOBDIR=$spider_job_dir_home/$job_dir_name &
+    killed_spider=1
   fi
+  sleep $SLEEP_TIME
+else
+  break
 fi
 
 sleep $SLEEP_TIME
