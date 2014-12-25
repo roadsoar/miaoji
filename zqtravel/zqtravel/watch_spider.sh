@@ -31,7 +31,7 @@ job_dir_name=$1
 
 cat /dev/null > $spider_log
 cd $spider_start_home
-scrapy crawl mafengwo -s JOBDIR=$spider_job_dir_home/$job_dir_name &
+nohup scrapy crawl mafengwo -s JOBDIR=$spider_job_dir_home/$job_dir_name &
 
 _exit()
 {
