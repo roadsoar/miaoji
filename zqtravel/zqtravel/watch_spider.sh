@@ -29,7 +29,6 @@ job_dir_name=$1
 cat /dev/null > $spider_log
 cd $spider_start_home
 nohup scrapy crawl mafengwo -s JOBDIR=$spider_job_dir_home/$job_dir_name &
-wait
 
 _exit()
 {
@@ -71,7 +70,6 @@ then
       cd $spider_start_home
       nohup scrapy crawl mafengwo -s JOBDIR=$spider_job_dir_home/$job_dir_name &
       killed_spider=1
-      wait
     fi
     sleep $SLEEP_TIME
   else
