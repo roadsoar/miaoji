@@ -9,7 +9,7 @@
 # nohup scrapy crawl mafengwo -s JOBDIR=$spider_job_dir_home/$job_dir_name &
 # ******
 
-spider_start_home=`dirname $(pwd)`
+spider_start_home=$(pwd)
 spider_job_dir_home='/home/scrapy/data'
 spider_log='/home/scrapy/log/zqtravel.log'
 err_threshold=8
@@ -37,7 +37,7 @@ _exit()
   exit 0
 }
 
-trap '_exit' TERM INT
+trap '_exit' TERM INT KILL
 
 killed_spider=1
 while [ "True" ]
