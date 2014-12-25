@@ -67,12 +67,11 @@ fi
 # 如果不是被网站封禁，则重启爬虫
 if [ ${err_500_count} -lt 3 ];
 then
-  ps -ef |grep scrapy |grep mafengwo |grep -v grep
+  ps -ef |grep scrapy |grep mafengwo |grep -v grep > /dev/null
   res=`echo $?`
   if [ $res -ne 0 ];
   then
     cd $spider_start_home
-    echo $spider_start_home $spider_job_dir_home/$job_dir_name
     nohup scrapy crawl mafengwo -s JOBDIR=$spider_job_dir_home/$job_dir_name &
     killed_spider=1
   fi
