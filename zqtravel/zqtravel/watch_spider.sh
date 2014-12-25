@@ -10,6 +10,8 @@
 # ******
 
 ##
+## 为了使用方便，不建议强制退出脚本（即不使用 kill -9），本脚本没有对SIGKILL信号的处理
+##
 spider_start_home=$(pwd)
 spider_job_dir_home='/home/scrapy/data'
 spider_log='/home/scrapy/log/zqtravel.log'
