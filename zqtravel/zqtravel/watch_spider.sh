@@ -19,11 +19,15 @@ err_threshold=8
 warn_threshold=3
 SLEEP_TIME=2 #单位：秒
 
+# 只允许一个watch_spider进程存在
+[[ `ps -ef |grep watch_spider |grep -v grep` ]] && { echo -e "\033[32;49;1mWatch_spider is running...\033[39;49;0m"; exit 1; }
+
+# 必须指定JOBDIR
 if [ $# -ne 1 ];
 then
   echo -e "\033[31;49;1m^^Need spider job directory name^^\033[39;49;0m"
   echo "Usage: $0 <spider_job_dir_name>"
-  echo -e "\n\033[32;49;1mcheck the dir at: $spider_job_dir/<spider_job_dir_name>\033[39;49;0m"
+  echo -e "\n\033[32;49;1mcheck the dir at: $spider_job_dir_home/<spider_job_dir_name>\033[39;49;0m"
   exit 1
 fi
 
