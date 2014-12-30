@@ -20,7 +20,12 @@ warn_threshold=3
 SLEEP_TIME=2 #单位：秒
 
 # 只允许一个watch_spider进程存在
-[[ `ps -ef |grep watch_spider |grep -v grep` ]] && { echo -e "\033[32;49;1mWatch_spider is running...\033[39;49;0m"; exit 1; }
+#watch_processes=$(ps -ef |grep watch_spider |grep -v grep|wc -l)
+#if [ $watch_processes -gt 1 ];
+#then
+#  echo -e "\033[32;49;1mWatch_spider is running...\033[39;49;0m"
+#  exit 1
+#fi
 
 # 必须指定JOBDIR
 if [ $# -ne 1 ];
@@ -50,7 +55,7 @@ killed_spider=1
 while [ "True" ]
 do
 warn1_count=$(grep -i "Filtered offsite request" $spider_log | wc -l)
-err_500_count=$(grep -i -e "Internal Server Error" -e "DNS lookup failed" $spider_log | wc -l)
+err_500_count=$(grep -i -e "connection timed out" -e "not handled or not allowed" -e "Internal Server Error" -e "DNS lookup failed" -e "An error occurred while connecting" $spider_log | wc -l)
 err2_count=$(grep -i -e "ERROR" -e "Errno" $spider_log | wc -l)
 
 spider_mafengwo_pid=$(ps -ef |grep scrapy |grep mafengwo |grep -v grep |awk '{print $2}')
