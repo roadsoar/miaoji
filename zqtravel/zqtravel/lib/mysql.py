@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from zqtravel.lib.manufacture import ConfigMiaoJI
+#from zqtravel.lib.manufacture import ConfigMiaoJI
 
 import os, sys, string  
 import MySQLdb  
 import codecs  
 
 class LoadToMysql(object):
-   def __init__(self, host='127.0.0.1', port='3306', user='root', passwd='default', database=''):
+   def __init__(self, host='localhost', port=3306, user='root', passwd='123456', database=''):
       self.host = host
       self.db_port= port
       self.db_user = user
@@ -18,14 +18,14 @@ class LoadToMysql(object):
    # 连接数据库  
    def connect_mysql(self):
       try:  
-         self.conn = MySQLdb.connect(host=self.host, user=self.db_user, passwd=self.db_passwd, db=self.database, port=self.port, charset='utf8')
+         self.conn = MySQLdb.connect(host=self.host, user=self.db_user, passwd=self.db_passwd, db=self.database, port=self.db_port, charset='utf8')
       except Exception, e:  
          print e  
-         self.close_mysql()
+         self.close()
          sys.exit()  
     
    # 关闭数据库
-   def close_mysql(self):
+   def close(self):
       if not self.conn is None:
          self.conn.close()  
   
