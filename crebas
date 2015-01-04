@@ -1,0 +1,200 @@
+﻿/*==============================================================*/
+/* DBMS name:      MySQL 5.0                                    */
+/* Created on:     1/4/2015 5:35:29 AM                          */
+/*==============================================================*/
+
+
+drop table if exists Airtickets;
+
+drop table if exists AttributeClass;
+
+drop table if exists City;
+
+drop table if exists Continent;
+
+drop table if exists Country;
+
+drop table if exists Hotelinfo;
+
+drop table if exists Province;
+
+drop table if exists Scenicspot;
+
+drop table if exists Tag;
+
+drop table if exists Travelnotes;
+
+/*==============================================================*/
+/* Table: Airtickets                                            */
+/*==============================================================*/
+create table Airtickets
+(
+   flight_no            varchar(1),
+   airlines             varchar(1),
+   departure_time       time,
+   arrival_time         time,
+   origin               varchar(1),
+   destination          varchar(1),
+   info_url             varchar(1),
+   punctuality          varchar(1),
+   price                float
+);
+
+/*==============================================================*/
+/* Table: AttributeClass                                        */
+/*==============================================================*/
+create table AttributeClass
+(
+   AttributeClass_no    numeric(20,0) not null,
+   AttributeClass_name  varchar(1),
+   primary key (AttributeClass_no)
+);
+
+alter table AttributeClass comment '属性类别';
+
+/*==============================================================*/
+/* Table: City                                                  */
+/*==============================================================*/
+create table City
+(
+   City_no              numeric(20,0) not null,
+   City_name            varchar(1),
+   City_intrd           varchar(1),
+   City_area            float,
+   Province_no          numeric(20,0),
+   primary key (City_no)
+);
+
+alter table City comment '城市';
+
+/*==============================================================*/
+/* Table: Continent                                             */
+/*==============================================================*/
+create table Continent
+(
+   Continent_no         numeric(20,0) not null,
+   Country_no           numeric(20,0),
+   Continent_name       varchar(1),
+   Continent_intrd      varchar(1),
+   primary key (Continent_no)
+);
+
+alter table Continent comment '大洲';
+
+/*==============================================================*/
+/* Table: Country                                               */
+/*==============================================================*/
+create table Country
+(
+   Country_no           numeric(20,0) not null,
+   Country_name         varchar(1),
+   Country_intrd        varchar(1),
+   Continent_no         numeric(20,0),
+   primary key (Country_no)
+);
+
+alter table Country comment '国家';
+
+/*==============================================================*/
+/* Table: Hotelinfo                                             */
+/*==============================================================*/
+create table Hotelinfo
+(
+   hotel_no             numeric(20,0) not null,
+   hotel_name           varchar(1),
+   city_no              numeric(20,0),
+   star_level           int,
+   type                 int,
+   info_url             varchar(1),
+   lowest_price         float,
+   highest_price        float,
+   primary key (hotel_no)
+);
+
+/*==============================================================*/
+/* Table: Province                                              */
+/*==============================================================*/
+create table Province
+(
+   Province_no          numeric(20,0) not null,
+   Province_name        varchar(1),
+   Province_intrd       varchar(1),
+   Country_no           numeric(20,0),
+   primary key (Province_no)
+);
+
+alter table Province comment '省';
+
+/*==============================================================*/
+/* Table: Scenicspot                                            */
+/*==============================================================*/
+create table Scenicspot
+(
+   Scenicspot_no        numeric(20,0) not null,
+   Scenicspot_name      varchar(1),
+   Scenicspot_en        varchar(1),
+   Scenicspot_level     int,
+   Scenicspot_heat      int,
+   City_no              numeric(20,0),
+   Scenicspot_intrd     varchar(1),
+   Scenicspot_address   varchar(1),
+   Scenicspot_telep     varchar(1),
+   Scenicspot_web       varchar(1),
+   Scenicspot_moftrans  varchar(1),
+   Scenicspot_ticketprice float,
+   Scenicspot_opentime  datetime,
+   Scenicspot_usetime   int,
+   primary key (Scenicspot_no)
+);
+
+alter table Scenicspot comment '景区';
+
+/*==============================================================*/
+/* Table: Tag                                                   */
+/*==============================================================*/
+create table Tag
+(
+   Tag_no               numeric(20,0) not null,
+   Tag_name             varchar(1),
+   AttributeClass_no    numeric(20,0),
+   primary key (Tag_no)
+);
+
+alter table Tag comment '标签';
+
+/*==============================================================*/
+/* Table: Travelnotes                                           */
+/*==============================================================*/
+create table Travelnotes
+(
+   Travelnotes_no       numeric(20,0) not null,
+   Travelnotes_title    varchar(1),
+   Travelnotes_url      varchar(1),
+   Travelnotes_intrd    varchar(1),
+   Travelnotes_commentnum int,
+   Scenicspot_no        numeric(20,0),
+   Travelnotes_time     date,
+   Travelnotes_from     varchar(1),
+   primary key (Travelnotes_no)
+);
+
+alter table Travelnotes comment '游记';
+
+alter table City add constraint FK_Reference_1 foreign key (Province_no)
+      references Province (Province_no) on delete restrict on update restrict;
+
+alter table Continent add constraint FK_Reference_2 foreign key (Country_no)
+      references Country (Country_no) on delete restrict on update restrict;
+
+alter table Province add constraint FK_Reference_3 foreign key (Country_no)
+      references Country (Country_no) on delete restrict on update restrict;
+
+alter table Scenicspot add constraint FK_Reference_4 foreign key (City_no)
+      references City (City_no) on delete restrict on update restrict;
+
+alter table Tag add constraint FK_Reference_6 foreign key (AttributeClass_no)
+      references AttributeClass (AttributeClass_no) on delete restrict on update restrict;
+
+alter table Travelnotes add constraint FK_Reference_5 foreign key (Scenicspot_no)
+      references Scenicspot (Scenicspot_no) on delete restrict on update restrict;
+
