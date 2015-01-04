@@ -4,6 +4,9 @@
 /*==============================================================*/
 
 
+create database zqtravel;
+use zqtravel;
+
 drop table if exists Airtickets;
 
 drop table if exists AttributeClass;
@@ -29,14 +32,14 @@ drop table if exists Travelnotes;
 /*==============================================================*/
 create table Airtickets
 (
-   flight_no            varchar(1),
-   airlines             varchar(1),
+   flight_no            varchar(100),
+   airlines             varchar(100),
    departure_time       time,
    arrival_time         time,
-   origin               varchar(1),
-   destination          varchar(1),
-   info_url             varchar(1),
-   punctuality          varchar(1),
+   origin               varchar(100),
+   destination          varchar(100),
+   info_url             varchar(100),
+   punctuality          varchar(50),
    price                float
 );
 
@@ -46,7 +49,7 @@ create table Airtickets
 create table AttributeClass
 (
    AttributeClass_no    numeric(20,0) not null,
-   AttributeClass_name  varchar(1),
+   AttributeClass_name  varchar(100),
    primary key (AttributeClass_no)
 );
 
@@ -58,8 +61,8 @@ alter table AttributeClass comment '属性类别';
 create table City
 (
    City_no              numeric(20,0) not null,
-   City_name            varchar(1),
-   City_intrd           varchar(1),
+   City_name            varchar(100),
+   City_intrd           varchar(10000),
    City_area            float,
    Province_no          numeric(20,0),
    primary key (City_no)
@@ -73,9 +76,8 @@ alter table City comment '城市';
 create table Continent
 (
    Continent_no         numeric(20,0) not null,
-   Country_no           numeric(20,0),
-   Continent_name       varchar(1),
-   Continent_intrd      varchar(1),
+   Continent_name       varchar(100),
+   Continent_intrd      varchar(10000),
    primary key (Continent_no)
 );
 
@@ -87,8 +89,8 @@ alter table Continent comment '大洲';
 create table Country
 (
    Country_no           numeric(20,0) not null,
-   Country_name         varchar(1),
-   Country_intrd        varchar(1),
+   Country_name         varchar(100),
+   Country_intrd        varchar(10000),
    Continent_no         numeric(20,0),
    primary key (Country_no)
 );
@@ -101,11 +103,11 @@ alter table Country comment '国家';
 create table Hotelinfo
 (
    hotel_no             numeric(20,0) not null,
-   hotel_name           varchar(1),
+   hotel_name           varchar(100),
    city_no              numeric(20,0),
    star_level           int,
    type                 int,
-   info_url             varchar(1),
+   info_url             varchar(100),
    lowest_price         float,
    highest_price        float,
    primary key (hotel_no)
@@ -117,8 +119,8 @@ create table Hotelinfo
 create table Province
 (
    Province_no          numeric(20,0) not null,
-   Province_name        varchar(1),
-   Province_intrd       varchar(1),
+   Province_name        varchar(100),
+   Province_intrd       varchar(10000),
    Country_no           numeric(20,0),
    primary key (Province_no)
 );
@@ -131,19 +133,19 @@ alter table Province comment '省';
 create table Scenicspot
 (
    Scenicspot_no        numeric(20,0) not null,
-   Scenicspot_name      varchar(1),
-   Scenicspot_en        varchar(1),
-   Scenicspot_level     int,
+   Scenicspot_name      varchar(100),
+   Scenicspot_en        varchar(1000),
+   Scenicspot_level     float,
    Scenicspot_heat      int,
    City_no              numeric(20,0),
-   Scenicspot_intrd     varchar(1),
-   Scenicspot_address   varchar(1),
-   Scenicspot_telep     varchar(1),
-   Scenicspot_web       varchar(1),
-   Scenicspot_moftrans  varchar(1),
+   Scenicspot_intrd     varchar(10000),
+   Scenicspot_address   varchar(1000),
+   Scenicspot_telephone     varchar(50),
+   Scenicspot_web       varchar(100),
+   Scenicspot_moftrans  varchar(100),
    Scenicspot_ticketprice float,
    Scenicspot_opentime  datetime,
-   Scenicspot_usetime   int,
+   Scenicspot_usetime   varchar(1000),
    primary key (Scenicspot_no)
 );
 
@@ -155,7 +157,7 @@ alter table Scenicspot comment '景区';
 create table Tag
 (
    Tag_no               numeric(20,0) not null,
-   Tag_name             varchar(1),
+   Tag_name             varchar(100),
    AttributeClass_no    numeric(20,0),
    primary key (Tag_no)
 );
@@ -168,26 +170,26 @@ alter table Tag comment '标签';
 create table Travelnotes
 (
    Travelnotes_no       numeric(20,0) not null,
-   Travelnotes_title    varchar(1),
-   Travelnotes_url      varchar(1),
-   Travelnotes_intrd    varchar(1),
+   Travelnotes_title    varchar(1000),
+   Travelnotes_url      varchar(100),
+   Travelnotes_intrd    varchar(80000),
    Travelnotes_commentnum int,
    Scenicspot_no        numeric(20,0),
    Travelnotes_time     date,
-   Travelnotes_from     varchar(1),
+   Travelnotes_from     varchar(100),
    primary key (Travelnotes_no)
 );
 
 alter table Travelnotes comment '游记';
 
-alter table City add constraint FK_Reference_1 foreign key (Province_no)
-      references Province (Province_no) on delete restrict on update restrict;
-
-alter table Continent add constraint FK_Reference_2 foreign key (Country_no)
-      references Country (Country_no) on delete restrict on update restrict;
+alter table Country add constraint FK_Reference_2 foreign key (Continent_no)
+      references Continent (Continent_no) on delete restrict on update restrict;
 
 alter table Province add constraint FK_Reference_3 foreign key (Country_no)
       references Country (Country_no) on delete restrict on update restrict;
+
+alter table City add constraint FK_Reference_1 foreign key (Province_no)
+      references Province (Province_no) on delete restrict on update restrict;
 
 alter table Scenicspot add constraint FK_Reference_4 foreign key (City_no)
       references City (City_no) on delete restrict on update restrict;
@@ -198,3 +200,8 @@ alter table Tag add constraint FK_Reference_6 foreign key (AttributeClass_no)
 alter table Travelnotes add constraint FK_Reference_5 foreign key (Scenicspot_no)
       references Scenicspot (Scenicspot_no) on delete restrict on update restrict;
 
+
+insert into Continent values(1,'亚洲','亚洲');
+insert into Continent values(2,'欧洲','欧洲');
+
+insert into Country values(100,'中国','中华民族伟大复兴，梦醒！',1);
