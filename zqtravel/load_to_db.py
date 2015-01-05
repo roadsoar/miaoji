@@ -6,6 +6,7 @@ from zqtravel.lib.manufacture import ConfigMiaoJI
 from zqtravel.lib.common import str_count_inside, max_id_from_db, dict_data_from_db
 
 import os
+import glob
 
 mj_cf = ConfigMiaoJI("zqtravel/db_settings.cfg")
 
@@ -97,7 +98,37 @@ def load_data_to_db():
 
       # City
       elif num == 2:
-        print '222'
+         city_query_sql = 'select City_name, City_no from City'
+         city_name_to_id = get_info_from(db_obj, city_query_sql)
+         for scenicspot_name in dirs:
+             starti = root.rfind('/')
+             city_name = root[starti+1:]
+             city_no = city_name_to_id[city_name.decode('utf-8')]
+             scenicspot_query_sql = 'select Scenicspot_name, Scenicspot_no from Scenicspot'
+             scenicspot_name_to_id = get_info_from(db_obj, scenicspot_query_sql)
+             scenicspot_ids_sql = 'select Scenicspot_no from Scenicspot'
+             max_id = get_max_id(db_obj, scenicspot_ids_sql)
+             if max_id == -1:
+                max_id = 100000
+             else:
+                max_id += 1
+
+             scenicspot_file = os.path.join(root, scenicspot_name, '[1-9]*_txt')
+             scenicspot_file_list = glob.glob(scenicspot_file)
+             for txt_file in scenicspot_file_list:
+                 file_size = os.path.getsize(txt_file)
+                 if file_size > 3:
+                    for line in open(txt_file):
+                        scenicspot_info = eval(line)
+                        scenicspot_intrd = scenicspot_info['scenicspot_intro']
+                        scenicspot_level = float(scenicspot_info['scenicspot_grade'])
+                        scenicspot_address = scenicspot_info['scenicspot_address']
+             if scenicspot_name.decode('utf-8') not in scenicspot_name_to_id.keys():
+                           insert_scenicspot_sql = 'insert into Scenicspot(Scenicspot_no, Scenicspot_name, Scenicspot_intrd, Scenicspot_level, Scenicspot_address, City_no)\
+                                                    values(%d, "%s", "%s", %f, %s, %d)'\
+                                                   % (max_id, scenicspot_name,scenicspot_intrd, scenicspot_level, scenicspot_address, city_no)
+                           db_obj.insertone(insert_scenicspot_sql)
+                           db_obj.commit()
       # Scenicspot
       elif num == 3:
         print '3333'
