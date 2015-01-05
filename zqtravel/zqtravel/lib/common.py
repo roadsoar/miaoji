@@ -6,6 +6,7 @@ import datetime
 
 import manufacture
 
+'''通用函数'''
 
 def remove_str(s_str, mj_re='[\n\r]'):
   mjRE = re.compile(mj_re)
@@ -59,3 +60,14 @@ def get_dir_with_province_name(item, spider):
 
   return file_path
 
+
+def str_count_inside(src_string, aString):
+  count = len(src_string.split(aString)) - 1
+  return count
+
+def max_id_from_db(id_results):
+   if not id_results:
+      return -1
+
+   max_id = max(id_results)
+   return max_id[0]

@@ -16,7 +16,7 @@ class LoadToMysql(object):
       self.conn = None
 
    # 连接数据库  
-   def connect_mysql(self):
+   def connect(self):
       try:  
          self.conn = MySQLdb.connect(host=self.host, user=self.db_user, passwd=self.db_passwd, db=self.database, port=self.db_port, charset='utf8')
       except Exception, e:  

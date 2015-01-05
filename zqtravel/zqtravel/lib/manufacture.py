@@ -35,6 +35,14 @@ class ConfigMiaoJI:
       field_value = ''.join(self.cfMJ.get(field, key))
       return field_value
 
+  def get_int(self, field, key):
+      field_value = self.cfMJ.get(field, key)
+      return int(field_value)
+
+  def get_float(self, field, key):
+      field_value = self.cfMJ.get(field, key)
+      return float(field_value)
+
   def set(self, field, key, value):
      try:
        self.cfMJ.set(field, key, value)
