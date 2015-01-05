@@ -71,3 +71,9 @@ def max_id_from_db(id_results):
 
    max_id = max(id_results)
    return max_id[0]
+
+def dict_data_from_db(data):
+   if not data:
+      return {}
+
+   return dict(data)

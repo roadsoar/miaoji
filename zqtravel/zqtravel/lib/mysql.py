@@ -2,7 +2,7 @@
 
 #from zqtravel.lib.manufacture import ConfigMiaoJI
 
-import os, sys, string  
+import os
 import MySQLdb  
 import codecs  
 
@@ -22,7 +22,6 @@ class LoadToMysql(object):
       except Exception, e:  
          print e  
          self.close()
-         sys.exit()  
     
    # 关闭数据库
    def close(self):
