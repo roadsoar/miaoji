@@ -40,7 +40,7 @@ def load_data_to_db():
    for root, dirs, files in os.walk(data_root_dir):  
       root_count = str_count_inside(root, '/')
       num = root_count - start_count
-      # Country
+      # Load the provinces into database
       if num == 0:
          country_query_sql = 'select Country_name, Country_no from Country'
          country_name_to_id = get_info_from(db_obj, country_query_sql)
@@ -66,7 +66,7 @@ def load_data_to_db():
                 insert_province_sql = 'insert into Province(Province_no, Province_name, Province_intrd, Country_no) values(%d, "%s", "%s", %d)' % (max_id, province_name,province_intrd,country_no)
                 db_obj.insertone(insert_province_sql)
                 db_obj.commit()
-      # Province
+      # Load the Cities into the database 
       elif num == 1:
          province_query_sql = 'select Province_name, Province_no from Province'
          province_name_to_id = get_info_from(db_obj, province_query_sql)
@@ -96,7 +96,7 @@ def load_data_to_db():
                 db_obj.insertone(insert_city_sql)
                 db_obj.commit()
 
-      # City
+      # Load the scenicspots into the databases
       elif num == 2:
          city_query_sql = 'select City_name, City_no from City'
          city_name_to_id = get_info_from(db_obj, city_query_sql)
@@ -104,8 +104,8 @@ def load_data_to_db():
              starti = root.rfind('/')
              city_name = root[starti+1:]
              city_no = city_name_to_id[city_name.decode('utf-8')]
-             scenicspot_query_sql = 'select Scenicspot_name, Scenicspot_no from Scenicspot'
-             scenicspot_name_to_id = get_info_from(db_obj, scenicspot_query_sql)
+             scenicspot_query_sql = 'select Scenicspot_name, City_no from Scenicspot'
+             scenicspot_name_to_city_id = get_info_from(db_obj, scenicspot_query_sql)
              scenicspot_ids_sql = 'select Scenicspot_no from Scenicspot'
              max_id = get_max_id(db_obj, scenicspot_ids_sql)
              if max_id == -1:
@@ -113,26 +113,34 @@ def load_data_to_db():
              else:
                 max_id += 1
 
-             scenicspot_file = os.path.join(root, scenicspot_name, '[1-9]*_txt')
+             scenicspot_file = r'/'.join([root, scenicspot_name, '[0-9]*_txt'])
              scenicspot_file_list = glob.glob(scenicspot_file)
+             null = "" # define this variable for below syntax: scenicspot_info = eval(line)
              for txt_file in scenicspot_file_list:
                  file_size = os.path.getsize(txt_file)
+                 # read the text file which is not empty
                  if file_size > 3:
                     for line in open(txt_file):
                         scenicspot_info = eval(line)
-                        scenicspot_intrd = scenicspot_info['scenicspot_intro']
-                        scenicspot_level = float(scenicspot_info['scenicspot_grade'])
-                        scenicspot_address = scenicspot_info['scenicspot_address']
-             if scenicspot_name.decode('utf-8') not in scenicspot_name_to_id.keys():
-                           insert_scenicspot_sql = 'insert into Scenicspot(Scenicspot_no, Scenicspot_name, Scenicspot_intrd, Scenicspot_level, Scenicspot_address, City_no)\
-                                                    values(%d, "%s", "%s", %f, %s, %d)'\
-                                                   % (max_id, scenicspot_name,scenicspot_intrd, scenicspot_level, scenicspot_address, city_no)
+                        scenicspot_intrd = scenicspot_info.get('scenicspot_intro','')
+                        scenicspot_level = float(scenicspot_info.get('scenicspot_grade',0))
+                        scenicspot_address = scenicspot_info.get('scenicspot_address','')
+                        scenicspot_telephone = scenicspot_info.get('scenicspot_tel','')
+                        scenicspot_web = scenicspot_info.get('scenicspot_webaddress','')
+                        scenicspot_heat = int(scenicspot_info.get('helpful_num',0))
+                        scenicspot_ticketprice = scenicspot_info.get('scenicspot_ticket',0) # contain the unit of money, like $, so the price is string type
+                        all_scenicspot_name = scenicspot_name_to_city_id.keys()
+                        if scenicspot_name.decode('utf-8') not in all_scenicspot_name: #or\
+#                           scenicspot_name.decode('utf-8') in all_scenicspot_name and city_no != scenicspot_name_to_city_id.get(scenicspot_name.decode('utf-8'), -1):
+                           insert_scenicspot_sql = 'insert into Scenicspot(Scenicspot_no, Scenicspot_name, Scenicspot_intrd, Scenicspot_level, Scenicspot_address,\
+                                                                           Scenicspot_telephone, Scenicspot_web, Scenicspot_heat, Scenicspot_ticketprice, City_no)\
+                                                                    values(%d, "%s", "%s", %f, "%s", "%s", "%s", %d, "%s", %d)'\
+                                                   % (max_id, scenicspot_name,scenicspot_intrd, scenicspot_level, scenicspot_address, scenicspot_telephone, scenicspot_web, scenicspot_heat, scenicspot_ticketprice, city_no)
                            db_obj.insertone(insert_scenicspot_sql)
                            db_obj.commit()
-      # Scenicspot
-      elif num == 3:
-        print '3333'
 
 if __name__ == '__main__':
 
+   print "Start loading..."
    load_data_to_db()
+   print "Finished for loading data into database."

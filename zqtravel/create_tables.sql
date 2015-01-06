@@ -143,7 +143,7 @@ create table Scenicspot
    Scenicspot_telephone     varchar(50),
    Scenicspot_web       varchar(100),
    Scenicspot_moftrans  varchar(100),
-   Scenicspot_ticketprice float,
+   Scenicspot_ticketprice varchar(100),
    Scenicspot_opentime  datetime,
    Scenicspot_usetime   varchar(1000),
    primary key (Scenicspot_no)
