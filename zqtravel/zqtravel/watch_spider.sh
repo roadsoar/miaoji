@@ -17,6 +17,7 @@ spider_job_dir_home='/home/scrapy/data'
 spider_log='/home/scrapy/log/zqtravel.log'
 err_threshold=8
 warn_threshold=3
+critical_threshold=1
 SLEEP_TIME=2 #单位：秒
 
 # 只允许一个watch_spider进程存在
@@ -57,12 +58,13 @@ do
 warn1_count=$(grep -i "Filtered offsite request" $spider_log | wc -l)
 err_500_count=$(grep -i -e "connection timed out" -e "not handled or not allowed" -e "Internal Server Error" -e "DNS lookup failed" -e "An error occurred while connecting" $spider_log | wc -l)
 err2_count=$(grep -i -e "ERROR" -e "Errno" $spider_log | wc -l)
+critical_error=$(grep -i -e "Unhandled Error" $spider_log | wc -l)
 
 spider_mafengwo_pid=$(ps -ef |grep scrapy |grep mafengwo |grep -v grep |awk '{print $2}')
 
-if [ ${err_500_count} -ge 1 -o $err2_count -ge $err_threshold -o $warn1_count -ge $warn_threshold ];
+if [ ${err_500_count} -ge 1 -o $err2_count -ge $err_threshold -o $warn1_count -ge $warn_threshold -o $critical_error -ge $critical_threshold ];
 then
-  #只能发送SIGTERM/SIGINT信号一次，然后等着spider进程自己结束，否则达不到增量爬取网页的目的
+  #只能发送SIGTERM/SIGINT信号一次，然后等着spider进程自己结束
   if [ $killed_spider -ne 0 ];
   then
     kill -15 $spider_mafengwo_pid
@@ -74,7 +76,7 @@ then
 fi
 
 # 如果不是被网站封禁，则重启爬虫
-if [ ${err_500_count} -lt 2 ];
+if [ ${err_500_count} -lt 2 -a $critical_error -lt $critical_threshold];
 then
   ps -ef |grep scrapy |grep mafengwo |grep -v grep > /dev/null
   res=`echo $?`
