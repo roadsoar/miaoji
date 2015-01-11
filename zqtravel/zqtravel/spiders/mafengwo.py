@@ -15,6 +15,8 @@ import scrapy
 import re
 
 mj_cf = ConfigMiaoJI("./spider_settings.cfg")
+# 不获取游记的时候调用
+youji_file = open('/home/scrapy/data/mafengwo_youji_txt', 'a+')
 
 class MafengwoSpider(CrawlSpider):
     '''爬取蚂蜂窝的游记和对应景点信息'''
@@ -213,7 +215,7 @@ class MafengwoSpider(CrawlSpider):
         url_prefix = self.get_url_prefix(response, True)
         for page_index in range(1, travel_pages + 1):
             url = ''.join([url_prefix, '/yj/', travel_id, '/1-0-', str(page_index), '.html'])
-            yield Request(url, callback=self.parse_scenicspot_travel_pages, meta=response.meta)
+            #yield Request(url, callback=self.parse_scenicspot_travel_pages, meta=response.meta)
         
         # 景点url
         scenicspot_page = response.xpath('//div[@class="nav-bg"]//div[@class="nav-inner"]//li[@class="nav-item"][1]//@href').extract()
@@ -267,8 +269,12 @@ class MafengwoSpider(CrawlSpider):
                 scenicspot_id = href[href.rfind('/')+1 : -5]
                 scenicspot_info_url = ''.join([url_prefix, '/poi/info-',scenicspot_id, '.html#comment_header'])
                 scenicspot_youji_url = ''.join([url_prefix, '/poi/youji-',scenicspot_id, '.html'])
+            # 不获取游记的时候将游记连接写入文件
+                youji_file.write(scenicspot_youji_url+'\n')
+                youji_file.flush()
                 yield Request(scenicspot_info_url, callback=self.parse_scenicspot_info_item, meta=response.meta)
-                yield Request(scenicspot_youji_url, callback=self.parse_scenicspot_travel_pages, meta=response.meta)
+            # 获取游记的时候调用
+            #    yield Request(scenicspot_youji_url, callback=self.parse_scenicspot_travel_pages, meta=response.meta)
 
     def parse_scenicspot_info_item(self, response):
         '''解析景点信息'''
