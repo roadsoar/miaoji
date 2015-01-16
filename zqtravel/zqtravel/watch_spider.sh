@@ -76,7 +76,7 @@ then
 fi
 
 # 如果不是被网站封禁，则重启爬虫
-if [ ${err_500_count} -lt 2 -a $critical_error -lt $critical_threshold];
+if [ ${err_500_count} -lt 2 -a $critical_error -lt $critical_threshold ];
 then
   ps -ef |grep scrapy |grep mafengwo |grep -v grep > /dev/null
   res=`echo $?`
