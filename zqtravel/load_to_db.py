@@ -36,7 +36,10 @@ def load_data_to_db():
    db_obj = connect_mysql()
    data_root_dir = mj_cf.get_str('global','data_root_dir')
    start_count = str_count_inside(data_root_dir, '/')
-   
+   null = "" # define this variable for below syntax: scenicspot_info = eval(line)
+
+   invalid_file = open('./invalid_files.txt', 'a+')
+
    for root, dirs, files in os.walk(data_root_dir):  
       root_count = str_count_inside(root, '/')
       num = root_count - start_count
@@ -55,17 +58,22 @@ def load_data_to_db():
              else:
                 max_id += 1
              province_file = os.path.join(root, province_name, province_name + '_txt')
-             if os.path.isfile(province_file):
-                for line in open(province_file):
-                    province_info = eval(line)
-                    province_intrd = province_info['scenicspot_intro']
-             else:
-               province_intrd = ''
-
-             if province_name.decode('utf-8') not in province_name_to_id.keys():
-                insert_province_sql = 'insert into Province(Province_no, Province_name, Province_intrd, Country_no) values(%d, "%s", "%s", %d)' % (max_id, province_name,province_intrd,country_no)
-                db_obj.insertone(insert_province_sql)
-                db_obj.commit()
+             try:
+               if os.path.isfile(province_file):
+                  fl = open(province_file,"r")
+                  lines = fl.readlines()
+                  province_info = eval(''.join(lines))
+                  province_intrd = province_info['scenicspot_intro']
+               else:
+                 province_intrd = ''
+  
+               if province_name.decode('utf-8') not in province_name_to_id.keys():
+                  insert_province_sql = 'insert into Province(Province_no, Province_name, Province_intrd, Country_no) values(%d, "%s", "%s", %d)' % (max_id, province_name,province_intrd,country_no)
+                  db_obj.insertone(insert_province_sql)
+                  db_obj.commit()
+             except Exception , msg:
+               invalid_file.write(province_file + str(msg) + '\n')
+               invalid_file.flush()
       # Load the Cities into the database 
       elif num == 1:
          province_query_sql = 'select Province_name, Province_no from Province'
@@ -84,17 +92,24 @@ def load_data_to_db():
                 max_id += 1
 
              city_file = os.path.join(root, city_name, city_name + '_txt')
-             if os.path.isfile(city_file):
-                for line in open(city_file):
-                    city_info = eval(line)
-                    city_intrd = city_info['scenicspot_intro']
-             else:
+             try:
+               if os.path.isfile(city_file):
+                  fl = open(city_file)
+                  lines = fl.readlines()
+                  city_info = eval(''.join(lines))
+                  city_intrd = city_info['scenicspot_intro']
+               else:
+                 city_intrd = ''
+             except Exception , msg:
+               invalid_file.write(city_file + str(msg) + '\n')
+               invalid_file.flush()
                city_intrd = ''
-
-             if city_name.decode('utf-8') not in city_name_to_id.keys():
-                insert_city_sql = 'insert into City(City_no, City_name, City_intrd, Province_no) values(%d, "%s", "%s", %d)' % (max_id, city_name,city_intrd,province_no)
-                db_obj.insertone(insert_city_sql)
-                db_obj.commit()
+  
+             finally:
+               if city_name.decode('utf-8') not in city_name_to_id.keys():
+                  insert_city_sql = 'insert into City(City_no, City_name, City_intrd, Province_no) values(%d, "%s", "%s", %d)' % (max_id, city_name,city_intrd,province_no)
+                  db_obj.insertone(insert_city_sql)
+                  db_obj.commit()
 
       # Load the scenicspots into the databases
       elif num == 2:
@@ -115,12 +130,13 @@ def load_data_to_db():
 
              scenicspot_file = r'/'.join([root, scenicspot_name, '[0-9]*_txt'])
              scenicspot_file_list = glob.glob(scenicspot_file)
-             null = "" # define this variable for below syntax: scenicspot_info = eval(line)
+             #null = "" # define this variable for below syntax: scenicspot_info = eval(line)
              for txt_file in scenicspot_file_list:
                  file_size = os.path.getsize(txt_file)
                  # read the text file which is not empty
                  if file_size > 3:
                     for line in open(txt_file):
+                      try:
                         scenicspot_info = eval(line)
                         scenicspot_intrd = scenicspot_info.get('scenicspot_intro','')
                         scenicspot_level = float(scenicspot_info.get('scenicspot_grade',0))
@@ -138,6 +154,9 @@ def load_data_to_db():
                                                    % (max_id, scenicspot_name,scenicspot_intrd, scenicspot_level, scenicspot_address, scenicspot_telephone, scenicspot_web, scenicspot_heat, scenicspot_ticketprice, city_no)
                            db_obj.insertone(insert_scenicspot_sql)
                            db_obj.commit()
+                      except Exception , msg:
+                        invalid_file.write(txt_file + str(msg) +'\n')
+                        invalid_file.flush()
 
 if __name__ == '__main__':
 
