@@ -36,7 +36,7 @@ IMAGES_STORE = '/home/scrapy/data/mafengwo/'
 
 #USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.66 Safari/537.36'
 
-WEBKIT_DOWNLOADER=['mafengwo', 'ctrip']
+WEBKIT_DOWNLOADER=['mafengwo', 'mafengwo_scenicspot', 'ctrip']
 
 DOWNLOADER_MIDDLEWARES = {
 #    'zqtravel.scrapyjs.middleware.WebkitDownloader': 1,
