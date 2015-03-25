@@ -16,6 +16,22 @@ def remove_str(s_str, mj_re='[\n\r]'):
 def today_str():
   return datetime.date.today().strftime('%Y%m%d')
 
+def get_data_dir_with(subdir=""):
+  
+  sub_dir = ""
+  if type(subdir) is str:
+    sub_dir = subdir
+  if type(subdir) is list:
+    sub_dir = '/'.join(subdir)
+
+  mj_cf = manufacture.ConfigMiaoJI("./spider_settings.cfg")
+  data_root_dir = mj_cf.get_str('global','spider_data_dir')
+  
+  pre_dir = os.path.join(data_root_dir, sub_dir)
+  if not os.path.isdir(pre_dir):
+    os.makedirs(pre_dir)
+  return pre_dir
+
 def get_dir_name_from_spider_item(item, spider):
   ''''''
      
