@@ -19,11 +19,7 @@ class MafengwoScenicspotSpider(scrapy.Spider):
     '''爬取蚂蜂窝的游记和对应景点信息'''
     name = "mafengwo_scenicspot"
     allowed_domains = ["mafengwo.cn"]
-    start_urls = (
-        'http://www.mafengwo.cn/',
-    )
-
-    start_urls = mj_cf.get_starturls('mafengwo_spider','start_urls')
+    start_urls = mj_cf.get_starturls('mafengwo_scenicspot_spider','start_urls')
 
     rules = [
              Rule(LxmlLinkExtractor('/travel-scenic-spot/mafengwo/'),
@@ -76,23 +72,34 @@ class MafengwoScenicspotSpider(scrapy.Spider):
     def parse_cities(self, response):
         '''省或直辖市的reponse.url => http://www.mafengwo.cn/jd/14407/gonglve.html'''
 
-        all_city_scenicspot = response.xpath('//div[@class="content"]//div[@class="m-recList"]//div[@class="bd"]//dl[@class="clearfix"][2]//dd//@href').extract()
+        # 非直辖市
+        city_href_list = response.xpath('//div[@class="content"]//div[@class="m-recList"]//div[@class="bd"]//dl[@class="clearfix"][2]//dd//@href').extract()
+        city_name_list = response.xpath('//div[@class="content"]//div[@class="m-recList"]//div[@class="bd"]//dl[@class="clearfix"][2]//dd//a/h2/text()').extract()
+        city_href_name_map = zip(city_href_list[1:], city_name_list)
+        # 直辖市
+        self_governed_city_href = response.xpath('//div[@id="container"]//div[@class="row row-allPlace row-bg"]//div[@class="wrapper"]//div[@class="list"]//ul[@class="clearfix"]//li//@href').extract()
+
         url_prefix = self.get_url_prefix(response, True)
 
         city_meta = response.meta
-        for href in all_city_scenicspot[1:]:
-            city_id = href.split('/')[-2]
+
+        # 非直辖市
+        for city_href, city_name in city_href_name_map:
+            city_id = city_href.split('/')[-2]
             baike_info_url = ''.join([url_prefix, '/baike/info-', city_id, '.html'])
-            # 直辖市
-            if all_city_scenicspot[0] in href:
-               scenicspot_locus = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][3]//span[@class="hd"]//a/text()').extract()
-               scenicspot_locus = ''.join(scenicspot_locus).strip()
-               city_meta['scenicspot_locus'] = scenicspot_locus
-               yield Request(baike_info_url, callback=self.parse_locus_info, meta=city_meta)
-               yield Request(url_prefix + href, callback=self.parse_scenicspot_next_page, meta=city_meta)
-            else:
-               yield Request(baike_info_url, callback=self.parse_locus_info,meta=city_meta)
-               yield Request(url_prefix + href, callback=self.parse_city_scenicspot,meta=city_meta)
+            city_meta['scenicspot_locus'] = city_name
+            yield Request(baike_info_url, callback=self.parse_locus_info,meta=city_meta)
+            yield Request(url_prefix + city_href, callback=self.parse_city_scenicspot,meta=city_meta)
+
+        # 直辖市
+        for href in self_governed_city_href:
+          city_id = href.split('/')[-2]
+          baike_info_url = ''.join([url_prefix, '/baike/info-', city_id, '.html'])
+          scenicspot_locus = response.xpath('//div[@id="container"]//div[@class="row row-primary"]//div[@class="wrapper"]//div[@class="crumb"]//div[@class="item"]//span[@class="hd"]//a/text()').extract()
+          scenicspot_locus = ''.join(scenicspot_locus).strip()
+          city_meta['scenicspot_locus'] = scenicspot_locus
+          yield Request(baike_info_url, callback=self.parse_locus_info, meta=city_meta)
+          yield Request(url_prefix + href, callback=self.parse_scenicspot_next_page, meta=city_meta)
 
     def parse_city_scenicspot(self, response):
         '''省下面的市或县的response.url => http://www.mafengwo.cn/jd/10163/'''       
@@ -234,6 +241,9 @@ class MafengwoScenicspotSpider(scrapy.Spider):
         province = meta.get('scenicspot_province')
 
         data_dir = get_data_dir_with(province)
+        # 不获取游记的时候将游记连接写入文件
+        youji_file = codecs.open('/'.join([data_dir, province + '_travel.urls']), "a", encoding='utf-8')
+
         re_href = re.compile('/poi/\d+\.html')
 
         url_prefix = self.get_url_prefix(response, splice_http=True)
@@ -243,8 +253,6 @@ class MafengwoScenicspotSpider(scrapy.Spider):
                 scenicspot_id = href[href.rfind('/')+1 : -5]
                 scenicspot_info_url = ''.join([url_prefix, '/poi/info-',scenicspot_id, '.html#comment_header'])
                 scenicspot_youji_url = ''.join([url_prefix, '/poi/youji-',scenicspot_id, '.html'])
-                # 不获取游记的时候将游记连接写入文件
-                youji_file = codecs.open('/'.join([data_dir, province + '_travel.urls']), "a", encoding='utf-8')
                 youji_file.write(''.join([province,'|', city, '|', scenicspot_name, '|', scenicspot_youji_url, '\n']))
                 youji_file.flush()
                 yield Request(scenicspot_info_url, callback=self.parse_scenicspot_info_item, meta=response.meta)

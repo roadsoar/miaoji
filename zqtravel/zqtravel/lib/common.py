@@ -18,14 +18,12 @@ def today_str():
 
 def get_data_dir_with(subdir=""):
   
-  sub_dir = ""
-  if type(subdir) is str:
-    sub_dir = subdir
+  sub_dir = subdir
   if type(subdir) is list:
     sub_dir = '/'.join(subdir)
 
   mj_cf = manufacture.ConfigMiaoJI("./spider_settings.cfg")
-  data_root_dir = mj_cf.get_str('global','spider_data_dir')
+  data_root_dir = mj_cf.get_str('global','travel_urls_dir')
   
   pre_dir = os.path.join(data_root_dir, sub_dir)
   if not os.path.isdir(pre_dir):
