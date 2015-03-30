@@ -92,14 +92,19 @@ class MafengwoScenicspotSpider(scrapy.Spider):
             yield Request(url_prefix + city_href, callback=self.parse_city_scenicspot,meta=city_meta)
 
         # 直辖市
-        for href in self_governed_city_href:
+        if self_governed_city_href:
           city_id = href.split('/')[-2]
           baike_info_url = ''.join([url_prefix, '/baike/info-', city_id, '.html'])
-          scenicspot_locus = response.xpath('//div[@id="container"]//div[@class="row row-primary"]//div[@class="wrapper"]//div[@class="crumb"]//div[@class="item"]//span[@class="hd"]//a/text()').extract()
-          scenicspot_locus = ''.join(scenicspot_locus).strip()
-          city_meta['scenicspot_locus'] = scenicspot_locus
           yield Request(baike_info_url, callback=self.parse_locus_info, meta=city_meta)
-          yield Request(url_prefix + href, callback=self.parse_scenicspot_next_page, meta=city_meta)
+          # 直辖市的景点
+          for href in self_governed_city_href:
+            scenicspot_locus = response.xpath('//div[@id="container"]//div[@class="row row-primary"]//div[@class="wrapper"]//div[@class="crumb"]//div[@class="item"]//span[@class="hd"]//a/text()').extract()
+            scenicspot_locus = ''.join(scenicspot_locus).strip()
+            city_meta['scenicspot_locus'] = scenicspot_locus
+            yield Request(url_prefix + href, callback=self.parse_scenicspot_info_item, meta=city_meta)
+            # 获取游记时调用
+            #youji_url = ''.join([url_prefix, '/poi/youji-', city_id, '.html'])
+            #yield Request(youji_href, callback=self.parse_scenicspot_travel_pages, meta=city_meta)
 
     def parse_city_scenicspot(self, response):
         '''省下面的市或县的response.url => http://www.mafengwo.cn/jd/10163/'''       
@@ -114,57 +119,68 @@ class MafengwoScenicspotSpider(scrapy.Spider):
         yield Request(url, callback=self.parse_scenicspot_next_page, meta=city_meta)
 
     def parse_locus_info(self,response):
-        '''获得省市的相关信息'''
+        '''获得省、市/县的相关信息'''
 
         scenicspot_item = ScenicspotItem()
 
-        scenicspot_province = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][3]//span[@class="hd"]//a/text()').extract()
+        # 获取当前页面的省
+        scenicspot_province = response.xpath(\
+                      '//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][3]//span[@class="hd"]//a/text()\
+                      | //div[@class="wrapper"]//div[@class="crumb"]//div[@class="item"][3]//span[@class="hd"]//a/text()'\
+                                            ).extract()
         scenicspot_province = remove_str(''.join(scenicspot_province).strip(),u'省')
 
-        scenicspot_locus = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][4]//span[@class="hd"]//a/text()').extract()
+        # 获取当前页面的市/县
+        scenicspot_locus = response.xpath(
+                     '//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][4]//span[@class="hd"]//a/text()\
+                     | //div[@class="wrapper"]//div[@class="crumb"]//div[@class="item cur"]//strong/text()'\
+                                         ).extract()
         scenicspot_locus = remove_str(''.join(scenicspot_locus).strip(),u'市')
 
-        # 如果是市县，则从上一个页面获得省
-        province_from_meta = remove_str(response.meta.get('province_name'),u'省')
-        if scenicspot_province != province_from_meta:
-           scenicspot_locus = remove_str(scenicspot_province,u'市')
-           scenicspot_province = province_from_meta
-        
-        # 如果是直辖市，则省和市相同
-        if 'scenicspot_locus' in response.meta:
-           meta = response.meta
-           scenicspot_locus = meta.get('scenicspot_locus') 
-
         scenicspot_name = scenicspot_locus
+        
+        # 省和市相同,则获取的是直辖市
+        if scenicspot_province in scenicspot_locus:
+           scenicspot_locus = scenicspot_province
+           scenicspot_name = scenicspot_province
   
-        # 如果市名包含'攻略'，则获取的是省信息
-        if u'攻略' in scenicspot_locus:
+        # 市/县名包含'攻略'且不是直辖市，则获取的是省信息
+        if u'攻略' in scenicspot_locus and scenicspot_province not in scenicspot_locus:
            scenicspot_locus = ''
            scenicspot_name = scenicspot_province
 
-        helpful_num = response.xpath('//div[@class="content"]//div[@class="m-title clearfix"]//span[@class="num-view"]/text()').extract()
+        helpful_num = response.xpath('//div[@class="wrapper"]//div[@class="content"]//div[@class="m-title clearfix"]//span[@class="num-view"]/text()').extract()
         helpful_num = ''.join(helpful_num).strip()
 
         # 景点相关信息 
-        locus_info_item_title = response.xpath('//div[@class="content"]//h2/text()').extract()
-        locus_info_item_content = response.xpath('//div[@class="content"]//h2/text() |//div[@class="content"]//div[@class="m-txt"]//p/text()').extract() 
+        locus_info_title_list = response.xpath('//div[@class="wrapper"]//div[@class="content"]//h2/text()').extract()
+        locus_info_content_list = response.xpath('//div[@class="wrapper"]//div[@class="content"]//div[@class="m-txt"]/text() | \
+                                                  //div[@class="wrapper"]//div[@class="content"]//div[@class="m-txt"]//p//text()'\
+                                                ).extract() 
+        title_to_content = zip(locus_info_title_list, locus_info_content_list)
+
         dict_title_to_content = {}
-        len_num = len(locus_info_item_title)
-        title_index = 0
-        # 生成title对应内容的字典，如：u'地址' : u'北京东城区景山前街4号'
-        while title_index < len_num:
-           title = locus_info_item_title[title_index]
-           if title_index + 1 == len_num:
-              dict_title_to_content[title] = ''.join(locus_info_item_content[locus_info_item_content.index(title)+1:]).strip()
-           else:
-              next_title = locus_info_item_title[title_index+1]
-              dict_title_to_content[title] = ''.join(locus_info_item_content[locus_info_item_content.index(title)+1:locus_info_item_content.index(next_title)]).strip()
-           title_index += 1
+        for title, content in title_to_content:
+          title_clean = title.strip("\n\r\t ")
+          content_clean = content.strip('\n\r\t ')
+          dict_title_to_content[title_clean] = content_clean
+        # 生成title对应内容的字典，如：u'地址' : u'北京东城区景山前街4号' '\n', '\r',  '\t',  ' '
+#        len_num = len(locus_info_item_title)
+#        title_index = 0
+#        while title_index < len_num:
+#           title = locus_info_item_title[title_index]
+#           if title_index + 1 == len_num:
+#              dict_title_to_content[title] = ''.join(locus_info_item_content[locus_info_item_content.index(title)+1:]).strip()
+#           else:
+#              next_title = locus_info_item_title[title_index+1]
+#              dict_title_to_content[title] = ''.join(locus_info_item_content[locus_info_item_content.index(title)+1:locus_info_item_content.index(next_title)]).strip()
+#           title_index += 1
 
         scenicspot_item['scenicspot_intro'] = dict_title_to_content.get(u'简介')
         scenicspot_item['best_traveling_time'] = dict_title_to_content.get(u'最佳旅行时间')
         scenicspot_item['num_days'] = dict_title_to_content.get(u'建议游玩天数')
         scenicspot_item['weather'] = dict_title_to_content.get(u'当地气候')
+        scenicspot_item['scenicspot_dressing'] = dict_title_to_content.get(u'穿衣指南')
         scenicspot_item['language'] = dict_title_to_content.get(u'语言')
         scenicspot_item['helpful_num'] = helpful_num
         scenicspot_item['scenicspot_province'] = scenicspot_province 
@@ -201,7 +217,7 @@ class MafengwoScenicspotSpider(scrapy.Spider):
 
         # 景点的总页数
         scenicspot_pages = response.xpath('//div[@class="m-recList"]//div[@class="page-hotel"]/span[@class="count"]/span[1]/text()').extract()
-          ## 如果没有获取到页数，则说明只有一页的景点
+        ## 如果没有获取到页数，则说明只有一页的景点
         scenicspot_pages = int(''.join(scenicspot_pages).strip()) if len(scenicspot_pages) >= 1 else 1
 
         scenicspot_item = ScenicspotItem()
@@ -231,14 +247,23 @@ class MafengwoScenicspotSpider(scrapy.Spider):
     def parse_scenicspot_pages(self, response):
         '''获得每页景点的地址'''
 
-        # 所有景点链接
+        # 一个页中的所有景点链接
         href_list = response.xpath('//div[@class="wrapper"]//div[@class="content"]//ul[@class="poi-list"]//li[@class="item clearfix"]//div[@class="title"]//@href').extract()
+        # 一个页中的所有景点名称
         scenicspot_name_list = response.xpath('//div[@class="wrapper"]//div[@class="content"]//ul[@class="poi-list"]//li[@class="item clearfix"]//div[@class="title"]//a//text()').extract()
         href_scenicspot_name_group = zip(href_list, scenicspot_name_list)
     
-        meta = response.meta.get('scenicspot_item')
-        city = meta.get('scenicspot_locus')
-        province = meta.get('scenicspot_province')
+        # 景点的等级
+        scenicspot_grade_list = response.xpath('//div[@class="wrapper"]//div[@class="content"]//div[@class="m-recList"]//div[@class="bd"]//ul[@class="poi-list"]//li[@class="item clearfix"]//div[@class="grade"]/em/text()').extract()
+        href_grade_group = dict(zip(href_list, scenicspot_grade))
+
+        # 景点概况被认为有用的数量
+        helpful_num_list = response.xpath('//div[@class="wrapper"]//div[@class="content"]//div[@class="m-recList"]//div[@class="bd"]//ul[@class="poi-list"]//li[@class="item clearfix"]//div[@class="grade"]/p/em/text()').extract()
+        href_num_group = dict(zip(href_list, helpful_num))
+
+        scenicspot_meta = response.meta.get('scenicspot_item')
+        city = scenicspot_meta.get('scenicspot_locus')
+        province = scenicspot_meta.get('scenicspot_province')
 
         data_dir = get_data_dir_with(province)
         # 不获取游记的时候将游记连接写入文件
@@ -251,7 +276,7 @@ class MafengwoScenicspotSpider(scrapy.Spider):
             m = re_href.match(href)
             if m:
                 scenicspot_id = href[href.rfind('/')+1 : -5]
-                scenicspot_info_url = ''.join([url_prefix, '/poi/info-',scenicspot_id, '.html#comment_header'])
+                scenicspot_info_url = ''.join([url_prefix, '/poi/',scenicspot_id, '.html'])
                 scenicspot_youji_url = ''.join([url_prefix, '/poi/youji-',scenicspot_id, '.html'])
                 youji_file.write(''.join([province,'|', city, '|', scenicspot_name, '|', scenicspot_youji_url, '\n']))
                 youji_file.flush()
@@ -263,14 +288,6 @@ class MafengwoScenicspotSpider(scrapy.Spider):
         '''解析景点信息'''
 
         scenicspot_item = response.meta['scenicspot_item']
-
-        # 景点的等级
-        scenicspot_grade = response.xpath('//div[@class="wrapper"]//div[@class="col-main"]//div[@class="txt-l"]//div[@class="score"]//span[@class="score-info"]//em/text()').extract()
-        scenicspot_grade = ''.join(scenicspot_grade).strip()
-         
-        # 景点概况被认为有用的数量
-        helpful_num = response.xpath('//div[@class="col-main"]//div[@class="poi-info poi-base tab-div"]//div[@class="hd"]//span[@class="s-view"]/text()').extract()
-        helpful_num = ''.join(helpful_num).strip()
 
         # 景点所在地
 #        scenicspot_province = scenicspot_item.get('province_name')

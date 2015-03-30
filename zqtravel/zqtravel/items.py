@@ -66,4 +66,5 @@ class ScenicspotItem(Item):
     scenicspot_usedtime = Field()      # 
     scenicspot_grade = Field()         # 景点的等级,如：3A,4A,5A...
     scenicspot_commentnum = Field()    # 对景点的评论数量
+    scenicspot_dressing = Field()      # 去景点时的穿衣建议
 
