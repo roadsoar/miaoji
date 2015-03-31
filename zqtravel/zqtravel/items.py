@@ -56,6 +56,7 @@ class ScenicspotItem(Item):
     language = Field()                 # 地方语言特色简介
     best_traveling_time = Field()      # 景点最佳旅游时间
     helpful_num = Field()              # 认为有用的人数
+    traffic = Field()                  # 交通
     scenicspot_name = Field()          # 景点名称
     scenicspot_intro = Field()         # 景点的简介
     scenicspot_address = Field()       # 景点的地址
@@ -63,8 +64,10 @@ class ScenicspotItem(Item):
     scenicspot_webaddress = Field()    # 景点的官网
     scenicspot_ticket = Field()        # 景点的票价
     scenicspot_opentime = Field()      # 景点开放时间
-    scenicspot_usedtime = Field()      # 
+    scenicspot_usedtime = Field()      # 景点游玩时间参考
     scenicspot_grade = Field()         # 景点的等级,如：3A,4A,5A...
     scenicspot_commentnum = Field()    # 对景点的评论数量
+    scenicspot_impression = Field()    # 对景点的印象
+    scenicspot_comments = Field()      # 对景点的前6条评论
     scenicspot_dressing = Field()      # 去景点时的穿衣建议
 

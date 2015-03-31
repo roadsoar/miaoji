@@ -280,7 +280,11 @@ class MafengwoScenicspotSpider(scrapy.Spider):
                 scenicspot_youji_url = ''.join([url_prefix, '/poi/youji-',scenicspot_id, '.html'])
                 youji_file.write(''.join([province,'|', city, '|', scenicspot_name, '|', scenicspot_youji_url, '\n']))
                 youji_file.flush()
-                yield Request(scenicspot_info_url, callback=self.parse_scenicspot_info_item, meta=response.meta)
+
+                scenicspot_meta['scenicspot_name'] = scenicspot_name.strip()
+                scenicspot_meta['scenicspot_grade'] = href_grade_group.get(href).strip()
+                scenicspot_meta['helpful_num'] = href_num_group.get(href).strip()
+                yield Request(scenicspot_info_url, callback=self.parse_scenicspot_info_item, meta={'scenicspot_item':scenicspot_meta})
             # 获取游记的时候调用
             #    yield Request(scenicspot_youji_url, callback=self.parse_scenicspot_travel_pages, meta=response.meta)
 
@@ -290,71 +294,58 @@ class MafengwoScenicspotSpider(scrapy.Spider):
         scenicspot_item = response.meta['scenicspot_item']
 
         # 景点所在地
-#        scenicspot_province = scenicspot_item.get('province_name')
-#        scenicspot_locus= scenicspot_item.get('scenicspot_locus')
-        scenicspot_locus = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][3]//span[@class="hd"]//a/text()').extract()
+        scenicspot_locus = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb crumb-white"]//div[@class="item"][4]//span[@class="hd"]//a/text()').extract()
         scenicspot_locus = ''.join(scenicspot_locus).strip()
-#        if u'市' in scenicspot_locus:
-        # 如果还是获取到省，则获取下一级别的市县
-#        province = scenicspot_item['scenicspot_province']
-#        if province in scenicspot_locus or scenicspot_locus in province or scenicspot_locus == u'中国':
-#           scenicspot_locus = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][last()-1]//span[@class="hd"]//a/text()').extract()
-#           scenicspot_locus = ''.join(scenicspot_locus).strip()
 
-        # 景点名称
-        scenicspot_name = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item cur"]//strong/text()').extract()
-        scenicspot_name = remove_str(''.join(scenicspot_name).strip(),'>')
+        # 景点介绍
+        scenicspot_intro = response.xpath('//div[@class="row row-overview"]//div[@class="wrapper"]//dl[@class="intro"]//dt//div[@class="simrows active"]//p//span//text()').extract()
+        scenicspot_intro = ''.join(scenicspot_intro).strip()
 
-        # 景点当地天气
-        weather = response.xpath('//div[@class="top-info clearfix"]/div[@class="weather"]/text()').extract()
-        weather = remove_str(remove_str(''.join(weather).strip(),u'：'),'\s+')
+        # 景点的地址
+        scenicspot_address = response.xpath('//div[@class="row row-location row-bg"]//div[@class="wrapper"]//div[@class="r-title"]//div[@class="style"]/text()').extract()
+        scenicspot_address = ''.join(scenicspot_address).strip()
 
-        # 景点门票价格
-        scenicspot_tickets = response.xpath('//div[@class="m-box m-piao"]//div[@class="bd"]//li[@class="clearfix"]//span[@class="c3"]/text()').extract()
-        scenicspot_ticket = ''
-        if scenicspot_tickets:
-           ticket_list = []
-           for ticket in scenicspot_tickets:
-               ticket_list.append(''.join([u'￥', ticket, u'起']))
-               scenicspot_ticket = ','.join(ticket_list)
+        # 景点其他相关信息,如：电话，门票，开放时间等
+        scenicspot_other_info_title = response.xpath('//div[@class="row row-overview"]//div[@class="wrapper"]//dl[@class="intro"]//dd//span[@class="label"]/text()').extract()
+        scenicspot_other_info_content = response.xpath('//div[@class="row row-overview"]//div[@class="wrapper"]//dl[@class="intro"]//dd//div[@class="simrows active"]//p//span//text()').extract()
+        # 生成title对应内容的字典，如：u'地址' : u'北京东城区景山前街4号'
+        dict_title_to_content = dict(zip(scenicspot_other_info_title, scenicspot_other_info_content))
 
-        # 景点简介相关信息 
-        scenicspot_info_item_title = response.xpath('//div[@class="col-main"]//div[@class="poi-info poi-base tab-div"]//div[@class="bd"]//h3/text()').extract()
-        scenicspot_info_item_content = response.xpath(\
-                               '//div[@class="col-main"]//div[@class="poi-info poi-base tab-div"]//div[@class="bd"]//p/text() |\
-                              //div[@class="col-main"]//div[@class="poi-info poi-base tab-div"]//div[@class="bd"]//p/a/text()' \
-                                                     ).extract()
+        # 对景点的前6条评论
+        scenicspot_comments_list = response.xpath('//div[@class="row row-reviews row-bg"]//div[@class="wrapper"]//ul[@class="rev-lists"]//li[position()<7]//p[@class="rev-txt"]//text()').extract()
+        scenicspot_comments = '|'.join(scenicspot_comments_list)
+
+        # 对景点的印象
+        scenicspot_impression_list = response.xpath('//div[@class="row row-reviews row-bg"]//div[@class="wrapper"]//div[@class="rev-tags"]//ul//li[@class="filter-word"]//a//strong//text()').extract()
+        scenicspot_impression = '|'.join(scenicspot_impression_list)
 
         # 避免title和content错位
-        title_item_num = len(scenicspot_info_item_title)
-        content_item_num = len(scenicspot_info_item_content)
-        re_tel = re.compile('\d{2,}-?\d{6,}')
-        while content_item_num > title_item_num and not re_tel.match(scenicspot_info_item_content[2]) and content_item_num > 2:
-           content = []
-           content.append(''.join(scenicspot_info_item_content[:2]))
-           content.extend(scenicspot_info_item_content[2:])
-           scenicspot_info_item_content = content
-           content_item_num = len(scenicspot_info_item_content)
+#        title_item_num = len(scenicspot_info_item_title)
+#        content_item_num = len(scenicspot_info_item_content)
+#        re_tel = re.compile('\d{2,}-?\d{6,}')
+#        while content_item_num > title_item_num and not re_tel.match(scenicspot_info_item_content[2]) and content_item_num > 2:
+#           content = []
+#           content.append(''.join(scenicspot_info_item_content[:2]))
+#           content.extend(scenicspot_info_item_content[2:])
+#           scenicspot_info_item_content = content
+#           content_item_num = len(scenicspot_info_item_content)
 
-        # 生成title对应内容的字典，如：u'地址' : u'北京东城区景山前街4号'
-        dict_title_to_content = dict(zip(scenicspot_info_item_title, scenicspot_info_item_content))
-
-        scenicspot_item['scenicspot_intro'] = dict_title_to_content.get(u'简介')
-        scenicspot_item['scenicspot_address'] = dict_title_to_content.get(u'地址')
-        scenicspot_item['scenicspot_webaddress'] = dict_title_to_content.get(u'网址')
+        scenicspot_item['scenicspot_intro'] = scenicspot_intro
+        scenicspot_item['scenicspot_address'] = scenicspot_address
+        scenicspot_item['scenicspot_comments'] = scenicspot_comments
+        scenicspot_item['scenicspot_impression'] = scenicspot_impression
+        scenicspot_item['traffic'] = dict_title_to_content.get(u'交通')
         scenicspot_item['scenicspot_tel'] = dict_title_to_content.get(u'电话')
-        scenicspot_item['scenicspot_ticket'] = scenicspot_ticket
-        scenicspot_item['helpful_num'] = helpful_num
-        if u'市' in scenicspot_locus:
-           scenicspot_item['scenicspot_locus'] = scenicspot_locus.rstrip(u'市')
-        scenicspot_item['scenicspot_name'] = scenicspot_name
-        scenicspot_item['weather'] = weather
+        scenicspot_item['scenicspot_ticket'] = dict_title_to_content.get(u'门票')
+        scenicspot_item['scenicspot_opentime'] = dict_title_to_content.get(u'开放时间')
+        scenicspot_item['scenicspot_usedtime'] = dict_title_to_content.get(u'用时参考')
         scenicspot_item['link'] = response.url
-        scenicspot_item['scenicspot_grade'] = scenicspot_grade
+#        scenicspot_item['scenicspot_locus'] = scenicspot_locus
+#        scenicspot_item['helpful_num'] = helpful_num
+#        scenicspot_item['scenicspot_name'] = scenicspot_name
+#        scenicspot_item['scenicspot_grade'] = scenicspot_grade
 #        scenicspot_item['scenicspot_province'] = scenicspot_province
-
         return scenicspot_item
-
 
     def get_url_prefix(self, response, splice_http=False):
         page_url_prefix = ''
