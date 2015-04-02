@@ -126,14 +126,14 @@ class MafengwoScenicspotSpider(scrapy.Spider):
         # 获取当前页面的省
         scenicspot_province = response.xpath(\
                       '//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][3]//span[@class="hd"]//a/text()\
-                      | //div[@class="wrapper"]//div[@class="crumb"]//div[@class="item"][3]//span[@class="hd"]//a/text()'\
+                      | //div[@class="wrapper"]//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][3]//span[@class="hd"]//a/text()'\
                                             ).extract()
         scenicspot_province = remove_str(''.join(scenicspot_province).strip(),u'省')
 
         # 获取当前页面的市/县
         scenicspot_locus = response.xpath(
                      '//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][4]//span[@class="hd"]//a/text()\
-                     | //div[@class="wrapper"]//div[@class="crumb"]//div[@class="item cur"]//strong/text()'\
+                     | //div[@class="wrapper"]//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item cur"]//strong/text()'\
                                          ).extract()
         scenicspot_locus = remove_str(''.join(scenicspot_locus).strip(),u'市')
 
@@ -255,11 +255,11 @@ class MafengwoScenicspotSpider(scrapy.Spider):
     
         # 景点的等级
         scenicspot_grade_list = response.xpath('//div[@class="wrapper"]//div[@class="content"]//div[@class="m-recList"]//div[@class="bd"]//ul[@class="poi-list"]//li[@class="item clearfix"]//div[@class="grade"]/em/text()').extract()
-        href_grade_group = dict(zip(href_list, scenicspot_grade))
+        href_grade_group = dict(zip(href_list, scenicspot_grade_list))
 
         # 景点概况被认为有用的数量
         helpful_num_list = response.xpath('//div[@class="wrapper"]//div[@class="content"]//div[@class="m-recList"]//div[@class="bd"]//ul[@class="poi-list"]//li[@class="item clearfix"]//div[@class="grade"]/p/em/text()').extract()
-        href_num_group = dict(zip(href_list, helpful_num))
+        href_num_group = dict(zip(href_list, helpful_num_list))
 
         scenicspot_meta = response.meta.get('scenicspot_item')
         city = scenicspot_meta.get('scenicspot_locus')
@@ -302,12 +302,15 @@ class MafengwoScenicspotSpider(scrapy.Spider):
         scenicspot_intro = ''.join(scenicspot_intro).strip()
 
         # 景点的地址
-        scenicspot_address = response.xpath('//div[@class="row row-location row-bg"]//div[@class="wrapper"]//div[@class="r-title"]//div[@class="style"]/text()').extract()
-        scenicspot_address = ''.join(scenicspot_address).strip()
+        scenicspot_address = response.xpath('//div[@class="row row-location row-bg"]//div[@class="wrapper"]//div[@class="r-title"]//text()').extract()
+        scenicspot_address = ': '.join(scenicspot_address).strip()
 
         # 景点其他相关信息,如：电话，门票，开放时间等
-        scenicspot_other_info_title = response.xpath('//div[@class="row row-overview"]//div[@class="wrapper"]//dl[@class="intro"]//dd//span[@class="label"]/text()').extract()
-        scenicspot_other_info_content = response.xpath('//div[@class="row row-overview"]//div[@class="wrapper"]//dl[@class="intro"]//dd//div[@class="simrows active"]//p//span//text()').extract()
+        scenicspot_other_info_title = response.xpath('//div[@class="row row-overview"]//div[@class="wrapper"]//dl[@class="intro"]//dd//span[@class="label"]//text()').extract()
+        scenicspot_other_info_content = response.xpath('//div[@class="row row-overview"]//div[@class="wrapper"]//dl[@class="intro"]//dd//div[@class="simrows active"]//p//span//text()|\
+                                                        //div[@class="row row-overview"]//div[@class="wrapper"]//dl[@class="intro"]//dd//div[@class="simrows"]//p//span//text()|\
+                                                        //div[@class="row row-overview"]//div[@class="wrapper"]//dl[@class="intro"]//dd//p//text()'\
+                                                      ).extract()
         # 生成title对应内容的字典，如：u'地址' : u'北京东城区景山前街4号'
         dict_title_to_content = dict(zip(scenicspot_other_info_title, scenicspot_other_info_content))
 
@@ -358,7 +361,7 @@ class MafengwoScenicspotSpider(scrapy.Spider):
         else:
             for domain_name in self.allowed_domains:
                 if domain_name in response.url:
-                   page_url_prefix = 'http://' + domain_name
+                   page_url_prefix = 'http://www.' + domain_name
                    break
         return page_url_prefix
 
