@@ -124,28 +124,25 @@ class MafengwoScenicspotSpider(scrapy.Spider):
         scenicspot_item = ScenicspotItem()
 
         # 获取当前页面的省
-        scenicspot_province = response.xpath(\
-                      '//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][3]//span[@class="hd"]//a/text()\
-                      | //div[@class="wrapper"]//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][3]//span[@class="hd"]//a/text()'\
-                                            ).extract()
+        scenicspot_province = response.xpath('//div[@class="wrapper"]//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][3]//div[@class="drop"]//span[@class="hd"]//a//text()').extract()
         scenicspot_province = remove_str(''.join(scenicspot_province).strip(),u'省')
 
         # 获取当前页面的市/县
-        scenicspot_locus = response.xpath(
-                     '//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][4]//span[@class="hd"]//a/text()\
-                     | //div[@class="wrapper"]//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item cur"]//strong/text()'\
-                                         ).extract()
+        scenicspot_locus = response.xpath('//div[@class="wrapper"]//div[@class="crumb"]//div[@class="item"][4]//span[@class="hd"]//a/text()').extract()
         scenicspot_locus = remove_str(''.join(scenicspot_locus).strip(),u'市')
+        log.msg('+++++++++++++'+response.url+'++++++')
+        log.msg('========'+scenicspot_province+'=======')
+        log.msg('----------'+scenicspot_locus+'--------------')
 
         scenicspot_name = scenicspot_locus
         
         # 省和市相同,则获取的是直辖市
-        if scenicspot_province in scenicspot_locus:
+        if '' == scenicspot_locus:
            scenicspot_locus = scenicspot_province
            scenicspot_name = scenicspot_province
   
-        # 市/县名包含'攻略'且不是直辖市，则获取的是省信息
-        if u'攻略' in scenicspot_locus and scenicspot_province not in scenicspot_locus:
+        # 市/县名包含'攻略'，则获取的是省信息
+        if u'攻略' in scenicspot_locus:
            scenicspot_locus = ''
            scenicspot_name = scenicspot_province
 
