@@ -291,9 +291,7 @@ class MafengwoScenicspotSpider(scrapy.Spider):
         scenicspot_intro = ''.join(scenicspot_intro).strip()
 
         # 景点的地址
-        #scenicspot_address = response.xpath('//div[@class="row row-location row-bg"]//div[@class="wrapper"]//div[@class="r-title"]//div//text()').extract()
         scenicspot_address = response.xpath('//div[@class="r-title"][1]/div/text()').extract()
-        log.msg('-----------'+str(scenicspot_address)+'----------') 
         scenicspot_address = ''.join(scenicspot_address).strip()
 
         # 景点其他相关信息,如：电话，门票，开放时间等
@@ -312,17 +310,6 @@ class MafengwoScenicspotSpider(scrapy.Spider):
         # 对景点的印象
         scenicspot_impression_list = response.xpath('//div[@class="row row-reviews row-bg"]//div[@class="wrapper"]//div[@class="rev-tags"]//ul//li[@class="filter-word"]//a//strong//text()').extract()
         scenicspot_impression = '|'.join(scenicspot_impression_list)
-
-        # 避免title和content错位
-#        title_item_num = len(scenicspot_info_item_title)
-#        content_item_num = len(scenicspot_info_item_content)
-#        re_tel = re.compile('\d{2,}-?\d{6,}')
-#        while content_item_num > title_item_num and not re_tel.match(scenicspot_info_item_content[2]) and content_item_num > 2:
-#           content = []
-#           content.append(''.join(scenicspot_info_item_content[:2]))
-#           content.extend(scenicspot_info_item_content[2:])
-#           scenicspot_info_item_content = content
-#           content_item_num = len(scenicspot_info_item_content)
 
         scenicspot_item['scenicspot_intro'] = scenicspot_intro
         scenicspot_item['scenicspot_address'] = scenicspot_address
