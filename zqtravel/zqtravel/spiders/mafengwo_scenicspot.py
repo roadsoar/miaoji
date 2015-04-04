@@ -166,14 +166,19 @@ class MafengwoScenicspotSpider(scrapy.Spider):
         scenicspot_item['weather'] = dict_title_to_content.get(u'当地气候')
         scenicspot_item['scenicspot_dressing'] = dict_title_to_content.get(u'穿衣指南')
         scenicspot_item['language'] = dict_title_to_content.get(u'语言')
+        scenicspot_item['history'] = dict_title_to_content.get(u'历史')
+        scenicspot_item['custom'] = dict_title_to_content.get(u'风俗禁忌')
+        scenicspot_item['culture'] = dict_title_to_content.get(u'宗教与文化')
         scenicspot_item['helpful_num'] = helpful_num
         scenicspot_item['scenicspot_province'] = scenicspot_province 
         scenicspot_item['scenicspot_locus'] = scenicspot_locus
         scenicspot_item['scenicspot_name'] = scenicspot_name
         scenicspot_item['link'] = response.url
 
-
-        return scenicspot_item
+        if scenicspot_province:
+          return scenicspot_item
+        else:
+          pass
 
     def parse_travel_next_pages(self,response):
         """获得游记下一页地址"""
@@ -286,8 +291,8 @@ class MafengwoScenicspotSpider(scrapy.Spider):
         scenicspot_intro = ''.join(scenicspot_intro).strip()
 
         # 景点的地址
-        scenicspot_address = response.xpath('//div[@class="row row-location row-bg"]//div[@class="wrapper"]//div[@class="r-title"]//text()').extract()
-        scenicspot_address = ': '.join(scenicspot_address).strip()
+        scenicspot_address = response.xpath('//div[@class="row row-location row-bg"]//div[@class="wrapper"]//div[@class="r-title"]//div//text()').extract()
+        scenicspot_address = ''.join(scenicspot_address).strip()
 
         # 景点其他相关信息,如：电话，门票，开放时间等
         scenicspot_other_info_title = response.xpath('//div[@class="row row-overview"]//div[@class="wrapper"]//dl[@class="intro"]//dd//span[@class="label"]//text()').extract()

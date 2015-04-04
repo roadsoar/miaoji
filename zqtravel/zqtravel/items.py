@@ -57,6 +57,9 @@ class ScenicspotItem(Item):
     best_traveling_time = Field()      # 景点最佳旅游时间
     helpful_num = Field()              # 认为有用的人数
     traffic = Field()                  # 交通
+    history = Field()                  # 历史
+    custom = Field()                   # 风俗禁忌
+    culture = Field()                  # 宗教与文化
     scenicspot_name = Field()          # 景点名称
     scenicspot_intro = Field()         # 景点的简介
     scenicspot_address = Field()       # 景点的地址
