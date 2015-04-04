@@ -148,27 +148,17 @@ class MafengwoScenicspotSpider(scrapy.Spider):
 
         # 景点相关信息 
         locus_info_title_list = response.xpath('//div[@class="wrapper"]//div[@class="content"]//h2/text()').extract()
-        locus_info_content_list = response.xpath('//div[@class="wrapper"]//div[@class="content"]//div[@class="m-txt"]/text() | \
-                                                  //div[@class="wrapper"]//div[@class="content"]//div[@class="m-txt"]//p//text()'\
-                                                ).extract() 
-        title_to_content = zip(locus_info_title_list, locus_info_content_list)
 
         dict_title_to_content = {}
-        for title, content in title_to_content:
-          title_clean = title.strip("\n\r\t ")
-          content_clean = content.strip('\n\r\t ')
-          dict_title_to_content[title_clean] = content_clean
-        # 生成title对应内容的字典，如：u'地址' : u'北京东城区景山前街4号' '\n', '\r',  '\t',  ' '
-#        len_num = len(locus_info_item_title)
-#        title_index = 0
-#        while title_index < len_num:
-#           title = locus_info_item_title[title_index]
-#           if title_index + 1 == len_num:
-#              dict_title_to_content[title] = ''.join(locus_info_item_content[locus_info_item_content.index(title)+1:]).strip()
-#           else:
-#              next_title = locus_info_item_title[title_index+1]
-#              dict_title_to_content[title] = ''.join(locus_info_item_content[locus_info_item_content.index(title)+1:locus_info_item_content.index(next_title)]).strip()
-#           title_index += 1
+        content_index = 1
+        for title in locus_info_title_list:
+          xpath_without_p = '//div[@class="wrapper"]//div[@class="content"]//div[@class="m-txt"][' + str(content_index ) + ']/text()'
+          xpath_with_p = '//div[@class="wrapper"]//div[@class="content"]//div[@class="m-txt"][' + str(content_index ) + ']//p/text()'
+          content_list = response.xpath(xpath_without_p + '|' + xpath_with_p).extract()
+          strip_content_list = [content.strip('\n\r\t ') for content in content_list]
+          joined_content = '|'.join(strip_content_list)
+          dict_title_to_content[title] = joined_content 
+          content_index += 1
 
         scenicspot_item['scenicspot_intro'] = dict_title_to_content.get(u'简介')
         scenicspot_item['best_traveling_time'] = dict_title_to_content.get(u'最佳旅行时间')
