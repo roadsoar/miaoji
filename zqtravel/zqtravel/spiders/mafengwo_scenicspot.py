@@ -124,15 +124,12 @@ class MafengwoScenicspotSpider(scrapy.Spider):
         scenicspot_item = ScenicspotItem()
 
         # 获取当前页面的省
-        scenicspot_province = response.xpath('//div[@class="wrapper"]//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][3]//div[@class="drop"]//span[@class="hd"]//a//text()').extract()
+        scenicspot_province = response.xpath('//div[@class="wrapper"]//div[@class="crumb "]//div[@class="item"][3]//span[@class="hd"]//a/text()').extract()
         scenicspot_province = remove_str(''.join(scenicspot_province).strip(),u'省')
 
         # 获取当前页面的市/县
-        scenicspot_locus = response.xpath('//div[@class="wrapper"]//div[@class="crumb"]//div[@class="item"][4]//span[@class="hd"]//a/text()').extract()
+        scenicspot_locus = response.xpath('//div[@class="wrapper"]//div[@class="crumb "]//div[@class="item"][4]//span[@class="hd"]//a/text()').extract()
         scenicspot_locus = remove_str(''.join(scenicspot_locus).strip(),u'市')
-        log.msg('+++++++++++++'+response.url+'++++++')
-        log.msg('========'+scenicspot_province+'=======')
-        log.msg('----------'+scenicspot_locus+'--------------')
 
         scenicspot_name = scenicspot_locus
         
