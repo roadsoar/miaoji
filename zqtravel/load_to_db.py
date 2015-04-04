@@ -62,6 +62,7 @@ def load_data_to_db():
                if os.path.isfile(province_file):
                   fl = open(province_file,"r")
                   lines = fl.readlines()
+                  fl.close()
                   province_info = eval(''.join(lines))
                   province_intrd = province_info['scenicspot_intro']
                else:
@@ -96,6 +97,7 @@ def load_data_to_db():
                if os.path.isfile(city_file):
                   fl = open(city_file)
                   lines = fl.readlines()
+                  fl.close()
                   city_info = eval(''.join(lines))
                   city_intrd = city_info['scenicspot_intro']
                else:
@@ -130,21 +132,24 @@ def load_data_to_db():
 
              scenicspot_file = r'/'.join([root, scenicspot_name, '[0-9]*_txt'])
              scenicspot_file_list = glob.glob(scenicspot_file)
-             #null = "" # define this variable for below syntax: scenicspot_info = eval(line)
              for txt_file in scenicspot_file_list:
                  file_size = os.path.getsize(txt_file)
                  # read the text file which is not empty
                  if file_size > 3:
-                    for line in open(txt_file):
+                    #for line in open(txt_file):
                       try:
-                        scenicspot_info = eval(line)
+                        fl = open(txt_file)
+                        lines = fl.readlines()
+                        scenicspot_info = eval(''.join(lines))
+                        fl.close()
+                        #scenicspot_info = eval(line)
                         scenicspot_intrd = scenicspot_info.get('scenicspot_intro','')
                         scenicspot_level = float(scenicspot_info.get('scenicspot_grade',0))
                         scenicspot_address = scenicspot_info.get('scenicspot_address','')
                         scenicspot_telephone = scenicspot_info.get('scenicspot_tel','')
                         scenicspot_web = scenicspot_info.get('scenicspot_webaddress','')
                         scenicspot_heat = int(scenicspot_info.get('helpful_num',0))
-                        scenicspot_ticketprice = scenicspot_info.get('scenicspot_ticket',0) # contain the unit of money, like $, so the price is string type
+                        scenicspot_ticketprice = scenicspot_info.get('scenicspot_ticket','') # contain the unit of money, like $, so the price is string type
                         all_scenicspot_name = scenicspot_name_to_city_id.keys()
                         if scenicspot_name.decode('utf-8') not in all_scenicspot_name: #or\
 #                           scenicspot_name.decode('utf-8') in all_scenicspot_name and city_no != scenicspot_name_to_city_id.get(scenicspot_name.decode('utf-8'), -1):
