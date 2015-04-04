@@ -831,3 +831,21 @@ kill: usage: kill [-s sigspec | -n signum | -sigspec] pid | jobspec ... or kill 
 2015-01-16 21:31:17+0800 [mafengwo] INFO: Spider closed (finished)
 kill: usage: kill [-s sigspec | -n signum | -sigspec] pid | jobspec ... or kill -l [sigspec]
 kill: usage: kill [-s sigspec | -n signum | -sigspec] pid | jobspec ... or kill -l [sigspec]
+2015-04-05 00:01:12+0800 [scrapy] INFO: Scrapy 0.24.4 started (bot: zqtravel)
+2015-04-05 00:01:12+0800 [scrapy] INFO: Optional features available: ssl, http11
+2015-04-05 00:01:12+0800 [scrapy] INFO: Overridden settings: {'NEWSPIDER_MODULE': 'zqtravel.spiders', 'SPIDER_MODULES': ['zqtravel.spiders'], 'LOG_FILE': '/home/scrapy/log/zqtravel.log', 'DOWNLOAD_DELAY': 2, 'BOT_NAME': 'zqtravel'}
+2015-04-05 00:01:12+0800 [scrapy] INFO: Enabled extensions: AutoThrottle, LogStats, TelnetConsole, CloseSpider, WebService, CoreStats, SpiderState
+2015-04-05 00:01:12+0800 [scrapy] INFO: Enabled downloader middlewares: RotateUserAgentMiddleware, HttpAuthMiddleware, DownloadTimeoutMiddleware, RetryMiddleware, DefaultHeadersMiddleware, MetaRefreshMiddleware, HttpCompressionMiddleware, RedirectMiddleware, CookiesMiddleware, ChunkedTransferMiddleware, DownloaderStats
+2015-04-05 00:01:12+0800 [scrapy] INFO: Enabled spider middlewares: HttpErrorMiddleware, OffsiteMiddleware, RefererMiddleware, UrlLengthMiddleware, DepthMiddleware
+2015-04-05 00:01:12+0800 [-] ERROR: /usr/lib/python2.7/site-packages/setuptools-7.0-py2.7.egg/pkg_resources.py:1045: UserWarning: /home/chunchen/.python-eggs is writable by group/others and vulnerable to attack when used with get_resource_filename. Consider a more secure location (set with .set_extraction_path or the PYTHON_EGG_CACHE environment variable).
+2015-04-05 00:01:12+0800 [-] ERROR:   warnings.warn(msg, UserWarning)
+2015-04-05 00:01:12+0800 [scrapy] INFO: Enabled item pipelines: ScenicspotPipeline, TravelPipeline
+2015-04-05 00:01:12+0800 [mafengwo_scenicspot] INFO: Spider opened
+2015-04-05 00:01:12+0800 [mafengwo_scenicspot] INFO: Crawled 0 pages (at 0 pages/min), scraped 0 items (at 0 items/min)
+2015-04-05 00:01:12+0800 [scrapy] DEBUG: Telnet console listening on 127.0.0.1:6024
+2015-04-05 00:01:12+0800 [scrapy] DEBUG: Web service listening on 127.0.0.1:6081
+2015-04-05 00:01:12+0800 [mafengwo_scenicspot] DEBUG: Crawled (200) <GET http://z.mafengwo.cn//> (referer: None)
+2015-04-05 00:01:12+0800 [mafengwo_scenicspot] DEBUG: Redirecting (301) to <GET http://www.mafengwo.cn/travel-scenic-spot/mafengwo/14575.html> from <GET http://www.mafengwo.cn/travel-scenic-spot/mafengwo/10111.html>
+2015-04-05 00:01:19+0800 [mafengwo_scenicspot] DEBUG: Redirecting (301) to <GET http://www.mafengwo.cn/travel-scenic-spot/mafengwo/12711.html> from <GET http://www.mafengwo.cn/travel-scenic-spot/mafengwo/10028.html>
+2015-04-05 00:01:25+0800 [mafengwo_scenicspot] DEBUG: Redirecting (301) to <GET http://www.mafengwo.cn/travel-scenic-spot/mafengwo/13061.html> from <GET http://www.mafengwo.cn/travel-scenic-spot/mafengwo/10081.html>
+2015-04-05 00:01:31+0800 [mafengwo_scenicspot] DEBUG: Redirecting (301) to <GET http://www.mafengwo.cn/travel-scenic-spot/mafengwo/10189.html> from <GET http://www.mafengwo.cn/travel-scenic-spot/mafengwo/10845.html>

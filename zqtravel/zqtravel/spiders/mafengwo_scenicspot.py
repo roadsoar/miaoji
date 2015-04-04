@@ -304,11 +304,11 @@ class MafengwoScenicspotSpider(scrapy.Spider):
         dict_title_to_content = dict(zip(scenicspot_other_info_title, scenicspot_other_info_content))
 
         # 对景点的前6条评论
-        scenicspot_comments_list = response.xpath('//div[@class="row row-reviews row-bg"]//div[@class="wrapper"]//ul[@class="rev-lists"]//li[position()<7]//p[@class="rev-txt"]//text()').extract()
+        scenicspot_comments_list = response.xpath('//div[@class="wrapper"]//ul[@class="rev-lists"]//li[position()<7]//p[@class="rev-txt"]//text()').extract()
         scenicspot_comments = '|'.join(scenicspot_comments_list)
 
         # 对景点的印象
-        scenicspot_impression_list = response.xpath('//div[@class="row row-reviews row-bg"]//div[@class="wrapper"]//div[@class="rev-tags"]//ul//li[@class="filter-word"]//a//strong//text()').extract()
+        scenicspot_impression_list = response.xpath('//div[@class="wrapper"]//div[@class="rev-tags"]//strong/text()').extract()
         scenicspot_impression = '|'.join(scenicspot_impression_list)
 
         scenicspot_item['scenicspot_intro'] = scenicspot_intro
