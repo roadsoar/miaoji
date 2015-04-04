@@ -282,7 +282,7 @@ class MafengwoScenicspotSpider(scrapy.Spider):
 
         scenicspot_item = response.meta['scenicspot_item']
 
-        # 景点所在地
+        # 景点所市、县
         scenicspot_locus = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb crumb-white"]//div[@class="item"][4]//span[@class="hd"]//a/text()').extract()
         scenicspot_locus = ''.join(scenicspot_locus).strip()
 
@@ -291,7 +291,9 @@ class MafengwoScenicspotSpider(scrapy.Spider):
         scenicspot_intro = ''.join(scenicspot_intro).strip()
 
         # 景点的地址
-        scenicspot_address = response.xpath('//div[@class="row row-location row-bg"]//div[@class="wrapper"]//div[@class="r-title"]//div//text()').extract()
+        #scenicspot_address = response.xpath('//div[@class="row row-location row-bg"]//div[@class="wrapper"]//div[@class="r-title"]//div//text()').extract()
+        scenicspot_address = response.xpath('//div[@class="row row-location row-bg"]')
+        log.msg('-----------'+str(scenicspot_address)+'----------') 
         scenicspot_address = ''.join(scenicspot_address).strip()
 
         # 景点其他相关信息,如：电话，门票，开放时间等
