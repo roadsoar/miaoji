@@ -287,12 +287,12 @@ class MafengwoScenicspotSpider(scrapy.Spider):
         scenicspot_locus = ''.join(scenicspot_locus).strip()
 
         # 景点介绍
-        scenicspot_intro = response.xpath('//div[@class="row row-overview"]//div[@class="wrapper"]//dl[@class="intro"]//dt//div[@class="simrows active"]//p//span//text()').extract()
+        scenicspot_intro = response.xpath('//div[@class="row row-overview"]//div[@class="wrapper"]//dl[@class="intro"]//dt//p//span//text()').extract()
         scenicspot_intro = ''.join(scenicspot_intro).strip()
 
         # 景点的地址
         #scenicspot_address = response.xpath('//div[@class="row row-location row-bg"]//div[@class="wrapper"]//div[@class="r-title"]//div//text()').extract()
-        scenicspot_address = response.xpath('//div[@class="row row-location row-bg"]')
+        scenicspot_address = response.xpath('//div[@class="r-title"][1]/div/text()').extract()
         log.msg('-----------'+str(scenicspot_address)+'----------') 
         scenicspot_address = ''.join(scenicspot_address).strip()
 
