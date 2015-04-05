@@ -23,14 +23,14 @@ class MafengwoScenicspotSpider(scrapy.Spider):
 
     rules = [
              Rule(LxmlLinkExtractor('/travel-scenic-spot/mafengwo/'),
-             callback='parse_scenic_spots',
+             callback='parse_province_and_scenicspot',
              follow=True),
-             Rule(LxmlLinkExtractor('/poi/\d+.html'),
-             callback='parse_scenic_spots',
-             follow=True),
-             Rule(LxmlLinkExtractor('/i/\d+.html'),
-             callback='parse_scenic_spots',
-             follow=True),
+#             Rule(LxmlLinkExtractor('/poi/\d+.html'),
+#             callback='parse_scenic_spots',
+#             follow=True),
+#             Rule(LxmlLinkExtractor('/i/\d+.html'),
+#             callback='parse_scenic_spots',
+#             follow=True),
             ]
 
     def parse_scenic_spots(self, response):
