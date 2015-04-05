@@ -16,7 +16,7 @@ import re
 
 mj_cf = ConfigMiaoJI("./spider_settings.cfg")
 # 不获取游记的时候调用
-youji_file = open('/home/scrapy/data/mafengwo_youji_txt', 'a+')
+#youji_file = open('/home/scrapy/data/mafengwo_youji_txt', 'a+')
 
 class MafengwoSpider(CrawlSpider):
     '''爬取蚂蜂窝的游记和对应景点信息'''
@@ -270,8 +270,8 @@ class MafengwoSpider(CrawlSpider):
                 scenicspot_info_url = ''.join([url_prefix, '/poi/info-',scenicspot_id, '.html#comment_header'])
                 scenicspot_youji_url = ''.join([url_prefix, '/poi/youji-',scenicspot_id, '.html'])
             # 不获取游记的时候将游记连接写入文件
-                youji_file.write(scenicspot_youji_url+'\n')
-                youji_file.flush()
+                #youji_file.write(scenicspot_youji_url+'\n')
+                #youji_file.flush()
                 yield Request(scenicspot_info_url, callback=self.parse_scenicspot_info_item, meta=response.meta)
             # 获取游记的时候调用
             #    yield Request(scenicspot_youji_url, callback=self.parse_scenicspot_travel_pages, meta=response.meta)
