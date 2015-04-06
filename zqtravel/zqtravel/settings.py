@@ -53,7 +53,7 @@ AUTOTHROTTLE_ENABLED = True
 # 是否启用cookies middleware。如果关闭，cookies将不会发送给web server。
 COOKIES_ENABLED = True
 # 单位是妙。下载器在下载同一个网站下一个页面前需要等待的时间。该选项可以用来限制爬取速度， 减轻服务器压力。同时也支持小数
-DOWNLOAD_DELAY = 3
+DOWNLOAD_DELAY = 0.5
 
 # 让爬取的质量更高，使用宽度优先的策略
 #SCHEDULER_ORDER = 'BFO'

@@ -152,8 +152,8 @@ class MafengwoScenicspotSpider(scrapy.Spider):
         dict_title_to_content = {}
         content_index = 1
         for title in locus_info_title_list:
-          xpath_without_p = '//div[@class="wrapper"]//div[@class="content"]//div[@class="m-txt"][' + str(content_index) + ']/text()'
-          xpath_with_p = '//div[@class="wrapper"]//div[@class="content"]//div[@class="m-txt"][' + str(content_index) + ']//p/text()'
+          xpath_without_p = '//div[@class="wrapper"]//div[@class="content"]//div[@class="m-txt"][' + str(content_index ) + ']/text()'
+          xpath_with_p = '//div[@class="wrapper"]//div[@class="content"]//div[@class="m-txt"][' + str(content_index ) + ']//p/text()'
           content_list = response.xpath(xpath_without_p + '|' + xpath_with_p).extract()
           strip_content_list = [content.strip('\n\r\t ') for content in content_list]
           joined_content = '|'.join(strip_content_list)
@@ -295,18 +295,13 @@ class MafengwoScenicspotSpider(scrapy.Spider):
         scenicspot_address = ''.join(scenicspot_address).strip()
 
         # 景点其他相关信息,如：电话，门票，开放时间等
-        scenicspot_other_info_title_list = response.xpath('//div[@class="row row-overview"]//div[@class="wrapper"]//dl[@class="intro"]//dd//span[@class="label"]//text()').extract()
-
-        dict_title_to_content = {}
-        content_index = 1
-        for title in scenicspot_other_info_title_list:
-          xpath_without_a = '//div[@class="wrapper"]//dl[@class="intro"]//dd[' + str(content_index) + ']//p//text()'
-          xpath_with_a = '//div[@class="wrapper"]//dl[@class="intro"]//dd[' + str(content_index) + ']//p//a//text()'
-          content_list = response.xpath(xpath_without_a + '|' + xpath_with_a).extract()
-          strip_content_list = [content.strip('\n\r\t ') for content in content_list]
-          joined_content = '|'.join(strip_content_list)
-          dict_title_to_content[title] = joined_content
-          content_index += 1
+        scenicspot_other_info_title = response.xpath('//div[@class="row row-overview"]//div[@class="wrapper"]//dl[@class="intro"]//dd//span[@class="label"]//text()').extract()
+        scenicspot_other_info_content = response.xpath('//div[@class="row row-overview"]//div[@class="wrapper"]//dl[@class="intro"]//dd//div[@class="simrows active"]//p//span//text()|\
+                                                        //div[@class="row row-overview"]//div[@class="wrapper"]//dl[@class="intro"]//dd//div[@class="simrows"]//p//span//text()|\
+                                                        //div[@class="row row-overview"]//div[@class="wrapper"]//dl[@class="intro"]//dd//p//text()'\
+                                                      ).extract()
+        # 生成title对应内容的字典，如：u'地址' : u'北京东城区景山前街4号'
+        dict_title_to_content = dict(zip(scenicspot_other_info_title, scenicspot_other_info_content))
 
         # 对景点的前6条评论
         scenicspot_comments_list = response.xpath('//div[@class="wrapper"]//ul[@class="rev-lists"]//li[position()<7]//p[@class="rev-txt"]//text()').extract()
@@ -325,7 +320,6 @@ class MafengwoScenicspotSpider(scrapy.Spider):
         scenicspot_item['scenicspot_ticket'] = dict_title_to_content.get(u'门票')
         scenicspot_item['scenicspot_opentime'] = dict_title_to_content.get(u'开放时间')
         scenicspot_item['scenicspot_usedtime'] = dict_title_to_content.get(u'用时参考')
-        scenicspot_item['scenicspot_webaddress'] = dict_title_to_content.get(u'网址')
         scenicspot_item['link'] = response.url
 #        scenicspot_item['scenicspot_locus'] = scenicspot_locus
 #        scenicspot_item['helpful_num'] = helpful_num
@@ -501,4 +495,3 @@ class MafengwoScenicspotSpider(scrapy.Spider):
          # travel_item['scenicspot_name'] = scenicspot_name
 
        return travel_item
-
