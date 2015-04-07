@@ -23,8 +23,8 @@ class MafengwoProvinceSpider(scrapy.Spider):
     start_urls = mj_cf.get_starturls_from_province('mafengwo_province_spider',['pre_url', 'provices'])
 
     rules = [
-             Rule(LxmlLinkExtractor('/travel-scenic-spot/mafengwo/'),
-             callback='parse',
+             Rule(LxmlLinkExtractor('/baike/'),
+             callback='parse_locus_info',
              follow=True),
             ]
 
@@ -47,7 +47,7 @@ class MafengwoProvinceSpider(scrapy.Spider):
         url_post = '/jd/' + province_id + '/'
 
         baike_info_url = ''.join([url_prefix, '/baike/info-', province_id, '.html'])
-        yield Request(url_prefix + baike_info_url, callback=self.parse_locus_info, meta={'province_name':province_name})
+        yield Request(baike_info_url, callback=self.parse_locus_info, meta={'province_name':province_name})
         yield Request(url_prefix + url_post, callback=self.parse_cities, meta={'province_name':province_name})
 
     def parse_cities(self, response):
@@ -84,6 +84,7 @@ class MafengwoProvinceSpider(scrapy.Spider):
     def parse_city_scenicspot(self, response):
         '''省下面的市或县的response.url => http://www.mafengwo.cn/jd/10163/'''       
 
+        log.msg('im in city....')
         city_meta = response.meta 
         scenicspot_locus = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][4]//span[@class="hd"]//a/text()').extract()
         scenicspot_locus = ''.join(scenicspot_locus).strip()
@@ -99,11 +100,11 @@ class MafengwoProvinceSpider(scrapy.Spider):
         scenicspot_item = ScenicspotItem()
 
         # 获取当前页面的省
-        scenicspot_province = response.xpath('//div[@class="wrapper"]//div[@class="crumb "]//div[@class="item"][3]//span[@class="hd"]//a/text()').extract()
+        scenicspot_province = response.xpath('//div[@class="wrapper"]//div[@class="crumb"]//div[@class="item"][3]//span[@class="hd"]//a/text()').extract()
         scenicspot_province = remove_str(''.join(scenicspot_province).strip(),u'省')
 
         # 获取当前页面的市/县
-        scenicspot_locus = response.xpath('//div[@class="wrapper"]//div[@class="crumb "]//div[@class="item"][4]//span[@class="hd"]//a/text()').extract()
+        scenicspot_locus = response.xpath('//div[@class="wrapper"]//div[@class="crumb"]//div[@class="item"][4]//span[@class="hd"]//a/text()').extract()
         scenicspot_locus = remove_str(''.join(scenicspot_locus).strip(),u'市')
 
         scenicspot_name = scenicspot_locus
@@ -117,6 +118,7 @@ class MafengwoProvinceSpider(scrapy.Spider):
         if u'攻略' in scenicspot_locus:
            scenicspot_locus = ''
            scenicspot_name = scenicspot_province
+        log.msg('im in info....'+scenicspot_province)
 
         helpful_num = response.xpath('//div[@class="wrapper"]//div[@class="content"]//div[@class="m-title clearfix"]//span[@class="num-view"]/text()').extract()
         helpful_num = ''.join(helpful_num).strip()
@@ -152,8 +154,6 @@ class MafengwoProvinceSpider(scrapy.Spider):
 
         if scenicspot_province:
           return scenicspot_item
-        else:
-          pass
 
     def parse_travel_next_pages(self,response):
         """获得游记下一页地址"""
