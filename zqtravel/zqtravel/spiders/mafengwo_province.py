@@ -15,47 +15,33 @@ import scrapy
 import re
 
 mj_cf = ConfigMiaoJI("./spider_settings.cfg")
-class MafengwoScenicspotSpider(scrapy.Spider):
-    '''爬取蚂蜂窝的游记链接和省、市/县、景点的信息'''
+class MafengwoProvinceSpider(scrapy.Spider):
+    '''爬取蚂蜂窝的景点信息,按省抓取'''
 
-    name = "mafengwo_scenicspot"
+    name = "mafengwo_province"
     allowed_domains = ["mafengwo.cn"]
-    start_urls = mj_cf.get_starturls('mafengwo_scenicspot_spider','start_urls')
+    start_urls = mj_cf.get_starturls('mafengwo_province_spider','start_urls')
 
     rules = [
              Rule(LxmlLinkExtractor('/travel-scenic-spot/mafengwo/'),
              callback='parse_province_and_scenicspot',
              follow=True),
-#             Rule(LxmlLinkExtractor('/poi/\d+.html'),
-#             callback='parse_scenic_spots',
-#             follow=True),
+             Rule(LxmlLinkExtractor('z.mafengwo.cn'),
+             callback='parse',
+             follow=False),
 #             Rule(LxmlLinkExtractor('/i/\d+.html'),
 #             callback='parse_scenic_spots',
 #             follow=True),
             ]
 
-    def parse_scenic_spots(self, response):
-        self.parse(response)
-
-    def parse(self,response):
-        """获得景点"""
-
-        # 得到页面中景点的href
-        # 目前只抓取国内的
-        province_hrefs = response.xpath('//div[@id="Mcon"]//div[@class="content"]//div[@class="MddLi"]//dl[2]//dd//@href').extract()
-        province_names= response.xpath('//div[@id="Mcon"]//div[@class="content"]//div[@class="MddLi"]//dl[2]//dd//a/text()').extract()
-        href_to_name = zip(province_hrefs,province_names)
-
-        url_prefix = self.get_url_prefix(response, True)
-
-        disallow_cities = mj_cf.get_dict('mafengwo_spider','disallow_cities').values()
-        # 省url
-        for href,name in href_to_name:
-            province_id = href.split('=')[1]
-            if province_id not in disallow_cities:
-               province_url = ''.join([url_prefix,'/travel-scenic-spot/mafengwo/', province_id, '.html'])
-               yield Request(province_url, callback=self.parse_province_and_scenicspot, meta={'province_name':name.strip()})
-    
+    def parse(self, response):
+       pre_url = mj_cf.get_str('mafengwo_province_spider','pre_url')
+       provice_name_to_id = mj_cf.get_dict('mafengwo_province_spider','provices')
+       log.msg('-----------'+provice_name_to_id+'---------')
+       for name, province_id in provice_name_to_id:
+            province_url = ''.join([pre_url, province_id, '.html'])
+            yield Request(province_url, callback=self.parse_province_and_scenicspot, meta={'province_name':name.strip()})
+ 
     def parse_province_and_scenicspot(self, response):
         '''省或直辖市的response.url => http://www.mafengwo.cn/travel-scenic-spot/mafengwo/10035.html'''
 
