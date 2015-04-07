@@ -20,51 +20,43 @@ class MafengwoProvinceSpider(scrapy.Spider):
 
     name = "mafengwo_province"
     allowed_domains = ["mafengwo.cn"]
-    start_urls = mj_cf.get_starturls('mafengwo_province_spider','start_urls')
+    start_urls = mj_cf.get_starturls_from_province('mafengwo_province_spider',['pre_url', 'provices'])
 
     rules = [
              Rule(LxmlLinkExtractor('/travel-scenic-spot/mafengwo/'),
-             callback='parse_province_and_scenicspot',
-             follow=True),
-             Rule(LxmlLinkExtractor('z.mafengwo.cn'),
              callback='parse',
-             follow=False),
-#             Rule(LxmlLinkExtractor('/i/\d+.html'),
-#             callback='parse_scenic_spots',
-#             follow=True),
+             follow=True),
             ]
 
-    def parse(self, response):
+    def parse_bak(self, response):
        pre_url = mj_cf.get_str('mafengwo_province_spider','pre_url')
        provice_name_to_id = mj_cf.get_dict('mafengwo_province_spider','provices')
-       log.msg('-----------'+provice_name_to_id+'---------')
-       for name, province_id in provice_name_to_id:
+       for name, province_id in provice_name_to_id.iteritems():
             province_url = ''.join([pre_url, province_id, '.html'])
             yield Request(province_url, callback=self.parse_province_and_scenicspot, meta={'province_name':name.strip()})
  
-    def parse_province_and_scenicspot(self, response):
+    #def parse_province_and_scenicspot(self, response):
+    def parse(self, response):
         '''省或直辖市的response.url => http://www.mafengwo.cn/travel-scenic-spot/mafengwo/10035.html'''
 
-        province_info_url = response.xpath('//div[@class="nav-bg"]//div[@class="nav-inner"]//li[@class="nav-item nav-drop"]/a[@class="drop-hd"]/@href').extract()
-        province_info_url = ''.join(province_info_url).strip()
+        province_name = response.xpath('//div[@id="container"]//div[@class="row row-primary"]//div[@class="wrapper"]//div[@class="crumb"]//div[@class="item"][3]//span[@class="hd"]//text()').extract()
+        province_name = ''.join(province_name).strip(u'省')
 
-        scenicspot_url = response.xpath('//div[@class="nav-bg"]//div[@class="nav-inner"]//li[@class="nav-item"][1]//@href').extract()
-        scenicspot_url = ''.join(scenicspot_url).strip()
-
+        province_id = response.url.split('/')[-1].split('.')[0]
         url_prefix = self.get_url_prefix(response, True)
+        url_post = '/jd/' + province_id + '/'
 
-        yield Request(url_prefix + province_info_url, callback=self.parse_locus_info, meta=response.meta)
-        yield Request(url_prefix + scenicspot_url, callback=self.parse_cities, meta=response.meta)
+        baike_info_url = ''.join([url_prefix, '/baike/info-', province_id, '.html'])
+        yield Request(url_prefix + baike_info_url, callback=self.parse_locus_info, meta={'province_name':province_name})
+        yield Request(url_prefix + url_post, callback=self.parse_cities, meta={'province_name':province_name})
 
     def parse_cities(self, response):
-        '''省或直辖市的reponse.url => http://www.mafengwo.cn/jd/14407/gonglve.html'''
+        '''省或直辖市的reponse.url => http://www.mafengwo.cn/jd/14407/'''
 
-        # 非直辖市
+        # 城市链接
         city_href_list = response.xpath('//div[@class="content"]//div[@class="m-recList"]//div[@class="bd"]//dl[@class="clearfix"][2]//dd//@href').extract()
         city_name_list = response.xpath('//div[@class="content"]//div[@class="m-recList"]//div[@class="bd"]//dl[@class="clearfix"][2]//dd//a/h2/text()').extract()
         city_href_name_map = zip(city_href_list[1:], city_name_list)
-        # 直辖市
-        self_governed_city_href = response.xpath('//div[@id="container"]//div[@class="row row-allPlace row-bg"]//div[@class="wrapper"]//div[@class="list"]//ul[@class="clearfix"]//li//@href').extract()
 
         url_prefix = self.get_url_prefix(response, True)
 
@@ -79,16 +71,12 @@ class MafengwoProvinceSpider(scrapy.Spider):
             yield Request(url_prefix + city_href, callback=self.parse_city_scenicspot,meta=city_meta)
 
         # 直辖市
-        if self_governed_city_href:
-          city_id = href.split('/')[-2]
+        if not city_href_name_map:
+          city_id = response.url.split('/')[-2]
           baike_info_url = ''.join([url_prefix, '/baike/info-', city_id, '.html'])
+          city_meta['scenicspot_locus'] = city_meta.get('province_name','') 
           yield Request(baike_info_url, callback=self.parse_locus_info, meta=city_meta)
-          # 直辖市的景点
-          for href in self_governed_city_href:
-            scenicspot_locus = response.xpath('//div[@id="container"]//div[@class="row row-primary"]//div[@class="wrapper"]//div[@class="crumb"]//div[@class="item"]//span[@class="hd"]//a/text()').extract()
-            scenicspot_locus = ''.join(scenicspot_locus).strip()
-            city_meta['scenicspot_locus'] = scenicspot_locus
-            yield Request(url_prefix + href, callback=self.parse_scenicspot_info_item, meta=city_meta)
+          yield Request(response.url, callback=self.parse_city_scenicspot, meta=city_meta)
             # 获取游记时调用
             #youji_url = ''.join([url_prefix, '/poi/youji-', city_id, '.html'])
             #yield Request(youji_href, callback=self.parse_scenicspot_travel_pages, meta=city_meta)

@@ -20,6 +20,25 @@ class ConfigMiaoJI:
       starturls_tuple = () 
     return starturls_tuple
 
+  def get_starturls_from_province(self, field, keys):
+      # 'pre_url' => keys[0]
+      # 'provices' => keys[1]
+
+    try:
+      pre_url = self.get_str(field,'pre_url')
+      provice_name_to_id = self.get_dict(field,'provices')
+
+      starturls_list = []
+      starturls_tuple=()
+      for name, province_id in provice_name_to_id.iteritems():
+         starturls_list.append(''.join([pre_url, province_id, '.html']))
+
+      starturls_tuple = set(starturls_list)
+    except Exception as e:
+      print e
+      starturls_tuple=()
+    return starturls_tuple
+
   def get_allow_cities(self, field, allow_cities, disallow_cities):
       all_allow_cities = set(eval(remove_str(self.cfMJ.get(field, allow_cities))))
       all_disallow_cities = set(eval(remove_str(self.cfMJ.get(field, disallow_cities))))
