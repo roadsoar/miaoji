@@ -211,7 +211,7 @@ class MafengwoProvinceSpider(scrapy.Spider):
             yield Request(url, callback=self.parse_scenicspot_pages, meta={'scenicspot_item':scenicspot_item})
 
     def parse_scenicspot_pages(self, response):
-        '''获得每页景点的地址'''
+        '''获得每页中景点的地址'''
 
         # 一个页中的所有景点链接
         href_list = response.xpath('//div[@class="wrapper"]//div[@class="content"]//ul[@class="poi-list"]//li[@class="item clearfix"]//div[@class="title"]//@href').extract()
@@ -293,6 +293,12 @@ class MafengwoProvinceSpider(scrapy.Spider):
         scenicspot_impression_list = response.xpath('//div[@class="wrapper"]//div[@class="rev-tags"]//strong/text()').extract()
         scenicspot_impression = '|'.join(scenicspot_impression_list)
 
+        # 对景的名称
+        name_xpath_pre = '//div[@class="banner wrapper"]//div[@class="cover"]//div[@class="s-title"]/'
+        scenicspot_name = response.xpath(name_xpath_pre + 'h1/text() |' + name_xpath_pre + 'p/span[1]/text()').extract()
+        scenicspot_name = ''.join(scenicspot_name)
+
+        scenicspot_item['scenicspot_name'] = scenicspot_name
         scenicspot_item['scenicspot_intro'] = scenicspot_intro
         scenicspot_item['scenicspot_address'] = scenicspot_address
         scenicspot_item['scenicspot_comments'] = scenicspot_comments
@@ -306,7 +312,6 @@ class MafengwoProvinceSpider(scrapy.Spider):
         scenicspot_item['link'] = response.url
 #        scenicspot_item['scenicspot_locus'] = scenicspot_locus
 #        scenicspot_item['helpful_num'] = helpful_num
-#        scenicspot_item['scenicspot_name'] = scenicspot_name
 #        scenicspot_item['scenicspot_grade'] = scenicspot_grade
 #        scenicspot_item['scenicspot_province'] = scenicspot_province
         return scenicspot_item
