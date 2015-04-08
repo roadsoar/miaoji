@@ -1,6 +1,6 @@
 蚂蜂窝旅游
 在路上旅游
 禅游旅游
-bread travel（面包）旅游
+2bread travel（面包）旅游
 
 mafengwo_province_bj => {u'北京':'10848', u'澳门':'10844', u'香港':'10845',}
