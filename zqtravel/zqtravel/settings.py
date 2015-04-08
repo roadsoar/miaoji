@@ -57,3 +57,6 @@ DOWNLOAD_DELAY = 1
 
 # 让爬取的质量更高，使用宽度优先的策略
 #SCHEDULER_ORDER = 'BFO'
+
+# 启用调试
+DUPEFILTER_DEBUG = True
