@@ -106,7 +106,7 @@ class MafengwoProvinceSpider(scrapy.Spider):
         scenicspot_locus = ''.join(scenicspot_locus).strip(u'市')
         scenicspot_name = scenicspot_province
         
-        # 如果是城市，则景点名设置为城市
+        # 如果是直辖市，则景点名设置为城市
         if '' != scenicspot_locus:
            scenicspot_name = scenicspot_locus
 
