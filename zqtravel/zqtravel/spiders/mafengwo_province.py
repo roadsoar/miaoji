@@ -33,22 +33,22 @@ class MafengwoProvinceSpider(scrapy.Spider):
        provice_name_to_id = mj_cf.get_dict('mafengwo_province_spider','provices')
        for name, province_id in provice_name_to_id.iteritems():
             province_url = ''.join([pre_url, province_id, '.html'])
-            yield Request(province_url, callback=self.parse_province_and_scenicspot, meta={'province_name':name.strip()})
+            yield Request(province_url, callback=self.parse_province_and_scenicspot, meta={'scenicspot_province':name.strip()})
  
     #def parse_province_and_scenicspot(self, response):
     def parse(self, response):
         '''省或直辖市的response.url => http://www.mafengwo.cn/travel-scenic-spot/mafengwo/12703.html'''
 
-        province_name = response.xpath('//div[@id="container"]//div[@class="row row-primary"]//div[@class="wrapper"]//div[@class="crumb"]//div[@class="item"][3]//span[@class="hd"]//text()').extract()
-        province_name = ''.join(province_name).strip(u'省')
+        scenicspot_province = response.xpath('//div[@id="container"]//div[@class="row row-primary"]//div[@class="wrapper"]//div[@class="crumb"]//div[@class="item"][3]//span[@class="hd"]//text()').extract()
+        scenicspot_province = ''.join(scenicspot_province).strip(u'省')
 
         province_id = response.url.split('/')[-1].split('.')[0]
         url_prefix = self.get_url_prefix(response, True)
         url_post = '/jd/' + province_id + '/'
 
         baike_info_url = ''.join([url_prefix, '/baike/info-', province_id, '.html'])
-        yield Request(baike_info_url, callback=self.parse_locus_info, meta={'province_name':province_name})
-        yield Request(url_prefix + url_post, callback=self.parse_cities, meta={'province_name':province_name})
+        yield Request(baike_info_url, callback=self.parse_locus_info, meta={'scenicspot_province':scenicspot_province})
+        yield Request(url_prefix + url_post, callback=self.parse_cities, meta={'scenicspot_province':scenicspot_province})
 
     def parse_cities(self, response):
         '''省或直辖市的reponse.url => http://www.mafengwo.cn/jd/14407/'''
@@ -74,7 +74,7 @@ class MafengwoProvinceSpider(scrapy.Spider):
         if not city_href_name_map:
           city_id = response.url.split('/')[-2]
           baike_info_url = ''.join([url_prefix, '/baike/info-', city_id, '.html'])
-          city_meta['scenicspot_locus'] = city_meta.get('province_name','') 
+          city_meta['scenicspot_locus'] = city_meta.get('scenicspot_province','') 
           first_href = response.xpath('//div[@class="m-recList"]//div[@class="page-hotel"]/a[@class="ti"][1]/@href').extract()
           first_href = ''.join(first_href).strip()
           url = ''.join([response.url, first_href])
@@ -108,19 +108,17 @@ class MafengwoProvinceSpider(scrapy.Spider):
 
         # 获取当前页面的市/县
         scenicspot_locus = response.xpath('//div[@class="wrapper"]//div[@class="crumb"]//div[@class="item"][4]//span[@class="hd"]//a/text()').extract()
-        scenicspot_locus = remove_str(''.join(scenicspot_locus).strip(),u'市')
-
-        scenicspot_name = scenicspot_locus
+        scenicspot_locus = ''.join(scenicspot_locus).strip(u'市')
+        scenicspot_name = scenicspot_province
         
-        # 省和市相同,则获取的是直辖市
-        if '' == scenicspot_locus:
-           scenicspot_locus = scenicspot_province
-           scenicspot_name = scenicspot_province
-  
+        meta_item = response.meta
+        province_from_meta = meta_item.get('scenicspot_province','')
+        locus_from_meta = meta_item.get('scenicspot_locus','')
         # 市/县名包含'攻略'，则获取的是省信息
-        if u'攻略' in scenicspot_locus:
-           scenicspot_locus = ''
-           scenicspot_name = scenicspot_province
+        if province_from_meta == locus_from_meta:
+           scenicspot_locus = scenicspot_province
+        elif '' != scenicspot_locus:
+           scenicspot_name = scenicspot_locus
 
         helpful_num = response.xpath('//div[@class="wrapper"]//div[@class="content"]//div[@class="m-title clearfix"]//span[@class="num-view"]/text()').extract()
         helpful_num = ''.join(helpful_num).strip()
@@ -189,12 +187,7 @@ class MafengwoProvinceSpider(scrapy.Spider):
         scenicspot_item = ScenicspotItem()
         meta = response.meta
         # 景点所在省份
-        scenicspot_province = meta.get('province_name') #response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][last()-2]//span[@class="hd"]//a/text()').extract()
-#        if u'中国' in scenicspot_province:
-#           scenicspot_province = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][last()-1]//span[@class="hd"]//a/text()').extract()
-#        scenicspot_province = ''.join(scenicspot_province).strip()
-        #scenicspot_locus = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][4]//span[@class="hd"]//a/text()').extract()
-        #scenicspot_locus = ''.join(scenicspot_locus).strip()
+        scenicspot_province = meta.get('scenicspot_province')
         scenicspot_locus = ''
         if meta.get('scenicspot_locus'):
            scenicspot_locus = meta.get('scenicspot_locus')
