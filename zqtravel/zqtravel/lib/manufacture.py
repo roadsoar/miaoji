@@ -22,15 +22,15 @@ class ConfigMiaoJI:
 
   def get_starturls_from_province(self, field, keys):
       # 'pre_url' => keys[0]
-      # 'provices' => keys[1]
+      # 'provinces' => keys[1]
 
     try:
       pre_url = self.get_str(field,'pre_url')
-      provice_name_to_id = self.get_dict(field,'provices')
+      province_name_to_id = self.get_dict(field,'provinces')
 
       starturls_list = []
       starturls_tuple=()
-      for name, province_id in provice_name_to_id.iteritems():
+      for name, province_id in province_name_to_id.iteritems():
          starturls_list.append(''.join([pre_url, province_id, '.html']))
 
       starturls_tuple = set(starturls_list)

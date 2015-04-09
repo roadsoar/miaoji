@@ -20,7 +20,7 @@ class MafengwoProvinceSpider(scrapy.Spider):
 
     name = "mafengwo_province"
     allowed_domains = ["mafengwo.cn"]
-    start_urls = mj_cf.get_starturls_from_province('mafengwo_province_spider',['pre_url', 'provices'])
+    start_urls = mj_cf.get_starturls_from_province('mafengwo_province_spider',['pre_url', 'provinces'])
 
     rules = [
              Rule(LxmlLinkExtractor('/baike/'),
@@ -32,7 +32,7 @@ class MafengwoProvinceSpider(scrapy.Spider):
     def parse(self, response):
         '''省或直辖市的response.url => http://www.mafengwo.cn/travel-scenic-spot/mafengwo/12703.html'''
 
-        scenicspot_province = response.xpath('//div[@id="container"]//div[@class="row row-primary"]//div[@class="wrapper"]//div[@class="crumb"]//div[@class="item"][3]//span[@class="hd"]//text()').extract()
+        scenicspot_province = response.xpath('//div[@class="p-top clearfix"]//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][3]//span[@class="hd"]//text()').extract()
         scenicspot_province = ''.join(scenicspot_province).strip(u'省')
 
         province_id = response.url.split('/')[-1].split('.')[0]
