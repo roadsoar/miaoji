@@ -94,11 +94,15 @@ class MafengwoProvinceSpider(scrapy.Spider):
         scenicspot_item = ScenicspotItem()
 
         # 获取当前页面的省
-        scenicspot_province = response.xpath('//div[@class="wrapper"]//div[@class="crumb"]//div[@class="item"][3]//span[@class="hd"]//a/text()').extract()
+        xpath_pre_without_blank = '//div[@class="wrapper"]//div[@class="crumb"]//'
+        xpath_pre_with_blank = '//div[@class="wrapper"]//div[@class="crumb "]//'
+        xpath_post_for_province = 'div[@class="item"][3]//span[@class="hd"]//a/text()'
+        xpath_post_for_locus = 'div[@class="item"][4]//span[@class="hd"]//a/text()'
+        scenicspot_province = response.xpath(xpath_pre_without_blank+xpath_post_for_province +'|'+ xpath_pre_with_blank+xpath_post_for_province).extract()
         scenicspot_province = remove_str(''.join(scenicspot_province).strip(),u'省')
 
         # 获取当前页面的市/县
-        scenicspot_locus = response.xpath('//div[@class="wrapper"]//div[@class="crumb"]//div[@class="item"][4]//span[@class="hd"]//a/text()').extract()
+        scenicspot_locus = response.xpath(xpath_pre_without_blank+xpath_post_for_locus +'|'+ xpath_pre_with_blank+xpath_post_for_locus).extract()
         scenicspot_locus = ''.join(scenicspot_locus).strip(u'市')
         scenicspot_name = scenicspot_province
         
