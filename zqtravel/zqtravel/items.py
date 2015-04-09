@@ -49,6 +49,7 @@ class ScenicspotItem(Item):
     scenicspot_locus = Field()         # 景点所在地，即所在的市/县
     scenicspot_province = Field()      # 景点所在地，即所在的省
     link = Field()                     # 景点简介的链接
+    from_url = Field()                 # 景点link是从from_url跳转过来的
     area = Field()                     # 
     abstract = Field()                 # 省市概况
     num_days = Field()                 # 建议游玩天数
