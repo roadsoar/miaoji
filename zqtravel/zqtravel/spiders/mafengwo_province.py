@@ -61,8 +61,8 @@ class MafengwoProvinceSpider(scrapy.Spider):
             city_id = city_href.split('/')[-2]
             baike_info_url = ''.join([url_prefix, '/baike/info-', city_id, '.html'])
             city_meta['scenicspot_locus'] = city_name
-            yield Request(url_prefix + city_href, callback=self.parse_city_scenicspot,meta=city_meta)
             yield Request(baike_info_url, callback=self.parse_locus_info,meta=city_meta)
+            yield Request(url_prefix + city_href, callback=self.parse_city_scenicspot,meta=city_meta)
         # 直辖市
         else:
           city_id = response.url.split('/')[-2]
@@ -70,8 +70,8 @@ class MafengwoProvinceSpider(scrapy.Spider):
           first_href = response.xpath('//div[@class="m-recList"]//div[@class="page-hotel"]/a[@class="ti"][1]/@href').extract()
           first_href = ''.join(first_href).strip()
           url = ''.join([response.url, first_href])
-          yield Request(url, callback=self.parse_scenicspot_next_page, meta=city_meta)
           yield Request(baike_info_url, callback=self.parse_locus_info, meta=city_meta)
+          yield Request(url, callback=self.parse_scenicspot_next_page, meta=city_meta)
             # 获取游记时调用
             #youji_url = ''.join([url_prefix, '/poi/youji-', city_id, '.html'])
             #yield Request(youji_href, callback=self.parse_scenicspot_travel_pages, meta=city_meta)

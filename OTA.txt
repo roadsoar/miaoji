@@ -7,4 +7,5 @@ mafengwo_province_bj => {u'北京':'10848', u'澳门':'10844', u'香港':'10845'
 mafengwo_province_hn => {u'海南':'10325', u'云南':'10028',}
 mafengwo_province_sh => {u'上海':'10849', u'台湾':'10074', u'福建':'10153',}
 mafengwo_province_nx => {u'宁夏':'10441', u'陕西':'10384', u'甘肃':'10227',}
+mafengwo_province_ah => {u'安徽':'10115', u'天津':'10847', u'广东':'10383',}
 
