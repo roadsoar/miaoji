@@ -1,10 +1,116 @@
-Wed Dec 17 07:38:56 CST 2014
-10115
-Wed Dec 17 07:59:41 CST 2014
-10115
-10844
-10848
-10846
-10153
-10227
-10383
+2015-04-11 19:00:46+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/10024/> (referer: http://www.mafengwo.cn/jd/13732/)
+2015-04-11 19:00:47+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-10024.html> (referer: http://www.mafengwo.cn/jd/13732/)
+2015-04-11 19:00:47+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-10024.html>
+	None
+2015-04-11 19:00:48+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/34594/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:00:50+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-34594.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:00:50+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-34594.html>
+	None
+2015-04-11 19:00:51+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/12053/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:00:52+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-12053.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:00:52+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-12053.html>
+	None
+2015-04-11 19:00:53+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/13034/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:00:55+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-13034.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:00:55+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-13034.html>
+	None
+2015-04-11 19:00:56+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/16575/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:00:57+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-16575.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:00:57+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-16575.html>
+	None
+2015-04-11 19:00:59+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/19205/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:00+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-19205.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:00+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-19205.html>
+	None
+2015-04-11 19:01:01+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/18746/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:02+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-18746.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:02+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-18746.html>
+	None
+2015-04-11 19:01:03+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/14894/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:05+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-14894.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:05+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-14894.html>
+	None
+2015-04-11 19:01:06+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/12057/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:07+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-12057.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:07+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-12057.html>
+	None
+2015-04-11 19:01:09+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/142763/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:10+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-142763.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:10+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-142763.html>
+	None
+2015-04-11 19:01:11+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/17860/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:13+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-17860.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:13+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-17860.html>
+	None
+2015-04-11 19:01:14+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/14548/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:15+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-14548.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:15+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-14548.html>
+	None
+2015-04-11 19:01:17+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/20079/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:18+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-20079.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:18+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-20079.html>
+	None
+2015-04-11 19:01:19+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/10785/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:21+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-10785.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:21+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-10785.html>
+	None
+2015-04-11 19:01:22+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/11732/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:23+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-11732.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:23+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-11732.html>
+	None
+2015-04-11 19:01:24+0800 [mafengwo_province] INFO: Crawled 1220 pages (at 47 pages/min), scraped 1087 items (at 32 items/min)
+2015-04-11 19:01:24+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/16013/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:26+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-16013.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:26+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-16013.html>
+	None
+2015-04-11 19:01:27+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/11808/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:28+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-11808.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:28+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-11808.html>
+	None
+2015-04-11 19:01:29+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/11262/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:31+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-11262.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:31+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-11262.html>
+	None
+2015-04-11 19:01:32+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/11781/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:33+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-11781.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:33+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-11781.html>
+	None
+2015-04-11 19:01:34+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/11567/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:35+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-11567.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:35+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-11567.html>
+	None
+2015-04-11 19:01:37+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/11796/> (referer: http://www.mafengwo.cn/jd/14407/)
+^C2015-04-11 19:01:37+0800 [scrapy] INFO: Received SIGINT, shutting down gracefully. Send again to force 
+2015-04-11 19:01:37+0800 [mafengwo_province] INFO: Closing spider (shutdown)
+2015-04-11 19:01:38+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-11796.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:38+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-11796.html>
+	None
+2015-04-11 19:01:39+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/11386/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:40+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-11386.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:40+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-11386.html>
+	None
+2015-04-11 19:01:42+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/10326/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:43+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-10326.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:43+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-10326.html>
+	None
+2015-04-11 19:01:44+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/11735/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:46+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-11735.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:46+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-11735.html>
+	None
+2015-04-11 19:01:47+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/10219/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:48+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-10219.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:48+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-10219.html>
+	None
+2015-04-11 19:01:49+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/11830/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:50+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-11830.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:50+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-11830.html>
+	None
+2015-04-11 19:01:52+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/10432/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:53+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-10432.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:53+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-10432.html>
+	None
+2015-04-11 19:01:54+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/11499/> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:56+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/baike/info-11499.html> (referer: http://www.mafengwo.cn/jd/14407/)
+2015-04-11 19:01:56+0800 [mafengwo_province] DEBUG: Scraped from <200 http://www.mafengwo.cn/baike/info-11499.html>
+	None
+2015-04-11 19:01:57+0800 [mafengwo_province] DEBUG: Crawled (200) <GET http://www.mafengwo.cn/jd/10209/> 
