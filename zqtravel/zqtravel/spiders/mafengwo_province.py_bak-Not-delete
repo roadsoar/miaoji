@@ -17,6 +17,7 @@ import re
 mj_cf = ConfigMiaoJI("./spider_settings.cfg")
 class MafengwoProvinceSpider(scrapy.Spider):
     '''爬取蚂蜂窝的景点信息,按省抓取'''
+    '''缺陷：该爬虫不能爬取到一个市/县的最后一页或只有一页时的景点'''
 
     name = "mafengwo_province"
     allowed_domains = ["mafengwo.cn"]
@@ -40,9 +41,7 @@ class MafengwoProvinceSpider(scrapy.Spider):
         url_post = '/jd/' + province_id + '/'
 
         baike_info_url = ''.join([url_prefix, '/baike/info-', province_id, '.html'])
-        # 获取省的信息
         yield Request(baike_info_url, callback=self.parse_locus_info, meta={'scenicspot_province':scenicspot_province})
-        # 跳转到包含市的景点页面
         yield Request(url_prefix + url_post, callback=self.parse_cities, meta={'scenicspot_province':scenicspot_province})
 
     def parse_cities(self, response):
@@ -58,7 +57,7 @@ class MafengwoProvinceSpider(scrapy.Spider):
         city_meta = response.meta
 
         # 非直辖市
-        if len(city_href_list) >= 8: # 为了抓取充分，需要8个及以上城市的分类
+        if len(city_href_list) >= 8: # 为了抓取充分，确定8个及以上城市划分
           for city_href, city_name in city_href_name_map:
             city_id = city_href.split('/')[-2]
             baike_info_url = ''.join([url_prefix, '/baike/info-', city_id, '.html'])
@@ -69,19 +68,11 @@ class MafengwoProvinceSpider(scrapy.Spider):
         else:
           city_id = response.url.split('/')[-2]
           baike_info_url = ''.join([url_prefix, '/baike/info-', city_id, '.html'])
-          last_page_href = response.xpath('//div[@class="m-recList"]//div[@class="page-hotel"]/a[@class="ti last"][last()]/@href').extract()
-          last_page_href = ''.join(last_page_href).strip()
-          url = ''.join([response.url, last_page_href])
-          city_meta['scenicspot_locus'] = city_meta.get('scenicspot_province','')
-          # 获取城市的信息
+          first_href = response.xpath('//div[@class="m-recList"]//div[@class="page-hotel"]/a[@class="ti last"][last()]/@href').extract()
+          first_href = ''.join(first_href).strip()
+          url = ''.join([response.url, first_href])
           yield Request(baike_info_url, callback=self.parse_locus_info, meta=city_meta)
-          # 抓取只有一个页面景点的城市
-          if not last_page_href:
-             scenicspots = self.parse_scenicspot_pages(response, one_page=True, meta=city_meta)
-             for scenicspot in scenicspots:
-                 yield scenicspot
-          else: # 多个页面的景点
-             yield Request(url, callback=self.parse_scenicspot_next_page, meta=city_meta)
+          yield Request(url, callback=self.parse_scenicspot_next_page, meta=city_meta)
             # 获取游记时调用
             #youji_url = ''.join([url_prefix, '/poi/youji-', city_id, '.html'])
             #yield Request(youji_href, callback=self.parse_scenicspot_travel_pages, meta=city_meta)
@@ -90,19 +81,13 @@ class MafengwoProvinceSpider(scrapy.Spider):
         '''省下面的市或县的response.url => http://www.mafengwo.cn/jd/10163/'''       
 
         city_meta = response.meta 
-        scenicspot_locus = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][4]//span[@class="hd"]//a/text()//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item "][4]//span[@class="hd"]//a/text()').extract()
+        scenicspot_locus = response.xpath('//div[@class="top-info clearfix"]//div[@class="crumb"]//div[@class="item"][4]//span[@class="hd"]//a/text()').extract()
         scenicspot_locus = ''.join(scenicspot_locus).strip()
         city_meta['city'] = scenicspot_locus
-        last_page_href = response.xpath('//div[@class="m-recList"]//div[@class="page-hotel"]/a[@class="ti last"][last()]/@href').extract()
-        last_page_href = ''.join(last_page_href).strip()
-        url = ''.join([response.url, last_page_href])
-        # 抓取只有一个页面景点的城市
-        if not last_page_href:
-           scenicspots = self.parse_scenicspot_pages(response, one_page=True, meta=city_meta)
-           for scenicspot in scenicspots:
-               yield scenicspot
-        else: # 多个页面的景点
-            yield Request(url, callback=self.parse_scenicspot_next_page, meta=city_meta)
+        first_href = response.xpath('//div[@class="m-recList"]//div[@class="page-hotel"]/a[@class="ti last"][last()]/@href').extract()
+        first_href = ''.join(first_href).strip()
+        url = ''.join([response.url, first_href])
+        yield Request(url, callback=self.parse_scenicspot_next_page, meta=city_meta)
 
     def parse_locus_info(self,response):
         '''获得省、市/县的相关信息'''
@@ -185,14 +170,14 @@ class MafengwoProvinceSpider(scrapy.Spider):
         #yield Request(scenicspot_page_url, callback=self.parse_scenicspot_next_page)
 
     def parse_scenicspot_next_page(self, response):
-        """获得城市景点的页地址, response.url => http://www.mafengwo.cn/jd/10065/0-0-0-0-0-46.html"""
+        """获得城市景点的页地址, response.url => http://www.mafengwo.cn/jd/10163/0-0-0-0-0-2.html"""
 
         # 景点的总页数
         scenicspot_pages = response.xpath('//div[@class="m-recList"]//div[@class="page-hotel"]/span[@class="count"]/span[1]/text()').extract()
         ## 如果没有获取到页数，则说明只有一页的景点
         scenicspot_pages = int(''.join(scenicspot_pages).strip()) if len(scenicspot_pages) >= 1 else 1
 
-        scenicspot_item = {}
+        scenicspot_item = ScenicspotItem()
         meta = response.meta
         # 景点所在省份
         scenicspot_province = meta.get('scenicspot_province')
@@ -206,30 +191,15 @@ class MafengwoProvinceSpider(scrapy.Spider):
         if scenicspot_locus:
            scenicspot_item['scenicspot_locus'] = scenicspot_locus.rstrip(u'市')
 
-        # 因为Scrapy的滤重，本页的景点也需要保证抓取到
-        scenicspots = self.parse_scenicspot_pages(response, one_page=True, meta=scenicspot_item)
-        for scenicspot in scenicspots:
-           yield scenicspot
-
         # 景点每一页url
         url_prefix = response.url[:response.url.rfind('-')+1]
         for page_index in range(1, scenicspot_pages + 1):
             url = ''.join([url_prefix, str(page_index), '.html'])
             yield Request(url, callback=self.parse_scenicspot_pages, meta={'scenicspot_item':scenicspot_item})
-       
-    def parse_scenicspot_pages(self, response, one_page=False, meta={}):
-        '''获得每页中景点的地址'''
-        '''one_page: True=>用于表明抓取只有一个页面景点的城市'''
-        '''meta:     当抓取只有一个页面景点的城市时，保存省名和城市名'''
 
-        scenicspot_meta = ScenicspotItem()
-        # 一个页面时
-        if one_page:
-            scenicspot_meta['scenicspot_province'] = meta.get('scenicspot_province','')
-            scenicspot_meta['scenicspot_locus'] = meta.get('scenicspot_locus','')
-        else:
-            scenicspot_meta['scenicspot_province'] = response.meta.get('scenicspot_item',{}).get('scenicspot_province','')
-            scenicspot_meta['scenicspot_locus'] = response.meta.get('scenicspot_item',{}).get('scenicspot_locus','')
+    def parse_scenicspot_pages(self, response):
+        '''获得每页中景点的地址'''
+
         # 一个页中的所有景点链接
         href_list = response.xpath('//div[@class="wrapper"]//div[@class="content"]//ul[@class="poi-list"]//li[@class="item clearfix"]//div[@class="title"]//@href').extract()
         # 一个页中的所有景点名称
@@ -244,7 +214,7 @@ class MafengwoProvinceSpider(scrapy.Spider):
         helpful_num_list = response.xpath('//div[@class="wrapper"]//div[@class="content"]//div[@class="m-recList"]//div[@class="bd"]//ul[@class="poi-list"]//li[@class="item clearfix"]//div[@class="grade"]/p/em/text()').extract()
         href_num_group = dict(zip(href_list, helpful_num_list))
 
-        #scenicspot_meta = response.meta.get('scenicspot_item')
+        scenicspot_meta = response.meta.get('scenicspot_item')
         province = scenicspot_meta.get('scenicspot_province')
         city = scenicspot_meta.get('scenicspot_locus', province)
 
@@ -255,8 +225,6 @@ class MafengwoProvinceSpider(scrapy.Spider):
         re_href = re.compile('/poi/\d+\.html')
 
         url_prefix = self.get_url_prefix(response, splice_http=True)
-        #if one_page:
-          
         for href,scenicspot_name in href_scenicspot_name_group:
             m = re_href.match(href)
             if m:
