@@ -49,15 +49,14 @@ IFS=$SAVEIFS
 
 function delete_duplicate_line()
 {
-  #file_dir_root='/home/scrapy/data/travel_urls' 
-  file_dir_root='/home/scrapy/data/test_urls' 
+  file_dir_root='/home/scrapy/data/travel_urls' 
   bak_dir="${file_dir_root}.origin_all"
   # 备份原始数据
   if [ ! -d $bak_dir ]
   then
       mkdir -p $bak_dir
-      cp -r $file_dir_root/* $bak_dir
   fi
+  cp -r $file_dir_root/* $bak_dir
   # 删除文件中重复的行
   for province in `ls $file_dir_root`
   do

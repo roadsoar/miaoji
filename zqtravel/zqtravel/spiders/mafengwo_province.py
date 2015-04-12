@@ -58,7 +58,7 @@ class MafengwoProvinceSpider(scrapy.Spider):
         city_meta = response.meta
 
         # 非直辖市
-        if len(city_href_list) >= 8: # 为了抓取充分，需要8个及以上城市的分类
+        if len(city_href_list) >= 80: # 为了抓取充分，需要8个及以上城市的分类
           for city_href, city_name in city_href_name_map:
             city_id = city_href.split('/')[-2]
             baike_info_url = ''.join([url_prefix, '/baike/info-', city_id, '.html'])
