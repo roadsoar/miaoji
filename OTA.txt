@@ -13,5 +13,6 @@ mafengwo_province_xj => {u'新疆':'10081', u'黑龙江':'10262', u'内蒙古':'
 mafengwo_province_xz => {u'西藏':'10025', u'广西':'10112', u'湖北':'10224',}
 mafengwo_province_sx => {u'山西':'10109', u'江西':'10263', u'辽宁':'10226',}
 mafengwo_province_sd => {u'山东':'10098', u'四川':'10107', }
-mafengwo_province_js => {u'江苏':'10100', u'浙江':'10111', }
+mafengwo_province_js => {u'江苏':'10100', }
+mafengwo_province_zj => {u'浙江':'10111', }
 

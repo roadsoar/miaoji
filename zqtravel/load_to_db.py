@@ -35,13 +35,13 @@ def get_info_from(db_obj, sql):
 def load_data_to_db():
    db_obj = connect_mysql()
    data_root_dir = mj_cf.get_str('global','data_root_dir')
-   start_count = str_count_inside(data_root_dir, '/')
+   start_count = str_count_inside(data_root_dir, '/') # 用数字来区分省、市/县、景点
    null = "" # define this variable for below syntax: scenicspot_info = eval(line)
 
    invalid_file = open('./invalid_files.txt', 'a+')
 
    for root, dirs, files in os.walk(data_root_dir):  
-      root_count = str_count_inside(root, '/')
+      root_count = str_count_inside(root, '/') # 用数字来区分省、市/县、景点
       num = root_count - start_count
       # Load the provinces into database
       if num == 0:

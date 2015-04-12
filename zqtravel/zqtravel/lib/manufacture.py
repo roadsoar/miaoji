@@ -50,6 +50,10 @@ class ConfigMiaoJI:
       dict_str = self.cfMJ.get(field, key)
       return eval(dict_str)
 
+  def get_list(self, field, key):
+      list_str = self.cfMJ.get(field, key)
+      return eval(list_str)
+
   def get_str(self, field, key):
       field_value = ''.join(self.cfMJ.get(field, key))
       return field_value

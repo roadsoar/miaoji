@@ -12,7 +12,7 @@ from scrapy import log
 import codecs
 
 import scrapy
-import re
+import re, os
 
 
 mj_cf = ConfigMiaoJI("./spider_settings.cfg")
@@ -29,7 +29,32 @@ class MafengwoTravelSpider(scrapy.Spider):
             ]
 
     def parse(self,response):
-       pass
+        travel_urls_root_dir = mj_cf.get_str('mafengwo_travel_spider','travel_urls_dir')
+        travel_provinces = mj_cf.get_list('mafengwo_travel_spider','travel_provinces')
+        if 'all' in travel_provinces:
+           for dirpath, subdir_names, filenames in os.walk(travel_urls_root_dir):
+               if filenames:
+                  travel_urls_file = os.path.join(dirpath,filenames[0])
+                  travel_urls = self.trigger_travel_url_from(travel_urls_file)
+                  for travel_url in travel_urls:
+                      yield travel_url
+        else:
+            for province in travel_provinces:
+                travel_urls_file = os.path.join(travel_urls_root_dir, province, province+'_travel.urls')
+                travel_urls = self.trigger_travel_url_from(travel_urls_file)
+                for travel_url in travel_urls:
+                    yield travel_url
+
+    def trigger_travel_url_from(self, travel_urls_file):
+        f_all_urls = open(travel_urls_file, 'r')
+        for line in f_all_urls.readlines():
+            line_list = line.split('|')
+            scenicspot_province = line_list[0]
+            scenicspot_locus = line_list[1]
+            scenicspot_name = line_list[2]
+            travel_url = line_list[-1] 
+            yield Request(travel_url, callback=self.parse_travel_next_pages)
+        f_all_urls.close()
 
     def parse_travel_next_pages(self,response):
         """获得游记下一页地址"""
@@ -37,16 +62,16 @@ class MafengwoTravelSpider(scrapy.Spider):
         # 游记的总页数
         travel_pages = response.xpath('//div[@class="wrapper"]//div[@class="page-hotel"]/span[@class="count"]/span[1]/text()').extract()
         ## 如果没有获取到页数，则说明只有一页的游记
-        travel_pages = int(''.join(travel_pages).strip()) if len(travel_pages) >= 1 else 1
+        travel_pages = int(''.join(travel_pages).strip()) if len(travel_pages)>=1 else 0
 
-        # 游记每一页url
-        travel_id = response.url[response.url.rfind('/')+1:-5]
-        url_prefix = self.get_url_prefix(response, True)
-        for page_index in range(1, travel_pages + 1):
+        if not travel_pages:
+          pass 
+        else: # 游记每一页url
+          travel_id = response.url[response.url.rfind('/')+1:-5]
+          url_prefix = self.get_url_prefix(response, True)
+          for page_index in range(1, travel_pages + 1):
             url = ''.join([url_prefix, '/yj/', travel_id, '/1-0-', str(page_index), '.html'])
-          #  yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
-        # Just for debugging
-        yield Request(response.url, callback=self.parse_travel_pages)
+            yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
 
     def get_url_prefix(self, response, splice_http=False):
         page_url_prefix = ''
