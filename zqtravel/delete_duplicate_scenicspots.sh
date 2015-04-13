@@ -2,11 +2,14 @@
 
 function delete_duplicate_file()
 {
+# 全部的景点信息
 root_dir='/home/scrapy/data/mafengwo_scenicspot'
-bak_dir='/home/scrapy/data/mafengwo_scenicspot.bak'
-# mafengwo_province.bak
+bak_dir='/home/scrapy/data/mafengwo_scenicspot.moved'
+# 不全的景点信息
+#root_dir='/home/scrapy/data/mafengwo_province'
+#bak_dir='/home/scrapy/data/mafengwo_province.moved'
 
-cat /dev/null > ./test.txt
+echo "************The handled scenispots as below***********" > ./rs.txt
 SAVEIFS=$IFS
 IFS=$(echo -en "\n\b")
 # 遍历省
@@ -29,8 +32,7 @@ do
           file_num=`ls "${scenicspot_path}" | wc -l`
           if [ $file_num -gt 1 ]
           then
-            #echo $files | sort >> ./test.txt
-            echo $scenicspot_path | sort >> ./test.txt
+            echo $scenicspot_path | sort >> ./rs.txt
             file=`echo $files | sort |awk '{print $1}'`
             bak_scenicspot_path="$bak_dir/$province/$city/$scenicspot"
             if [ ! -d $bak_scenicspot_path ]
@@ -47,6 +49,7 @@ done
 IFS=$SAVEIFS
 }
 
+# 删除目录下文件中的重复行
 function delete_duplicate_line()
 {
   file_dir_root='/home/scrapy/data/travel_urls' 
@@ -69,8 +72,34 @@ function delete_duplicate_line()
   done
 }
 
+function get_scenispot_num()
+{
+  root_dir='/home/scrapy/data/mafengwo_scenicspot'
+  for province in `ls $root_dir`
+  do
+    province_path="$root_dir/$province"
+    each_city_num=`ls $province_path |wc -l`
+    echo "$each_city_num" >> .tmpccy
+  done
+  all_num=`find $root_dir -type f | wc -l`
+  province_num=`ls $root_dir |wc -l`
+  province_and_city_num=`awk '{sum+=$1}END{print sum}' .tmpccy`
+  let city_num=$province_and_city_num-$province_num
+  let scenicspot_num=$all_num-$province_and_city_num
+  echo "Province Num: $province_num"
+  echo "City Num: $city_num"
+  echo "Scenicspot Num: $scenicspot_num"
+  rm .tmpccy
+}
+
+function main()
+{
 case $1 in
 line) delete_duplicate_line;;
 file) delete_duplicate_file;;
+num) get_scenispot_num;;
 *)     echo 'Only accept "line" or "file"';;
 esac
+}
+
+main $1
