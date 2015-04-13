@@ -1,11 +1,13 @@
 #!/bin/bash
 
 SOURCE='/home/chunchen/Music/miaoji/zqtravel'
-DATA_SOURCE='/home/scrapy/data/mafengwo_scenicspot'
+ScpFile='load_to_db.py'
+#DATA_SOURCE='/home/scrapy/data/mafengwo_scenicspot'
 DESTINATION='~/travel'
 USER='root'
 
-scp -r -p -P12301 $SOURCE $DATA_SOURCE $USER@121.41.20.59:$DESTINATION
+#scp -r -p -P12301 $SOURCE $DATA_SOURCE $USER@121.41.20.59:$DESTINATION
+scp -r -p -P12301 $SOURCE/$ScpFile $DATA_SOURCE $USER@121.41.20.59:$DESTINATION/zqtravel
 
 
 
