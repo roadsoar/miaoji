@@ -56,28 +56,6 @@ create table AttributeClass
 alter table AttributeClass comment '属性类别';
 
 /*==============================================================*/
-/* Table: City                                                  */
-/*==============================================================*/
-create table City
-(
-   City_no              numeric(20,0) not null,
-   City_name            varchar(100),
-   City_intrd           varchar(10000),
-   City_best_traveling_time varchar(500),
-   City_dressing varchar(500),
-   City_custom          varchar(5000),
-   City_culture         varchar(500),
-   City_history         varchar(500),
-   City_weather         varchar(500),
-   City_days            varchar(100),
-   City_area            float,
-   Province_no          numeric(20,0),
-   primary key (City_no)
-);
-
-alter table City comment '城市';
-
-/*==============================================================*/
 /* Table: Continent                                             */
 /*==============================================================*/
 create table Continent
@@ -121,54 +99,6 @@ create table Hotelinfo
 );
 
 /*==============================================================*/
-/* Table: Province                                              */
-/*==============================================================*/
-create table Province
-(
-   Province_no          numeric(20,0) not null,
-   Province_name        varchar(100),
-   Province_intrd       varchar(10000),
-   Province_traveling_time   varchar(200),
-   Province_dressing    varchar(500),
-   Province_custom    varchar(5000),
-   Province_culture    varchar(500),
-   Province_history    varchar(2000),
-   Province_weather    varchar(500),
-   Province_days    varchar(50),
-   Country_no           numeric(20,0),
-   primary key (Province_no)
-);
-
-alter table Province comment '省';
-
-/*==============================================================*/
-/* Table: Scenicspot                                            */
-/*==============================================================*/
-create table Scenicspot
-(
-   Scenicspot_no        numeric(20,0) not null,
-   Scenicspot_name      varchar(100),
-   Scenicspot_en        varchar(1000),
-   Scenicspot_level     float,
-   Scenicspot_heat      int,
-   City_no              numeric(20,0),
-   Scenicspot_intrd     varchar(10000),
-   Scenicspot_address   varchar(500),
-   Scenicspot_telephone     varchar(100),
-   Scenicspot_web       varchar(100),
-   Scenicspot_moftrans  varchar(100),
-   Scenicspot_ticketprice varchar(100),
-   Scenicspot_opentime   varchar(200),
-   Scenicspot_usetime   varchar(1000),
-   Scenicspot_comments  varchar(5000),
-   Scenicspot_impression   varchar(200),
-   Scenicspot_traffic   varchar(1000),
-   primary key (Scenicspot_no)
-);
-
-alter table Scenicspot comment '景区';
-
-/*==============================================================*/
 /* Table: Tag                                                   */
 /*==============================================================*/
 create table Tag
@@ -199,6 +129,80 @@ create table Travelnotes
 
 alter table Travelnotes comment '游记';
 
+/*==============================================================*/
+/* Table: City                                                  */
+/*==============================================================*/
+create table City
+(
+   City_no              numeric(20,0) not null,
+   City_name            varchar(100),
+   City_intrd           text,
+   City_best_traveling_time text,
+   City_dressing varchar(500),
+   City_custom          text,
+   City_culture         text,
+   City_history         text,
+   City_weather         varchar(500),
+   City_days            varchar(100),
+   City_area            float,
+   City_language        text,
+   Province_no          numeric(20,0),
+   primary key (City_no)
+);
+
+alter table City comment '城市';
+
+
+/*==============================================================*/
+/* Table: Province                                              */
+/*==============================================================*/
+create table Province
+(
+   Province_no          numeric(20,0) not null,
+   Province_name        varchar(100),
+   Province_intrd       text,
+   Province_traveling_time   text,
+   Province_dressing    varchar(500),
+   Province_custom    text,
+   Province_culture    text,
+   Province_history    text,
+   Province_weather    varchar(500),
+   Province_days    varchar(100),
+   Province_language        text,
+   Country_no           numeric(20,0),
+   primary key (Province_no)
+);
+
+alter table Province comment '省';
+
+/*==============================================================*/
+/* Table: Scenicspot                                            */
+/*==============================================================*/
+create table Scenicspot
+(
+   Scenicspot_no        numeric(20,0) not null,
+   Scenicspot_name      varchar(600),
+   Scenicspot_en        varchar(1000),
+   Scenicspot_level     float,
+   Scenicspot_heat      int,
+   City_no              numeric(20,0),
+   Scenicspot_intrd     text,
+   Scenicspot_address   varchar(500),
+   Scenicspot_telephone     varchar(100),
+   Scenicspot_web       varchar(100),
+   Scenicspot_moftrans  varchar(100),
+   Scenicspot_ticketprice varchar(1000),
+   Scenicspot_opentime   varchar(2000),
+   Scenicspot_usetime   varchar(2000),
+   Scenicspot_comments  text,
+   Scenicspot_impression   varchar(200),
+   Scenicspot_traffic   varchar(1000),
+   primary key (Scenicspot_no)
+);
+
+alter table Scenicspot comment '景区';
+
+
 alter table Country add constraint FK_Reference_2 foreign key (Continent_no)
       references Continent (Continent_no) on delete restrict on update restrict;
 
@@ -220,5 +224,5 @@ alter table Travelnotes add constraint FK_Reference_5 foreign key (Scenicspot_no
 
 insert into Continent values(1,'亚洲','亚洲');
 insert into Continent values(2,'欧洲','欧洲');
-
 insert into Country values(100,'中国','中华民族伟大复兴，梦醒！',1);
+
