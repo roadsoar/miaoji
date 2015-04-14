@@ -1,11 +1,10 @@
-
 # -*- coding: utf-8 -*-
 
 from zqtravel.lib.mysql import LoadToMysql
 from zqtravel.lib.manufacture import ConfigMiaoJI
 from zqtravel.lib.common import str_count_inside, max_id_from_db, dict_data_from_db
 
-import os
+import os, re
 import glob
 
 mj_cf = ConfigMiaoJI("zqtravel/db_settings.cfg")
@@ -31,6 +30,14 @@ def get_info_from(db_obj, sql):
    src_data = connected_obj.selectall(sql)
    dict_data = dict_data_from_db(src_data)
    return dict_data
+
+def get_value_for(key, source_str):
+   key_str = '.*"' + key + '":\s*"(.*?)"'
+   matched_key = re.match(key_str, source_str)
+   if matched_key:
+      return matched_key.group(1)
+   else:
+      return ''
 
 def load_data_to_db():
    db_obj = connect_mysql()
@@ -63,15 +70,28 @@ def load_data_to_db():
                   fl = open(province_file,"r")
                   lines = fl.readlines()
                   fl.close()
-                  province_info = eval(''.join(lines).strip())
-                  province_intrd = province_info['scenicspot_intro']
-                  province_traveling_time = province_info['best_traveling_time']
-                  province_history = province_info['history']
-                  province_custom = province_info['custom']
-                  province_culture = province_info['culture']
-                  province_weather = province_info['weather']
-                  province_days = province_info['num_days']
-                  province_dressing = province_info['scenicspot_dressing']
+                  lines_str = ''.join(lines).strip()
+                  try:
+                     province_info = eval(lines_str)
+                     province_intrd = province_info['scenicspot_intro']
+                     province_traveling_time = province_info['best_traveling_time']
+                     province_history = province_info['history']
+                     province_custom = province_info['custom']
+                     province_culture = province_info['culture']
+                     province_weather = province_info['weather']
+                     province_days = province_info['num_days']
+                     province_dressing = province_info['scenicspot_dressing']
+                     province_language = province_info['language']
+                  except Exception:
+                     province_intrd = get_value_for('scenicspot_intro', lines_str)
+                     province_traveling_time = get_value_for('best_traveling_time', lines_str)
+                     province_history = get_value_for('history', lines_str)
+                     province_custom = get_value_for('custom', lines_str)
+                     province_culture = get_value_for('culture', lines_str)
+                     province_weather = get_value_for('weather', lines_str)
+                     province_days = get_value_for('num_days', lines_str)
+                     province_dressing = get_value_for('scenicspot_dressing', lines_str)
+                     province_language = get_value_for('language', lines_str)
                else:
                  province_intrd = ''
                  province_traveling_time = ''
@@ -81,9 +101,10 @@ def load_data_to_db():
                  province_weather = ''
                  province_days = ''
                  province_dressing = ''
+                 province_language = ''
   
                if province_name.decode('utf-8') not in province_name_to_id.keys():
-                  insert_province_sql = 'insert into Province(Province_no, Province_name, Province_intrd, Country_no, Province_traveling_time, Province_dressing, Province_custom, Province_culture, Province_history, Province_weather, Province_days) values(%d, "%s", "%s", %d, "%s", "%s", "%s", "%s", "%s", "%s", "%s")' % (max_id, province_name,province_intrd,country_no,province_traveling_time,province_dressing,province_custom,province_culture,province_history,province_weather,province_days)
+                  insert_province_sql = 'insert into Province(Province_no, Province_name, Province_intrd, Country_no, Province_traveling_time, Province_dressing, Province_custom, Province_culture, Province_history, Province_weather, Province_days, Province_language) values(%d, "%s", "%s", %d, "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")' % (max_id, province_name,province_intrd,country_no,province_traveling_time,province_dressing,province_custom,province_culture,province_history,province_weather,province_days,province_language)
                   db_obj.insertone(insert_province_sql)
                   db_obj.commit()
              except Exception , msg:
@@ -112,15 +133,28 @@ def load_data_to_db():
                   fl = open(city_file)
                   lines = fl.readlines()
                   fl.close()
-                  city_info = eval(''.join(lines).strip())
-                  city_intrd = city_info['scenicspot_intro']
-                  city_traveling_time = city_info['best_traveling_time']
-                  city_history = city_info['history']
-                  city_custom = city_info['custom']
-                  city_culture = city_info['culture']
-                  city_weather = city_info['weather']
-                  city_days = city_info['num_days']
-                  city_dressing = city_info['scenicspot_dressing']
+                  lines_str = ''.join(lines).strip()
+                  try:
+                     city_info = eval(lines_str)
+                     city_intrd = city_info['scenicspot_intro']
+                     city_traveling_time = city_info['best_traveling_time']
+                     city_history = city_info['history']
+                     city_custom = city_info['custom']
+                     city_culture = city_info['culture']
+                     city_weather = city_info['weather']
+                     city_days = city_info['num_days']
+                     city_dressing = city_info['scenicspot_dressing']
+                     city_language = city_info['language']
+                  except Exception:
+                     city_intrd = get_value_for('scenicspot_intro', lines_str)
+                     city_traveling_time = get_value_for('best_traveling_time', lines_str)
+                     city_history = get_value_for('history', lines_str)
+                     city_custom = get_value_for('custom', lines_str)
+                     city_culture = get_value_for('culture', lines_str)
+                     city_weather = get_value_for('weather', lines_str)
+                     city_days = get_value_for('num_days', lines_str)
+                     city_dressing = get_value_for('scenicspot_dressing', lines_str)
+                     city_language = get_value_for('language', lines_str)
                else:
                  city_intrd = ''
                  city_traveling_time = ''
@@ -130,6 +164,7 @@ def load_data_to_db():
                  city_weather = ''
                  city_days = ''
                  city_dressing = ''
+                 city_language = ''
              except Exception , msg:
                invalid_file.write(city_file + str(msg) + '\n')
                invalid_file.flush()
@@ -141,10 +176,10 @@ def load_data_to_db():
                city_weather = ''
                city_days = ''
                city_dressing = ''
-  
+               city_language = '' 
              finally:
                if city_name.decode('utf-8') not in city_name_to_id.keys():
-                  insert_city_sql = 'insert into City(City_no, City_name, City_intrd, Province_no, City_best_traveling_time, City_dressing, City_custom, City_culture, City_history, City_weather, City_days) values(%d, "%s", "%s", %d, "%s", "%s","%s","%s","%s","%s","%s")' % (max_id, city_name,city_intrd,province_no,city_traveling_time,city_dressing,city_custom,city_culture,city_history,city_weather,city_days)
+                  insert_city_sql = 'insert into City(City_no, City_name, City_intrd, Province_no, City_best_traveling_time, City_dressing, City_custom, City_culture, City_history, City_weather, City_days, City_language) values(%d, "%s", "%s", %d, "%s", "%s","%s","%s","%s","%s","%s","%s")' % (max_id, city_name,city_intrd,province_no,city_traveling_time,city_dressing,city_custom,city_culture,city_history,city_weather,city_days,city_language)
                   db_obj.insertone(insert_city_sql)
                   db_obj.commit()
 
@@ -175,20 +210,38 @@ def load_data_to_db():
                       try:
                         fl = open(txt_file)
                         lines = fl.readlines()
-                        scenicspot_info = eval(''.join(lines).strip())
                         fl.close()
-                        scenicspot_intrd = scenicspot_info.get('scenicspot_intro','')
-                        scenicspot_level = float(scenicspot_info.get('scenicspot_grade',0))
-                        scenicspot_address = scenicspot_info.get('scenicspot_address','')
-                        scenicspot_telephone = scenicspot_info.get('scenicspot_tel','')
-                        scenicspot_web = scenicspot_info.get('scenicspot_webaddress','')
-                        scenicspot_heat = int(scenicspot_info.get('helpful_num',0))
-                        scenicspot_ticketprice = scenicspot_info.get('scenicspot_ticket','') # contain the unit of money, like $
-                        scenicspot_comments = scenicspot_info.get('scenicspot_comments','')
-                        scenicspot_impression = scenicspot_info.get('scenicspot_impression','')
-                        scenicspot_opentime = scenicspot_info.get('scenicspot_opentime','')
-                        scenicspot_usetime = scenicspot_info.get('scenicspot_usetime','')
-                        scenicspot_traffic = scenicspot_info.get('traffic','')
+                        lines_str = ''.join(lines).strip()
+                        try:
+                           scenicspot_info = eval(lines_str)
+                           scenicspot_intrd = scenicspot_info.get('scenicspot_intro','')
+                           scenicspot_level = float(scenicspot_info.get('scenicspot_grade',0))
+                           scenicspot_address = scenicspot_info.get('scenicspot_address','')
+                           scenicspot_telephone = scenicspot_info.get('scenicspot_tel','')
+                           scenicspot_web = scenicspot_info.get('scenicspot_webaddress','')
+                           scenicspot_heat = int(scenicspot_info.get('helpful_num',0))
+                           scenicspot_ticketprice = scenicspot_info.get('scenicspot_ticket','') # contain the unit of money, like $
+                           scenicspot_comments = scenicspot_info.get('scenicspot_comments','')
+                           scenicspot_impression = scenicspot_info.get('scenicspot_impression','')
+                           scenicspot_opentime = scenicspot_info.get('scenicspot_opentime','')
+                           scenicspot_usetime = scenicspot_info.get('scenicspot_usetime','')
+                           scenicspot_traffic = scenicspot_info.get('traffic','')
+                        except Exception:
+                           scenicspot_intrd = get_value_for('scenicspot_intro', lines_str)
+                           scenicspot_level = float(get_value_for('scenicspot_grade', lines_str))\
+                                       if len(get_value_for('scenicspot_grade', lines_str)) > 0 else 0
+                           scenicspot_address = get_value_for('scenicspot_address', lines_str)
+                           scenicspot_telephone = get_value_for('scenicspot_tel', lines_str)
+                           scenicspot_web = get_value_for('scenicspot_webaddress', lines_str)
+                           scenicspot_heat = int(get_value_for('helpful_num', lines_str))\
+                                      if len(get_value_for('helpful_num', lines_str)) > 0 else 0
+                           scenicspot_ticketprice = get_value_for('scenicspot_ticket', lines_str)
+                           scenicspot_comments = get_value_for('scenicspot_comments', lines_str)
+                           scenicspot_impression = get_value_for('scenicspot_impression', lines_str)
+                           scenicspot_opentime = get_value_for('scenicspot_opentime', lines_str)
+                           scenicspot_usetime = get_value_for('scenicspot_usetime', lines_str)
+                           scenicspot_traffic = get_value_for('traffic', lines_str)
+
                         all_scenicspot_name = scenicspot_name_to_city_id.keys()
                         if scenicspot_name.decode('utf-8') not in all_scenicspot_name: #or\
 #                           scenicspot_name.decode('utf-8') in all_scenicspot_name and city_no != scenicspot_name_to_city_id.get(scenicspot_name.decode('utf-8'), -1):

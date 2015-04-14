@@ -49,6 +49,62 @@ done
 IFS=$SAVEIFS
 }
 
+function do_merge()
+{
+  if [ -f $1 ]
+  then
+     num=`wc -l $1|awk '{print $1}'`
+     if [ $num -gt 1 ]
+     then
+       cat $1 |tr -d '\n' > tmp.txt
+       cat tmp.txt > $1 && rm tmp.txt
+     fi
+  fi
+}
+
+
+function merge_lines()
+{
+# 景点信息
+root_dir='/home/scrapy/data/mafengwo_scenicspot'
+#root_dir='/root/travel/mafengwo_data'
+
+SAVEIFS=$IFS
+IFS=$(echo -en "\n\b")
+# 遍历省
+for province in `ls $root_dir`
+do
+  province_path=${root_dir}/$province
+  do_merge $province_path
+  if [ -d $province_path ]
+  then
+    # 遍历市/县
+    for city in `ls $province_path`
+    do
+      city_path=$province_path/$city
+      do_merge $city_path
+      if [ -d $city_path ]
+      then
+        # 遍历景点
+        for scenicspot in `ls $city_path`
+        do
+          scenicspot_path=$city_path/$scenicspot
+          files=`ls "${scenicspot_path}"`
+          file_num=`ls "${scenicspot_path}" | wc -l`
+          if [ $file_num -eq 1 ]
+          then
+             do_merge $scenicspot_path/$files
+          else
+            echo "$scenicspot_path" >> need_do.txt
+          fi
+        done
+      fi
+    done
+  fi
+done
+IFS=$SAVEIFS
+}
+
 # 删除目录下文件中的重复行
 function delete_duplicate_line()
 {
@@ -98,6 +154,7 @@ case $1 in
 line) delete_duplicate_line;;
 file) delete_duplicate_file;;
 num) get_scenispot_num;;
+merge) merge_lines;;
 *)     echo 'Only accept "line" or "file"';;
 esac
 }
