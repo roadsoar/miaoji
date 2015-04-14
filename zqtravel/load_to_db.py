@@ -45,7 +45,7 @@ def load_data_to_db():
    start_count = str_count_inside(data_root_dir, '/') # 用数字来区分省、市/县、景点
    null = "" # define this variable for below syntax: scenicspot_info = eval(line)
 
-   invalid_file = open('./invalid_files.txt', 'a+')
+   invalid_file = open('./check_scenicspot_by_manual.txt', 'a+')
 
    for root, dirs, files in os.walk(data_root_dir):  
       root_count = str_count_inside(root, '/') # 用数字来区分省、市/县、景点
