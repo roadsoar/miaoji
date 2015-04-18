@@ -288,7 +288,7 @@ class MafengwoProvinceSpider(scrapy.Spider):
 
         # 对景的名称
         name_xpath_pre = '//div[@class="banner wrapper"]//div[@class="cover"]//div[@class="s-title"]/'
-        scenicspot_name = response.xpath(name_xpath_pre + 'h1/text() |' + name_xpath_pre + 'p/span[1]/text()').extract()
+        scenicspot_name = response.xpath(name_xpath_pre + 'h1/text()').extract()
         scenicspot_name = ''.join(scenicspot_name)
 
         if scenicspot_locus:

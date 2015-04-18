@@ -18,7 +18,7 @@ LOG_FILE = '/home/scrapy/log/zqtravel.log'
 ITEM_PIPELINES = {
  
  'zqtravel.pipelines.TravelPipeline': 802,
- 'zqtravel.pipelines.ScenicspotPipeline': 801,
+# 'zqtravel.pipelines.ScenicspotPipeline': 801,
 # 'zqtravel.pipelines.ImagesStorePipeline': 1,
 # 'zqtravel.pipelines.TravelLinkPipeline': 803
 # 'scrapy.contrib.pipeline.images.ImagesPipeline': 1,
@@ -27,7 +27,7 @@ ITEM_PIPELINES = {
 IMAGES_MIN_HEIGHT = 110
 IMAGES_MIN_WIDTH = 110
 IMAGES_EXPIRES = 90   # 90天的图片失效期限
-IMAGES_STORE = '/home/scrapy/data/mafengwo/'
+IMAGES_STORE = '/home/scrapy/data/mafengwo_pic/'
 
 #DOWNLOAD_HANDLERS = {
 #    'http': 'zqtravel.scrapyjs.dhandler.WebkitDownloadHandler',
@@ -36,7 +36,7 @@ IMAGES_STORE = '/home/scrapy/data/mafengwo/'
 
 #USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.66 Safari/537.36'
 
-WEBKIT_DOWNLOADER=['mafengwo', 'mafengwo_scenicspot', 'mafengwo_province', 'ctrip']
+WEBKIT_DOWNLOADER=['mafengwo', 'mafengwo_scenicspot', 'mafengwo_province', 'ctrip', 'mafengwo_travel']
 
 DOWNLOADER_MIDDLEWARES = {
 #    'zqtravel.scrapyjs.middleware.WebkitDownloader': 1,

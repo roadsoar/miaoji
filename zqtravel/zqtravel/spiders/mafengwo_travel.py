@@ -117,10 +117,6 @@ class MafengwoTravelSpider(scrapy.Spider):
         scenicspot_locus = tmp_item.get('scenicspot_locus')
         scenicspot_name = tmp_item.get('scenicspot_name')
 
-        map_pre_xpath = '//div[@class="wrapper"]//div[@class="top-info clearfix"]//div[@class="crumb"]//'
-        #scenicspot_name = response.xpath( map_pre_xpath + 'div[@class="item cur"]/strong/text()').extract()
-        #scenicspot_name = ''.join(scenicspot_name).strip()
-
         # 所有游记链接
         youji_pre_xpath ='//div[@class="wrapper"]//div[@class="p-content"]//div[@class="m-post"]//ul//li[@class="post-item clearfix"]//'
         href_list = response.xpath(youji_pre_xpath + 'h2[@class="post-title yahei"]/a/@href').extract()
@@ -150,6 +146,7 @@ class MafengwoTravelSpider(scrapy.Spider):
                 yield Request(url, callback=self.parse_scenicspot_travel_item,meta=meta_data)
 
     def parse_scenicspot_travel_item(self, response):
+
        travel_item = MafengwoItem()
        meta = response.meta
 
@@ -185,7 +182,7 @@ class MafengwoTravelSpider(scrapy.Spider):
        c_count = ''.join(meta['numreply']).strip()
 
        # 游记被赞或顶的数量
-       travels_praisenum = response.xpath('//div[@class="post-hd"]//div[@class="bar_share"]/div[@class="post-up"]/div[@class="num"]/text() |\
+       travels_praisenum = response.xpath('//div[@class="post-hd"]//div[@class="bar_share"]/div[@class="post-up"]/div[@class="num _j_up_num"]/text() |\
                                            //div[@class="view clearfix"]//div[@class="ding"]/strong/text()' \
                                          ).extract()
        travels_praisenum = ''.join(travels_praisenum).strip()

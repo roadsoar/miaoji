@@ -24,20 +24,23 @@ class TravelPipeline(object):
     self.travel_file = None
 
   def process_item(self, item, spider):
-    try:
+    #try:
       if item:
         self.open_file(item, spider)
         dict_item = dict(item)
-        line = json.dumps(dict_item) + "\n"
+        line = json.dumps(dict_item)
         if dict_item.get('travels_content'):
            self.travel_file.write(line.decode('unicode_escape'))
         else:
            return item
-    except Exception ,e:
-        log.msg('Failed to write travel records to file', level=log.ERROR)
+    #except Exception ,e:
+        #log.msg('Failed to write travel records to file', level=log.ERROR)
+       # log.msg(str(e), level=log.ERROR)
 
   def open_file(self, item, spider):
-    file_path = get_dir_name_from_spider_item(item, spider)
+    file_path = get_dir_name_from_spider_item(item, spider).replace("(","\(").replace(")","\)").decode('unicode_escape')
+    #file_path = file_path_row.decode('unicode_escape')
+    log.msg('----------'+file_path)
     # 保存游记的文件
     dict_item = dict(item)
     link = dict_item.get('travels_link')
@@ -46,16 +49,12 @@ class TravelPipeline(object):
 
     path_travel_file = os.path.join(file_path, travel_file)
 
-    try:
-      self.travel_file = codecs.open(path_travel_file, 'w', encoding='utf-8')
-    except Exception, e:
-      log.msg('Failed to open file: ' + file_name, level=log.ERROR)
-    finally:
-      pass
-
-  def spider_closed(self, spider):  
-    if not self.file:
-       self.travel_file.close()
+    #try:
+    self.travel_file = codecs.open(path_travel_file, 'w', encoding='utf-8')
+    #except Exception, e:
+      #log.msg('Failed to open file: ' + path_travel_file, level=log.ERROR)
+    #finally:
+     # pass
 
 
 class ScenicspotPipeline(object):
@@ -73,7 +72,7 @@ class ScenicspotPipeline(object):
           else:
              return item
     except Exception ,e:
-        log.msg('Failed to write travel records to file', level=log.ERROR)
+        log.msg('Failed to write scenicspot information to file', level=log.ERROR)
 
   def open_file(self, item, spider):
     file_path = get_dir_name_from_spider_item(item, spider)
