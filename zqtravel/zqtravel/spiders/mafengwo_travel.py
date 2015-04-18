@@ -31,6 +31,7 @@ class MafengwoTravelSpider(scrapy.Spider):
     def parse(self,response):
         travel_urls_root_dir = mj_cf.get_str('mafengwo_travel_spider','travel_urls_dir')
         travel_provinces = mj_cf.get_list('mafengwo_travel_spider','travel_provinces')
+        # 爬取所有省份
         if 'all' in travel_provinces:
            for dirpath, subdir_names, filenames in os.walk(travel_urls_root_dir):
                if filenames:
@@ -38,6 +39,7 @@ class MafengwoTravelSpider(scrapy.Spider):
                   travel_urls = self.trigger_travel_url_from(travel_urls_file)
                   for travel_url in travel_urls:
                       yield travel_url
+        # 爬取部分省份
         else:
             for province in travel_provinces:
                 travel_urls_file = os.path.join(travel_urls_root_dir, province, province+'_travel.urls')
@@ -52,8 +54,11 @@ class MafengwoTravelSpider(scrapy.Spider):
             scenicspot_province = line_list[0]
             scenicspot_locus = line_list[1]
             scenicspot_name = line_list[2]
+            scenicspot_info['scenicspot_province'] = scenicspot_province
+            scenicspot_info['scenicspot_locus'] = scenicspot_locus
+            scenicspot_info['scenicspot_name'] = scenicspot_name 
             travel_url = line_list[-1] 
-            yield Request(travel_url, callback=self.parse_travel_next_pages)
+            yield Request(travel_url, callback=self.parse_travel_next_pages, meta={'scenicspot_info':scenicspot_info})
         f_all_urls.close()
 
     def parse_travel_next_pages(self,response):
@@ -64,14 +69,29 @@ class MafengwoTravelSpider(scrapy.Spider):
         ## 如果没有获取到页数，则说明只有一页的游记
         travel_pages = int(''.join(travel_pages).strip()) if len(travel_pages)>=1 else 0
 
+        # 只有一页游记
         if not travel_pages:
-          pass 
-        else: # 游记每一页url
-          travel_id = response.url[response.url.rfind('/')+1:-5]
-          url_prefix = self.get_url_prefix(response, True)
-          for page_index in range(1, travel_pages + 1):
-            url = ''.join([url_prefix, '/yj/', travel_id, '/1-0-', str(page_index), '.html'])
-            yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
+           # 直接调用获取游记页地址方法=>parse_travel_pages
+           travel_urls = self.parse_travel_pages(response)
+           for travel_url in travel_urls:
+               yield travel_url
+        # 多页
+        else:
+          fetch_js = mj_cf.get_starturls('mafengwo_travel_spider','fetch_js')
+          # 抓取的动态网页
+          if fetch_js:
+             travel_id = response.url[response.url.rfind('/')+1:-5]
+             url_prefix = self.get_url_prefix(response, True)
+             for page_index in range(1, travel_pages + 1):
+                 url = ''.join([url_prefix, '/yj/', travel_id, '/1-0-', str(page_index), '.html'])
+                 yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
+          # 非动态网页
+          else:
+             travel_id = response.url[response.url.rfind('/')+1:-5]
+             url_prefix = self.get_url_prefix(response, True)
+             for page_index in range(1, travel_pages + 1):
+                 url = ''.join([url_prefix, '/yj/', travel_id, '/1-0-', str(page_index), '.html'])
+                 yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
 
     def get_url_prefix(self, response, splice_http=False):
         page_url_prefix = ''
@@ -91,7 +111,7 @@ class MafengwoTravelSpider(scrapy.Spider):
     def parse_travel_pages(self, response):
         """获取游记页地址"""
 
-        tmp_item = response.meta.get('info_for_place')
+        tmp_item = response.meta.get('scenicspot_info')
         scenicspot_province = tmp_item.get('scenicspot_province')
         scenicspot_locus = tmp_item.get('scenicspot_locus')
         scenicspot_name = tmp_item.get('scenicspot_name')
@@ -101,18 +121,17 @@ class MafengwoTravelSpider(scrapy.Spider):
         #scenicspot_name = ''.join(scenicspot_name).strip()
 
         # 所有游记链接
-        youji_pre_xpath = '//div[@class="wrapper"]//div[@class="p-content"]//div[@class="m-post"]//ul[@class="post-list"]//li[@class="post-item clearfix"]//'
+        youji_pre_xpath ='//div[@class="wrapper"]//div[@class="p-content"]//div[@class="m-post"]//ul//li[@class="post-item clearfix"]//'
         href_list = response.xpath(youji_pre_xpath + 'h2[@class="post-title yahei"]/a/@href').extract()
 
         re_travel_href = re.compile('/i/\d+\.html')
 
         numview_numreply = response.xpath(youji_pre_xpath + 'span[@class="status"]/text()').extract()
         ## numview_numreply output format:
-        ##  numview numreply numview  numreply ...
+        ##  numview numreply, numview numreply ...
         ## [u'2824', u'13',  u'2462', u'27',   u'9594', u'24', u'2326', u'22', u'2345', u'7'] 
-        ## 浏览数和评论数的对数跟页面中游记连接条数是一致的, 如：http://www.mafengwo.cn/yj/10219/2-0-42.html
+        ## 浏览数和评论数的对数跟页面中游记连接条数是一致的, 如：http://www.mafengwo.cn/poi/youji-21100.html
         url_prefix = self.get_url_prefix(response, splice_http=True)
-        travel_item = MafengwoItem()
         num_index = 0
         for href in href_list:
             m = re_travel_href.match(href)
@@ -121,13 +140,6 @@ class MafengwoTravelSpider(scrapy.Spider):
                 numreply = numview_numreply[num_index+1]
                 num_index += 2 # 以及上面numview_numreply的输出格式，每次的步数为2
                 url = ''.join([url_prefix, href])
-                #travel_item['travels_link'] = url 
-                #travel_item['scenicspot_province'] =scenicspot_province
-                #travel_item['scenicspot_locus'] = scenicspot_locus
-                #travel_item['scenicspot_name'] = scenicspot_name
-                #yield travel_item
-                #return travel_item
-               # 抓取游记内容的时候使用下面的yield回调
                 meta_data = {"numreply":numreply, \
                              "numview":numview, \
                              "scenicspot_province":scenicspot_province, \

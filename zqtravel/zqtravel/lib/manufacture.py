@@ -62,6 +62,10 @@ class ConfigMiaoJI:
       field_value = self.cfMJ.get(field, key)
       return int(field_value)
 
+  def get_bool(self, field, key):
+      field_value = self.cfMJ.get(field, key)
+      return eval(field_value)
+
   def get_float(self, field, key):
       field_value = self.cfMJ.get(field, key)
       return float(field_value)
