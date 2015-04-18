@@ -148,6 +148,31 @@ function get_scenispot_num()
   rm .tmpccy
 }
 
+function remove_specific_string()
+{
+  echo "a（23fsf）3" |sed 's#\(.*\)\(（.*）\)\(.*\)#\1\3#'
+  file_dir_root='/home/scrapy/data/travel_urls'
+  bak_dir="${file_dir_root}.origin_all"
+  # 备份原始数据
+  if [ ! -d $bak_dir ]
+  then
+      mkdir -p $bak_dir
+  fi 
+  cp -r $file_dir_root/* $bak_dir
+  # 删除文件中重复的行
+  for province in `ls $file_dir_root`
+  do
+    province_path=$file_dir_root/$province
+    for file in `ls $province_path`
+    do
+      file_name=$province_path/$file
+      sort -u $file_name -o $file_name
+    done
+  done
+}
+
+}
+
 function main()
 {
 case $1 in
@@ -155,6 +180,7 @@ line) delete_duplicate_line;;
 file) delete_duplicate_file;;
 num) get_scenispot_num;;
 merge) merge_lines;;
+spec) remove_specific_string;;
 *)     echo 'Only accept "line" or "file"';;
 esac
 }
