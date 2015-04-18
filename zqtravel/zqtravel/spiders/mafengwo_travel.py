@@ -54,10 +54,11 @@ class MafengwoTravelSpider(scrapy.Spider):
             scenicspot_province = line_list[0]
             scenicspot_locus = line_list[1]
             scenicspot_name = line_list[2]
+            scenicspot_info = {}
             scenicspot_info['scenicspot_province'] = scenicspot_province
             scenicspot_info['scenicspot_locus'] = scenicspot_locus
             scenicspot_info['scenicspot_name'] = scenicspot_name 
-            travel_url = line_list[-1] 
+            travel_url = line_list[-1].strip()
             yield Request(travel_url, callback=self.parse_travel_next_pages, meta={'scenicspot_info':scenicspot_info})
         f_all_urls.close()
 
