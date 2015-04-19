@@ -39,7 +39,7 @@ IMAGES_STORE = '/home/scrapy/data/mafengwo_pic/'
 WEBKIT_DOWNLOADER=['mafengwo', 'mafengwo_scenicspot', 'mafengwo_province', 'ctrip', 'mafengwo_travel']
 
 DOWNLOADER_MIDDLEWARES = {
-#    'zqtravel.scrapyjs.middleware.WebkitDownloader': 1,
+    'zqtravel.scrapyjs.middleware.WebkitDownloader': 1,
     'scrapy.contrib.downloadermiddleware.useragent.UserAgentMiddleware': None,
     'zqtravel.middleware.rotate_useragent.RotateUserAgentMiddleware': 300,
 #     'zqtravel.downloader.WebkitDownloader': 3,

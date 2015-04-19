@@ -24,7 +24,7 @@ class MafengwoTravelSpider(scrapy.Spider):
 
     rules = [
              Rule(LxmlLinkExtractor('/poi/youji*'),
-             callback='parse_travel_next_pages',
+             callback='parse_travel_pages',
              follow=True),
             ]
 
@@ -77,22 +77,22 @@ class MafengwoTravelSpider(scrapy.Spider):
            for travel_url in travel_urls:
                yield travel_url
         # 多页
-        else:
-          fetch_js = mj_cf.get_starturls('mafengwo_travel_spider','fetch_js')
-          # 抓取的动态网页
-          if fetch_js:
-             travel_id = response.url[response.url.rfind('/')+1:-5]
-             url_prefix = self.get_url_prefix(response, True)
-             for page_index in range(1, travel_pages + 1):
-                 url = ''.join([url_prefix, '/yj/', travel_id, '/1-0-', str(page_index), '.html'])
-                 yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
-          # 非动态网页
-          else:
-             travel_id = response.url[response.url.rfind('/')+1:-5]
-             url_prefix = self.get_url_prefix(response, True)
-             for page_index in range(1, travel_pages + 1):
-                 url = ''.join([url_prefix, '/yj/', travel_id, '/1-0-', str(page_index), '.html'])
-                 yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
+#        else:
+#          fetch_js = mj_cf.get_starturls('mafengwo_travel_spider','fetch_js')
+#          # 抓取的动态网页
+#          if fetch_js:
+#             travel_id = response.url[response.url.rfind('/')+1:-5]
+#             url_prefix = self.get_url_prefix(response, True)
+#             for page_index in range(1, travel_pages + 1):
+#                 url = ''.join([url_prefix, '/yj/', travel_id, '/1-0-', str(page_index), '.html'])
+#                 yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
+#          # 非动态网页
+#          else:
+#             travel_id = response.url[response.url.rfind('/')+1:-5]
+#             url_prefix = self.get_url_prefix(response, True)
+#             for page_index in range(1, travel_pages + 1):
+#                 url = ''.join([url_prefix, '/yj/', travel_id, '/1-0-', str(page_index), '.html'])
+#                 yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
 
     def get_url_prefix(self, response, splice_http=False):
         page_url_prefix = ''
