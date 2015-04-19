@@ -24,37 +24,34 @@ class TravelPipeline(object):
     self.travel_file = None
 
   def process_item(self, item, spider):
-    #try:
+#    try:
       if item:
         self.open_file(item, spider)
         dict_item = dict(item)
         line = json.dumps(dict_item)
-        if dict_item.get('travels_content'):
+        if dict_item.get('travel_content'):
            self.travel_file.write(line.decode('unicode_escape'))
         else:
            return item
-    #except Exception ,e:
-        #log.msg('Failed to write travel records to file', level=log.ERROR)
-       # log.msg(str(e), level=log.ERROR)
+#    except Exception ,e:
+#        log.msg('Failed to write travel records to file', level=log.ERROR)
 
   def open_file(self, item, spider):
-    file_path = get_dir_name_from_spider_item(item, spider).replace("(","\(").replace(")","\)").decode('unicode_escape')
-    #file_path = file_path_row.decode('unicode_escape')
-    log.msg('----------'+file_path)
+    file_path = get_dir_name_from_spider_item(item, spider).decode('utf-8')
     # 保存游记的文件
     dict_item = dict(item)
-    link = dict_item.get('travels_link')
+    link = dict_item.get('travel_link')
     link_id = link[link.rfind('/')+1:-5]
-    travel_file = "_".join([dict_item.get('travels_praisenum'),dict_item.get('travels_viewnum'), dict_item.get('travels_commentnum'), link_id, 'json'])
+    travel_file = "_".join([dict_item.get('travel_praisenum'),dict_item.get('travel_viewnum'), dict_item.get('travel_commentnum'), link_id, 'json'])
 
     path_travel_file = os.path.join(file_path, travel_file)
 
-    #try:
-    self.travel_file = codecs.open(path_travel_file, 'w', encoding='utf-8')
-    #except Exception, e:
-      #log.msg('Failed to open file: ' + path_travel_file, level=log.ERROR)
-    #finally:
-     # pass
+    try:
+      self.travel_file = codecs.open(path_travel_file, 'w', encoding='utf-8')
+    except Exception, e:
+      log.msg('Failed to open file: ' + path_travel_file, level=log.ERROR)
+    finally:
+      pass
 
 
 class ScenicspotPipeline(object):
@@ -163,7 +160,7 @@ class TravelLinkPipeline(object):
         self.open_file(item, spider)
         dict_item = dict(item)
         line = json.dumps(dict_item) + "\n"
-        if dict_item.get('travels_link'):
+        if dict_item.get('travel_link'):
            self.travel_link_file.write(line.decode('unicode_escape'))
         else:
            return item

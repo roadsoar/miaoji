@@ -150,38 +150,35 @@ function get_scenispot_num()
 
 function remove_specific_string()
 {
-  echo "a（23fsf）3" |sed 's#\(.*\)\(（.*）\)\(.*\)#\1\3#'
   file_dir_root='/home/scrapy/data/travel_urls'
-  bak_dir="${file_dir_root}.origin_all"
-  # 备份原始数据
-  if [ ! -d $bak_dir ]
-  then
-      mkdir -p $bak_dir
-  fi 
-  cp -r $file_dir_root/* $bak_dir
-  # 删除文件中重复的行
+  # 删除文件中小括号及其之间的内容，如：(Secem info)
   for province in `ls $file_dir_root`
   do
     province_path=$file_dir_root/$province
     for file in `ls $province_path`
     do
       file_name=$province_path/$file
-      sort -u $file_name -o $file_name
+      sed -i -e 's#\(.*\)\(（.*|\)\(.*\)#\1|\3#g' -e 's#\(.*\)\((.*|\)\(.*\)#\1|\3#g' $file_name
+      #sed -i -e 's#\(.*\)\(（.*）\)\(.*\)#\1\3#g' -e 's#\(.*\)\((.*)\)\(.*\)#\1\3#g' -e 's#\(.*\)\((.*）\)\(.*\)#\1\3#g' -e 's#\(.*\)\(（.*)\)\(.*\)#\1\3#g' $file_name
     done
   done
-}
-
 }
 
 function main()
 {
 case $1 in
-line) delete_duplicate_line;;
-file) delete_duplicate_file;;
-num) get_scenispot_num;;
+line ) delete_duplicate_line;;
+file ) delete_duplicate_file;;
+num  ) get_scenispot_num;;
 merge) merge_lines;;
-spec) remove_specific_string;;
-*)     echo 'Only accept "line" or "file"';;
+spec ) remove_specific_string;;
+    *) echo 'Only accept "line", "file", "num", "merge", "spec"'
+       echo '"line": 删除景点文件中重复的行'
+       echo '"file": 删除景点目录中重复的文件'
+       echo '"num" : 计算景点的个数'
+       echo '"merge": 将景点文件将多行合并成一行'
+       echo '"spec": 删除文件中小括号及其之间的内容，如：(Secem info)'
+       ;;
 esac
 }
 

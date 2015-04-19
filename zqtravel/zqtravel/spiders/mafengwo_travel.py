@@ -141,7 +141,8 @@ class MafengwoTravelSpider(scrapy.Spider):
                              "numview":numview, \
                              "scenicspot_province":scenicspot_province, \
                              "scenicspot_locus":scenicspot_locus, \
-                             "scenicspot_name":scenicspot_name \
+                             "scenicspot_name":scenicspot_name, \
+                             "from_url":response.url \
                             }
                 yield Request(url, callback=self.parse_scenicspot_travel_item,meta=meta_data)
 
@@ -159,11 +160,29 @@ class MafengwoTravelSpider(scrapy.Spider):
                              ).extract()
        title = remove_str(title[0],'[\r\n\s]') if len(title) >= 1 else ''
 
-       # 游记发布时间
-       travels_time = response.xpath('//div[@class="post_item"]//div[@class="tools no-bg"]//div[@class="fl"]//span[@class="date"]/text() |\
+       # 游记创建时间
+       travel_create_time = response.xpath('//div[@class="post_item"]//div[@class="tools no-bg"]//div[@class="fl"]//span[@class="date"]/text() |\
                                       //div[@class="view clearfix"]//div[@class="vc_title clearfix"]//div[@class="vc_time"]/span[@class="time"]/text()' \
                                     ).extract()
-       travels_time = ''.join(travels_time).strip()
+       travel_create_time = ''.join(travel_create_time).strip()
+
+       xpath_with_blank_pre = '//div[@class="post_wrap"]//div[@class="post_main "]//div[@class="post_info"]//div[@id="exinfo-tripinfo"]//div[@class="basic-info"]//li[@class="%s"]//text()'
+       xpath_without_blank_pre = '//div[@class="post_wrap"]//div[@class="post_main"]//div[@class="post_info"]//div[@id="exinfo-tripinfo"]//div[@class="basic-info"]//li[@class="%s"]//text()'
+       # 得到类似数据:[u'天数', u'7', u'天'],所以用[1:]截取后面的实际数值
+       travel_time = response.xpath(xpath_with_blank_pre % 'item-date'+'|'+xpath_without_blank_pre % 'item-date').extract()
+       travel_time = ''.join(travel_time[1:]).strip()
+
+       travel_people = response.xpath(xpath_with_blank_pre % 'item-people'+'|'+xpath_without_blank_pre % 'item-people').extract()
+       travel_people = ''.join(travel_people[1:]).strip()
+
+       travel_cost = response.xpath(xpath_with_blank_pre % 'item-cost'+'|'+xpath_without_blank_pre % 'item-cost').extract()
+       travel_cost = ''.join(travel_cost[1:]).strip()
+
+       travel_type= response.xpath(xpath_with_blank_pre % 'item-type'+'|'+xpath_without_blank_pre % 'item-type').extract()
+       travel_type = ''.join(travel_type[1:]).strip()
+
+       travel_days = response.xpath(xpath_with_blank_pre % 'item-days'+'|'+xpath_without_blank_pre % 'item-days').extract()
+       travel_days = ''.join(travel_days[1:]).strip()
 
        # 游记内容
        # 蚂蜂窝的游记页面使用了多种模板，所以对照的写了些xpath
@@ -182,64 +201,47 @@ class MafengwoTravelSpider(scrapy.Spider):
        c_count = ''.join(meta['numreply']).strip()
 
        # 游记被赞或顶的数量
-       travels_praisenum = response.xpath('//div[@class="post-hd"]//div[@class="bar_share"]/div[@class="post-up"]/div[@class="num _j_up_num"]/text() |\
+       travel_praisenum = response.xpath('//div[@class="post-hd"]//div[@class="bar_share"]/div[@class="post-up"]/div[@class="num _j_up_num"]/text() |\
                                            //div[@class="view clearfix"]//div[@class="ding"]/strong/text()' \
                                          ).extract()
-       travels_praisenum = ''.join(travels_praisenum).strip()
+       travel_praisenum = ''.join(travel_praisenum).strip()
 
        # 游记中的图片
        image_urls = response.xpath('//div[@class="post_item"]//div[@id="pnl_contentinfo"]//a//img/@src |\
                                     //div[@class="view clearfix"]//div[@class="vc_article"]//div[@class="va_con"]//a//img/@src'\
                                   ).extract()
 
-       # 游记所在省
-#       scenicspot_province = response.xpath('//div[@class="post-hd"]//div[@class="crumb"]//strong[2]//a/text()').extract()
- #      scenicspot_province = ''.join(scenicspot_locus).strip()[:-2]
-
        # 游记所在地
    #    scenicspot_locus = response.xpath('//div[@class="post-hd"]//div[@class="crumb"]//strong[last()-2]//a/text()').extract()
-  #     scenicspot_locus = ''.join(scenicspot_locus).strip()[:-2]
-
-       # 景点名称
-    #   scenicspot_name = response.xpath('//div[@class="post-hd"]//div[@class="crumb"]//strong[last()-1]//a/text()').extract()
-     #  scenicspot_name = ''.join(scenicspot_name).strip()[:-4]
+   #    scenicspot_locus = ''.join(scenicspot_locus).strip()[:-2]
 
        # 如果设置并开启了爬取的开始时间，则将早于开始时间的游记丢弃
        enable_start_crawling_time = mj_cf.get_str('mafengwo_spider','enable_start_crawling_time')
        if enable_start_crawling_time == 'True':
           start_crawling_time = mj_cf.get_str('mafengwo_spider','start_crawling_time')
-          if travels_time < start_crawling_time:
+          if travel_create_time < start_crawling_time:
              return None
 
        # 丢弃游记内容是空的
        if all_content == '':
          return None
 
-       travel_item['travels_praisenum'] = travels_praisenum
-       travel_item['travels_time'] = travels_time
-       travel_item['travels_link'] = link
-       travel_item['travels_title'] = title
-       travel_item['travels_content'] = all_content
-       travel_item['travels_viewnum'] = b_count
-       travel_item['travels_commentnum'] = c_count
+       travel_item['travel_praisenum'] = travel_praisenum
+       travel_item['travel_create_time'] = travel_create_time
+       travel_item['travel_link'] = link
+       travel_item['travel_title'] = title
+       travel_item['travel_content'] = all_content
+       travel_item['travel_viewnum'] = b_count
+       travel_item['travel_commentnum'] = c_count
+       travel_item['travel_time'] = travel_time
+       travel_item['travel_people'] = travel_people
+       travel_item['travel_cost'] = travel_cost
+       travel_item['travel_type'] = travel_type
+       travel_item['travel_days'] = travel_days
        travel_item['scenicspot_province'] = meta.get('scenicspot_province')
        travel_item['scenicspot_locus'] = meta.get('scenicspot_locus')
        travel_item['scenicspot_name'] = meta.get('scenicspot_name')
-       #travel_item['image_urls'] = image_urls
-       
-#       image_item = ImageItem()
-
-#       image_item['scenicspot_province'] = meta.get('scenicspot_province')
-#       image_item['scenicspot_locus'] = meta.get('scenicspot_locus')
-#       image_item['scenicspot_name'] = meta.get('scenicspot_name')
-#       image_item['image_urls'] = image_urls
-       # 如果从游记页不能取到景点，才使用总游记页中的获取到的景点
-       #if '' == scenicspot_locus or '' == scenicspot_name:
-        #  travel_item['scenicspot_locus'] = meta['scenicspot_locus'].rstrip(u'市') if meta['scenicspot_locus'] != u'中国' else meta['scenicspot_name'].rstrip(u'市')
-         # travel_item['scenicspot_name'] = meta['scenicspot_name']
-       #else:
-        #  travel_item['scenicspot_locus'] = scenicspot_locus.rstrip(u'市')
-         # travel_item['scenicspot_name'] = scenicspot_name
+       travel_item['from_url'] = meta.get('from_url')
 
        return travel_item
 

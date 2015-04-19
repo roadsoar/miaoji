@@ -20,13 +20,19 @@ class CtripItem(Item):
 class MafengwoItem(Item):
     '''蚂蜂窝的游记条目'''
 
-    travels_praisenum = Field()        # 游记被赞的数量
-    travels_viewnum = Field()          # 游记的浏览数量
-    travels_commentnum = Field()       # 游记的评论数量
-    travels_title = Field()            # 游记的标题
-    travels_time = Field()             # 游记创建的时间
-    travels_link = Field()             # 游记的链接
-    travels_content = Field()          # 游记的内容
+    travel_praisenum = Field()        # 游记被赞的数量
+    travel_viewnum = Field()          # 游记的浏览数量
+    travel_commentnum = Field()       # 游记的评论数量
+    travel_title = Field()            # 游记的标题
+    travel_create_time = Field()      # 游记文章创建的时间
+    travel_time = Field()             # 游玩的时间
+    travel_people = Field()           # 游玩的人数
+    travel_cost = Field()             # 游玩的费用
+    travel_type = Field()             # 游玩的形式
+    travel_days = Field()             # 游玩的天数
+    travel_link = Field()             # 游记的链接
+    from_url = Field()                 # 游记link是从from_url跳转过来的
+    travel_content = Field()          # 游记的内容
     scenicspot_province = Field()      # 景点所在地，即所在的省
     scenicspot_name = Field()          # 景点名称
     scenicspot_locus = Field()         # 景点所在地，即所在的省/市/县
