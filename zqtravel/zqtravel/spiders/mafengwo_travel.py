@@ -26,6 +26,9 @@ class MafengwoTravelSpider(scrapy.Spider):
              Rule(LxmlLinkExtractor('/poi/youji*'),
              callback='parse_travel_pages',
              follow=True),
+             Rule(LxmlLinkExtractor('/i/\d+\.html'),
+             callback='parse_scenicspot_travel_item',
+             follow=True),
             ]
 
     def parse(self,response):
