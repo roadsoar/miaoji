@@ -5,7 +5,7 @@ ScpFile='load_to_db.py'
 shellFile='delete_duplicate_scenicspots.sh'
 sqlFile='*.sql'
 #DATA_SOURCE='/home/scrapy/data/mafengwo_scenicspot'
-DATA_SOURCE='/home/scrapy/data_201220/mafengwo'
+#DATA_SOURCE='/home/scrapy/data_201220/mafengwo'
 DESTINATION='~/travel'
 USER='root'
 
