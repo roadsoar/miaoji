@@ -19,7 +19,7 @@ ITEM_PIPELINES = {
  
  'zqtravel.pipelines.TravelPipeline': 802,
 # 'zqtravel.pipelines.ScenicspotPipeline': 801,
-# 'zqtravel.pipelines.ImagesStorePipeline': 1,
+ 'zqtravel.pipelines.ImagesStorePipeline': 1,
 # 'zqtravel.pipelines.TravelLinkPipeline': 803
 # 'scrapy.contrib.pipeline.images.ImagesPipeline': 1,
 }
@@ -39,10 +39,10 @@ IMAGES_STORE = '/home/scrapy/data/mafengwo_pic/'
 WEBKIT_DOWNLOADER=['mafengwo', 'mafengwo_scenicspot', 'mafengwo_province', 'ctrip', 'mafengwo_travel']
 
 DOWNLOADER_MIDDLEWARES = {
-    'zqtravel.scrapyjs.middleware.WebkitDownloader': 1,
+#    'zqtravel.downloader.WebkitDownloader': 1,
     'scrapy.contrib.downloadermiddleware.useragent.UserAgentMiddleware': None,
     'zqtravel.middleware.rotate_useragent.RotateUserAgentMiddleware': 300,
-#     'zqtravel.downloader.WebkitDownloader': 3,
+    #'zqtravel.scrapyjs.middleware.WebkitDownloader': 1,
 }
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from zqtravel.items import MafengwoItem, ScenicspotItem
+from zqtravel.items import MafengwoItem, ScenicspotItem, ImageItem
 from zqtravel.lib.manufacture import ConfigMiaoJI
 from zqtravel.lib.common import remove_str, get_data_dir_with
 
@@ -24,7 +24,7 @@ class MafengwoTravelSpider(scrapy.Spider):
 
     rules = [
              Rule(LxmlLinkExtractor('/poi/youji*'),
-             callback='parse_travel_pages',
+             callback='parse_travel_next_pages',
              follow=True),
              Rule(LxmlLinkExtractor('/i/\d+\.html'),
              callback='parse_scenicspot_travel_item',
@@ -73,29 +73,34 @@ class MafengwoTravelSpider(scrapy.Spider):
         ## 如果没有获取到页数，则说明只有一页的游记
         travel_pages = int(''.join(travel_pages).strip()) if len(travel_pages)>=1 else 0
 
-        # 只有一页游记
-        if not travel_pages:
-           # 直接调用获取游记页地址方法=>parse_travel_pages
-           travel_urls = self.parse_travel_pages(response)
-           for travel_url in travel_urls:
-               yield travel_url
-        # 多页
+        # 游记页码的href
+        js_travel_href = response.xpath('//div[@class="wrapper"]//div[@class="page-hotel"]/a[@class="ti next"]/@href').extract()
+        js_travel_href = ''.join(js_travel_href).strip()
+
+        # 为了抓取第一页面,直接调用获取游记页地址方法=>parse_travel_pages
+        travel_urls = self.parse_travel_pages(response)
+        for travel_url in travel_urls:
+            yield travel_url
+
+#  动态抓取时可以打开下面的逻辑，但目前还没有调好
+#        fetch_js = mj_cf.get_bool('mafengwo_travel_spider','fetch_js')
+        # 抓取的动态网页
+#        if fetch_js:
+#           for page_index in range(2, travel_pages + 1):
+#               url = re.sub(r'\d+\)',str(page_index)+')',js_travel_href)
+#               yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
+#             #travel_id = response.url[response.url.rfind('/')+1:-5]
+#             #url_prefix = self.get_url_prefix(response, True)
+#             #for page_index in range(1, travel_pages + 1):
+#             #    url = ''.join([url_prefix, '/yj/', travel_id, '/1-0-', str(page_index), '.html'])
+#             #    yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
+#        # 非动态网页
 #        else:
-#          fetch_js = mj_cf.get_starturls('mafengwo_travel_spider','fetch_js')
-#          # 抓取的动态网页
-#          if fetch_js:
-#             travel_id = response.url[response.url.rfind('/')+1:-5]
-#             url_prefix = self.get_url_prefix(response, True)
-#             for page_index in range(1, travel_pages + 1):
-#                 url = ''.join([url_prefix, '/yj/', travel_id, '/1-0-', str(page_index), '.html'])
-#                 yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
-#          # 非动态网页
-#          else:
-#             travel_id = response.url[response.url.rfind('/')+1:-5]
-#             url_prefix = self.get_url_prefix(response, True)
-#             for page_index in range(1, travel_pages + 1):
-#                 url = ''.join([url_prefix, '/yj/', travel_id, '/1-0-', str(page_index), '.html'])
-#                 yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
+#           travel_id = response.url[response.url.rfind('/')+1:-5]
+#           url_prefix = self.get_url_prefix(response, True)
+#           for page_index in range(1, travel_pages + 1):
+#               url = ''.join([url_prefix, '/yj/', travel_id, '/1-0-', str(page_index), '.html'])
+#               yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
 
     def get_url_prefix(self, response, splice_http=False):
         page_url_prefix = ''
@@ -215,8 +220,8 @@ class MafengwoTravelSpider(scrapy.Spider):
                                   ).extract()
 
        # 游记所在地
-   #    scenicspot_locus = response.xpath('//div[@class="post-hd"]//div[@class="crumb"]//strong[last()-2]//a/text()').extract()
-   #    scenicspot_locus = ''.join(scenicspot_locus).strip()[:-2]
+       #scenicspot_locus = response.xpath('//div[@class="post-hd"]//div[@class="crumb"]//strong[last()-2]//a/text()').extract()
+       #scenicspot_locus = ''.join(scenicspot_locus).strip()[:-2]
 
        # 如果设置并开启了爬取的开始时间，则将早于开始时间的游记丢弃
        enable_start_crawling_time = mj_cf.get_str('mafengwo_spider','enable_start_crawling_time')
@@ -245,6 +250,7 @@ class MafengwoTravelSpider(scrapy.Spider):
        travel_item['scenicspot_locus'] = meta.get('scenicspot_locus')
        travel_item['scenicspot_name'] = meta.get('scenicspot_name')
        travel_item['from_url'] = meta.get('from_url')
+       travel_item['image_urls'] = image_urls
 
        return travel_item
 

@@ -19,7 +19,9 @@ class WebkitDownloader( object ):
         return webview
 
     def process_request( self, request, spider ):
+        print '%s----' % request
         if 'renderjs' in request.meta:
+           # print '%s----' % request
             webview = self._get_webview()
             webview.connect('load-finished', self.stop_gtk)
             webview.load_uri(request.url)
