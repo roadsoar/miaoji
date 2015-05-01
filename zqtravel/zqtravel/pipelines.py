@@ -115,47 +115,36 @@ class ImagesStorePipeline(ImagesPipeline):
 #        return '/'.join([scenicspot_province, scenicspot_locus, scenicspot_name, 'scenicspot_image', image_name])
 
     def get_media_requests(self, item, info):
-         scenicspot_province = item['scenicspot_province']
-         scenicspot_locus = item['scenicspot_locus']
-         scenicspot_name = item['scenicspot_name']
-         for url in item.get('image_urls', []):
-            yield Request(url, meta={'scenicspot_province':scenicspot_province, 'scenicspot_locus':scenicspot_locus, 'scenicspot_name':scenicspot_name})
-#         for image_url in item['image_urls']:
-#            yield Request(image_url)
+#         scenicspot_province = item['scenicspot_province']
+#         scenicspot_locus = item['scenicspot_locus']
+#         scenicspot_name = item['scenicspot_name']
+#         for url in item.get('image_urls', []):
+#            yield Request(url, meta={'scenicspot_province':scenicspot_province, 'scenicspot_locus':scenicspot_locus, 'scenicspot_name':scenicspot_name})
+         for image_url in item['image_urls']:
+            yield Request(image_url)
 
     def item_completed(self, results, item, info):
-#        image_paths = [x['path'] for ok, x in results if ok]
-#        if not image_paths:
-#            raise DropItem("Item contains no images")
-#        item['image_paths'] = image_paths
-#        return item
-#        if 'images' in item.fields:
-#           item['images'] = [x for ok, x in results if ok]
-#           return item
-#
         image_pre_dir = get_dir_name_from_spider_item(item, None)
         from scrapy.conf import settings
         store_uri = settings['IMAGES_STORE']
         mkdirs(store_uri + image_pre_dir)
-# 
+ 
         dict_item = dict(item)
         travel_id = ''
         if 'travel_link' in item.fields:
            link = dict_item.get('travel_link')
            travel_id = link[link.rfind('/')+1:-5]
-#
+
+        tmp_results = results
+        for index, result in enumerate(tmp_results):
+            tmp_path = result[1].get('path').split('/')
+            image_file_name = '_'.join([travel_id, tmp_path[1]])
+            new_path = '/'.join([image_pre_dir,tmp_path[0], image_file_name])
+            results[index][1]['path'] = new_path
+
         if 'images' in item.fields:
-            images = [x for ok, x in results if ok]
-            item['images'] = []
-            if images:
-               for image in images:
-                   tmp_path = image.get('path').split('/')
-                   image_file_name = '.'.join([travel_id, tmp_path[1]])
-                   path = '/'.join([image_pre_dir, tmp_path[0], image_file_name])
-                   image['path'] = path
-                   item['images'].append(image)
-#
-        return item
+           item['images'] = [x for ok, x in results if ok]
+        #return item
 
 class TravelLinkPipeline(object):
   def __init__(self):
