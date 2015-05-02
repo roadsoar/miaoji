@@ -100,6 +100,10 @@ class ScenicspotPipeline(object):
 class ImagesStorePipeline(ImagesPipeline):
 
     def file_path(self, request, response=None, info=None):
+         '''重写scrapy的默认函数，以便自定义存储路径'''
+
+         # 调试scrapy重写的函数时特别注意，如果有异常，如语法错误：NoneType调用了get()方法，使用未声明的变量等,
+         # 这时是不会有错误提示输出的，给调试带来一定的迷惑性，不留神，会认为该方法没被调用，而实际是简单的语法错误.^^
          if not isinstance(request, Request):
             _warn()
             url = request
@@ -115,6 +119,8 @@ class ImagesStorePipeline(ImagesPipeline):
          return '/'.join([scenicspot_province, scenicspot_locus, scenicspot_name, 'images', image_guid+'.jpg'])
 
     def get_media_requests(self, item, info):
+         '''重写scrapy的默认函数，以传递自定义存储路径所需要的信息，如：省、市/县、景点名称'''
+
          scenicspot_province = item['scenicspot_province']
          scenicspot_locus = item['scenicspot_locus']
          scenicspot_name = item['scenicspot_name']

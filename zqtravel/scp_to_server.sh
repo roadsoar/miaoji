@@ -6,11 +6,12 @@ shellFile='delete_duplicate_scenicspots.sh'
 sqlFile='*.sql'
 #DATA_SOURCE='/home/scrapy/data/mafengwo_scenicspot'
 #DATA_SOURCE='/home/scrapy/data_201220/mafengwo'
-DESTINATION='~/travel'
-USER='root'
+DESTINATION='~'
+USER='chency'
+PASSWd='(!@#QWE,,..)'
 
-scp -r -p -P12301 $SOURCE $DATA_SOURCE $USER@121.41.20.59:$DESTINATION
-#scp -r -p -P12301 $SOURCE/$ScpFile $SOURCE/$shellFile $SOURCE/$sqlFile $USER@121.41.20.59:$DESTINATION/zqtravel
+scp -r -p -P22 $SOURCE $DATA_SOURCE $USER@202.85.216.77:$DESTINATION
+#scp -r -p -P22 $SOURCE/$ScpFile $SOURCE/$shellFile $SOURCE/$sqlFile $USER@202.85.216.77:$DESTINATION
 
 
 
