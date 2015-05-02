@@ -29,6 +29,9 @@ class TravelPipeline(object):
       if item:
         self.open_file(item, spider)
         dict_item = dict(item)
+        # 删除images和images_urls字段，因为游记分析不需要且占很多空间
+        dict_item.pop('images')
+        dict_item.pop('image_urls')
         line = json.dumps(dict_item)
         if dict_item.get('travel_content'):
            self.travel_file.write(line.decode('unicode_escape'))
@@ -114,9 +117,13 @@ class ImagesStorePipeline(ImagesPipeline):
          scenicspot_province = meta.get('scenicspot_province', '')
          scenicspot_locus = meta.get('scenicspot_locus', '')
          scenicspot_name = meta.get('scenicspot_name', '')
+         link_id = meta.get('link_id', '')
          image_guid = hashlib.sha1(url).hexdigest()
 
-         return '/'.join([scenicspot_province, scenicspot_locus, scenicspot_name, 'images', image_guid+'.jpg'])
+         image_post_dir = '%s/%s/%s/%s/%s' % (scenicspot_province, scenicspot_locus, scenicspot_name, 'images', link_id)
+         image_name = '%s%s' % (image_guid, '.jpg')
+
+         return '/'.join([image_post_dir, image_name])
 
     def get_media_requests(self, item, info):
          '''重写scrapy的默认函数，以传递自定义存储路径所需要的信息，如：省、市/县、景点名称'''
@@ -124,10 +131,14 @@ class ImagesStorePipeline(ImagesPipeline):
          scenicspot_province = item['scenicspot_province']
          scenicspot_locus = item['scenicspot_locus']
          scenicspot_name = item['scenicspot_name']
+         link = item['travel_link']
+         link_id = link[link.rfind('/')+1:-5]
          return [Request(x, \
                         meta={'scenicspot_province':scenicspot_province, \
                               'scenicspot_locus':scenicspot_locus, \
-                              'scenicspot_name':scenicspot_name} \
+                              'scenicspot_name':scenicspot_name, \
+                              'link_id':link_id, \
+                             }\
                         ) for x in item.get('image_urls', []) \
                 ]
 
