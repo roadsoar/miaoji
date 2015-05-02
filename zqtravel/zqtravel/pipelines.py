@@ -10,6 +10,7 @@ import sys, os
 import json
 import codecs
 import random
+import hashlib
 
 from zqtravel.lib.common import get_dir_name_from_spider_item, today_str, mkdirs, get_dir_with_province_name
 
@@ -98,53 +99,31 @@ class ScenicspotPipeline(object):
 
 class ImagesStorePipeline(ImagesPipeline):
 
-#    def file_path(self, request, response=None, info=None):
-#        if not isinstance(request, Request):
-#           _warn()
-#           url = request
-#        else:
-#           url = request.url
-#
-#        meta = response.meta
-#        scenicspot_province = meta.get('scenicspot_province', '')
-#        scenicspot_locus = meta.get('scenicspot_locus', '')
-#        scenicspot_name = meta.get('scenicspot_name', '')
-#
-#        image_name = url.split('/')[-1]
-#        log.msg('========================'+'/'.join([scenicspot_province, scenicspot_locus, scenicspot_name, 'scenicspot_image', image_guid]))
-#        return '/'.join([scenicspot_province, scenicspot_locus, scenicspot_name, 'scenicspot_image', image_name])
+    def file_path(self, request, response=None, info=None):
+         if not isinstance(request, Request):
+            _warn()
+            url = request
+         else:
+            url = request.url
+
+         meta = request.meta
+         scenicspot_province = meta.get('scenicspot_province', '')
+         scenicspot_locus = meta.get('scenicspot_locus', '')
+         scenicspot_name = meta.get('scenicspot_name', '')
+         image_guid = hashlib.sha1(url).hexdigest()
+
+         return '/'.join([scenicspot_province, scenicspot_locus, scenicspot_name, 'images', image_guid+'.jpg'])
 
     def get_media_requests(self, item, info):
-#         scenicspot_province = item['scenicspot_province']
-#         scenicspot_locus = item['scenicspot_locus']
-#         scenicspot_name = item['scenicspot_name']
-#         for url in item.get('image_urls', []):
-#            yield Request(url, meta={'scenicspot_province':scenicspot_province, 'scenicspot_locus':scenicspot_locus, 'scenicspot_name':scenicspot_name})
-         for image_url in item['image_urls']:
-            yield Request(image_url)
-
-    def item_completed(self, results, item, info):
-        image_pre_dir = get_dir_name_from_spider_item(item, None)
-        from scrapy.conf import settings
-        store_uri = settings['IMAGES_STORE']
-        mkdirs(store_uri + image_pre_dir)
- 
-        dict_item = dict(item)
-        travel_id = ''
-        if 'travel_link' in item.fields:
-           link = dict_item.get('travel_link')
-           travel_id = link[link.rfind('/')+1:-5]
-
-        tmp_results = results
-        for index, result in enumerate(tmp_results):
-            tmp_path = result[1].get('path').split('/')
-            image_file_name = '_'.join([travel_id, tmp_path[1]])
-            new_path = '/'.join([image_pre_dir,tmp_path[0], image_file_name])
-            results[index][1]['path'] = new_path
-
-        if 'images' in item.fields:
-           item['images'] = [x for ok, x in results if ok]
-        #return item
+         scenicspot_province = item['scenicspot_province']
+         scenicspot_locus = item['scenicspot_locus']
+         scenicspot_name = item['scenicspot_name']
+         return [Request(x, \
+                        meta={'scenicspot_province':scenicspot_province, \
+                              'scenicspot_locus':scenicspot_locus, \
+                              'scenicspot_name':scenicspot_name} \
+                        ) for x in item.get('image_urls', []) \
+                ]
 
 class TravelLinkPipeline(object):
   def __init__(self):
