@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from zqtravel.items import MafengwoItem, ScenicspotItem
+from zqtravel.items import TravelItem, ScenicspotItem
 from zqtravel.lib.manufacture import ConfigMiaoJI
 from zqtravel.lib.common import remove_str, get_data_dir_with
 
@@ -354,7 +354,7 @@ class MafengwoProvinceSpider(scrapy.Spider):
         ## [u'2824', u'13',  u'2462', u'27',   u'9594', u'24', u'2326', u'22', u'2345', u'7'] 
         ## 浏览数和评论数的对数跟页面中游记连接条数是一致的, 如：http://www.mafengwo.cn/yj/10219/2-0-42.html
         url_prefix = self.get_url_prefix(response, splice_http=True)
-        travel_item = MafengwoItem()
+        travel_item = TravelItem()
         num_index = 0
         for href, title in href_title_group:
             m = re_travel_href.match(href)
@@ -379,7 +379,7 @@ class MafengwoProvinceSpider(scrapy.Spider):
                 yield Request(url, callback=self.parse_scenicspot_travel_item,meta=meta_data)
 
     def parse_scenicspot_travel_item(self, response):
-       travel_item = MafengwoItem()
+       travel_item = TravelItem()
        meta = response.meta
 
        # 游记链接

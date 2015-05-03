@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from zqtravel.items import MafengwoItem, ScenicspotItem, ImageItem
+from zqtravel.items import TravelItem, ScenicspotItem, ImageItem
 from zqtravel.lib.manufacture import ConfigMiaoJI
 from zqtravel.lib.common import remove_str, get_data_dir_with
 
@@ -156,7 +156,7 @@ class MafengwoTravelSpider(scrapy.Spider):
 
     def parse_scenicspot_travel_item(self, response):
 
-       travel_item = MafengwoItem()
+       travel_item = TravelItem()
        meta = response.meta
 
        # 游记链接

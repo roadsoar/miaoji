@@ -18,7 +18,7 @@ LOG_FILE = '/home/scrapy/log/zqtravel.log'
 ITEM_PIPELINES = {
  'zqtravel.pipelines.TravelPipeline': 802,
 # 'zqtravel.pipelines.ScenicspotPipeline': 801,
- 'zqtravel.pipelines.ImagesStorePipeline': 801,
+# 'zqtravel.pipelines.ImagesStorePipeline': 801,
 # 'zqtravel.pipelines.TravelLinkPipeline': 803
 # 'scrapy.contrib.pipeline.images.ImagesPipeline': 1,
 }
@@ -35,7 +35,7 @@ IMAGES_STORE = '/home/scrapy/data/mafengwo_images/'
 
 #USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.66 Safari/537.36'
 
-WEBKIT_DOWNLOADER=['mafengwo', 'mafengwo_scenicspot', 'mafengwo_province', 'ctrip', 'mafengwo_travel']
+WEBKIT_DOWNLOADER=['mafengwo', 'mafengwo_scenicspot', 'mafengwo_province', 'ctrip', 'mafengwo_travel', 'chanyouji']
 
 DOWNLOADER_MIDDLEWARES = {
 #    'zqtravel.downloader.WebkitDownloader': 1,

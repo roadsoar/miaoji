@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from zqtravel.items import MafengwoItem, ScenicspotItem
+from zqtravel.items import TravelItem, ScenicspotItem
 from zqtravel.lib.manufacture import ConfigMiaoJI
 from zqtravel.lib.common import remove_str, get_data_dir_with
 
