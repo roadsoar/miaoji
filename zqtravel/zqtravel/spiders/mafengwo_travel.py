@@ -66,7 +66,7 @@ class MafengwoTravelSpider(scrapy.Spider):
         f_all_urls.close()
 
     def parse_travel_next_pages(self,response):
-        """获得游记下一页地址"""
+        """获得游记下一页地址, response.url => http://www.mafengwo.cn/poi/youji-3452.html """
 
         # 游记的总页数
         travel_pages = response.xpath('//div[@class="wrapper"]//div[@class="page-hotel"]/span[@class="count"]/span[1]/text()').extract()
@@ -74,33 +74,27 @@ class MafengwoTravelSpider(scrapy.Spider):
         travel_pages = int(''.join(travel_pages).strip()) if len(travel_pages)>=1 else 0
 
         # 游记页码的href
-        js_travel_href = response.xpath('//div[@class="wrapper"]//div[@class="page-hotel"]/a[@class="ti next"]/@href').extract()
-        js_travel_href = ''.join(js_travel_href).strip()
+        #js_travel_href = response.xpath('//div[@class="wrapper"]//div[@class="page-hotel"]/a[@class="ti next"]/@href').extract()
+        #js_travel_href = ''.join(js_travel_href).strip()
 
         # 为了抓取第一页面,直接调用获取游记页地址方法=>parse_travel_pages
-        travel_urls = self.parse_travel_pages(response)
-        for travel_url in travel_urls:
-            yield travel_url
+        #travel_urls = self.parse_travel_pages(response)
+        #for travel_url in travel_urls:
+        #    yield travel_url
 
-#  动态抓取时可以打开下面的逻辑，但目前还没有调好
-#        fetch_js = mj_cf.get_bool('mafengwo_travel_spider','fetch_js')
+        fetch_js = mj_cf.get_bool('mafengwo_travel_spider','fetch_js')
         # 抓取的动态网页
-#        if fetch_js:
-#           for page_index in range(2, travel_pages + 1):
-#               url = re.sub(r'\d+\)',str(page_index)+')',js_travel_href)
-#               yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
-#             #travel_id = response.url[response.url.rfind('/')+1:-5]
-#             #url_prefix = self.get_url_prefix(response, True)
-#             #for page_index in range(1, travel_pages + 1):
-#             #    url = ''.join([url_prefix, '/yj/', travel_id, '/1-0-', str(page_index), '.html'])
-#             #    yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
-#        # 非动态网页
-#        else:
-#           travel_id = response.url[response.url.rfind('/')+1:-5]
-#           url_prefix = self.get_url_prefix(response, True)
-#           for page_index in range(1, travel_pages + 1):
-#               url = ''.join([url_prefix, '/yj/', travel_id, '/1-0-', str(page_index), '.html'])
-#               yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
+        if fetch_js:
+           for page_index in range(2, travel_pages + 1):
+               url = re.sub(r'\d+\)',str(page_index)+')',js_travel_href)
+               yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
+        # 非动态网页
+        else:
+           poi_id = response.url[response.url.rfind('-')+1:-5]
+           url_format = 'http://www.mafengwo.cn/gonglve/ajax.php?act=get_new_travellist&page=%s&poi_id=%s'
+           for page_index in range(1, travel_pages + 1):
+               url = url_format % (str(page_index), poi_id)
+               yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
 
     def get_url_prefix(self, response, splice_http=False):
         page_url_prefix = ''
@@ -118,6 +112,16 @@ class MafengwoTravelSpider(scrapy.Spider):
         return page_url_prefix
 
     def parse_travel_pages(self, response):
+        '''获取游记页的地址, response.url => http://www.mafengwo.cn/gonglve/ajax.php?act=get_new_travellist&page=6&poi_id=3452'''
+        # 这个页面比较特殊，返回的是json格式的内容
+
+        # re.sub(r'\\','', a) 获得游记的href
+        # re.findall(r'post-ding.*?>(\d+)<.*?(i\\\/\d+\.html).*?icon_view.*?>(\d+)<.*?icon_comment.*?>(\d+).*?',b)
+        #[('1', 'i\\/869220.html', '831', '6'),
+        #('1', 'i\\/960205.html', '2078', '1')]
+        pass
+
+    def parse_travel_pages_bak(self, response):
         """获取游记页地址"""
 
         tmp_item = response.meta.get('scenicspot_info')
