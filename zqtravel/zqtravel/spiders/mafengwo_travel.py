@@ -78,9 +78,10 @@ class MafengwoTravelSpider(scrapy.Spider):
         #js_travel_href = ''.join(js_travel_href).strip()
 
         # 为了抓取第一页面,直接调用获取游记页地址方法=>parse_travel_pages
-        #travel_urls = self.parse_travel_pages(response)
-        #for travel_url in travel_urls:
-        #    yield travel_url
+        if 1 >= travel_pages:
+           travel_urls = self.parse_travel_pages_for_static(response)
+           for travel_url in travel_urls:
+                yield travel_url
 
         fetch_js = mj_cf.get_bool('mafengwo_travel_spider','fetch_js')
         # 抓取的动态网页
@@ -115,13 +116,33 @@ class MafengwoTravelSpider(scrapy.Spider):
         '''获取游记页的地址, response.url => http://www.mafengwo.cn/gonglve/ajax.php?act=get_new_travellist&page=6&poi_id=3452'''
         # 这个页面比较特殊，返回的是json格式的内容
 
-        # re.sub(r'\\','', a) 获得游记的href
-        # re.findall(r'post-ding.*?>(\d+)<.*?(i\\\/\d+\.html).*?icon_view.*?>(\d+)<.*?icon_comment.*?>(\d+).*?',b)
-        #[('1', 'i\\/869220.html', '831', '6'),
-        #('1', 'i\\/960205.html', '2078', '1')]
-        pass
+        tmp_item = response.meta.get('scenicspot_info')
+        scenicspot_province = tmp_item.get('scenicspot_province')
+        scenicspot_locus = tmp_item.get('scenicspot_locus')
+        scenicspot_name = tmp_item.get('scenicspot_name')
 
-    def parse_travel_pages_bak(self, response):
+        # re.sub(r'\\','', a) 获得游记的href
+        travel_items = re.findall(r'post-ding.*?>(\d+)<.*?(/i\\\/\d+\.html).*?icon_view.*?>(\d+)<.*?icon_comment.*?>(\d+).*?', response.body)
+        # travel_items 的输出如： #  [('1', '/i\\/869220.html', '831', '6'), ...... ,('1', '/i\\/960205.html', '2078', '1')]
+
+        url_prefix = self.get_url_prefix(response, splice_http=True)
+        for travel_item in travel_items:
+            numding = travel_item[0]
+            href_src = travel_item[1]
+            href = re.sub(r'\\', '', href_src)
+            numview = travel_item[2]
+            numreply = travel_item[3]
+            meta_data = {"numreply":numreply, \
+                             "numview":numview, \
+                             "scenicspot_province":scenicspot_province, \
+                             "scenicspot_locus":scenicspot_locus, \
+                             "scenicspot_name":scenicspot_name, \
+                             "from_url":response.url \
+                            }
+            url = '%s%s' % (url_prefix, href)
+            yield Request(url, callback=self.parse_scenicspot_travel_item,meta=meta_data)
+
+    def parse_travel_pages_for_static(self, response):
         """获取游记页地址"""
 
         tmp_item = response.meta.get('scenicspot_info')
@@ -178,8 +199,8 @@ class MafengwoTravelSpider(scrapy.Spider):
                                     ).extract()
        travel_create_time = ''.join(travel_create_time).strip()
 
-       xpath_with_blank_pre = '//div[@class="post_wrap"]//div[@class="post_main "]//div[@class="post_info"]//div[@id="exinfo-tripinfo"]//div[@class="basic-info"]//li[@class="%s"]//text()'
-       xpath_without_blank_pre = '//div[@class="post_wrap"]//div[@class="post_main"]//div[@class="post_info"]//div[@id="exinfo-tripinfo"]//div[@class="basic-info"]//li[@class="%s"]//text()'
+       xpath_with_blank_pre = '//div[@class="post_wrap"]//div[@class="post_main no-border "]//div[@class="post_info"]//div[@id="exinfo-tripinfo"]//div[@class="basic-info"]//li[@class="%s"]//text()'
+       xpath_without_blank_pre = '//div[@class="post_wrap"]//div[@class="post_main no-border"]//div[@class="post_info"]//div[@id="exinfo-tripinfo"]//div[@class="basic-info"]//li[@class="%s"]//text()'
        # 得到类似数据:[u'天数', u'7', u'天'],所以用[1:]截取后面的实际数值
        travel_time = response.xpath(xpath_with_blank_pre % 'item-date'+'|'+xpath_without_blank_pre % 'item-date').extract()
        travel_time = ''.join(travel_time[1:]).strip()
