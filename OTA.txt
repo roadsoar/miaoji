@@ -17,3 +17,5 @@ mafengwo_province_js => {u'江苏':'10100', }
 mafengwo_province_zj => {u'浙江':'10111', }
 
 202.85.216.77 chency !@#QWE,,..
+
+travel_bj => ['北京', '西藏', '上海', '河南', '香港', '新疆']

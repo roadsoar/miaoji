@@ -18,7 +18,7 @@ LOG_FILE = '/home/scrapy/log/zqtravel.log'
 ITEM_PIPELINES = {
  'zqtravel.pipelines.TravelPipeline': 802,
 # 'zqtravel.pipelines.ScenicspotPipeline': 801,
-# 'zqtravel.pipelines.ImagesStorePipeline': 801,
+ 'zqtravel.pipelines.ImagesStorePipeline': 801,
 # 'zqtravel.pipelines.TravelLinkPipeline': 803
 # 'scrapy.contrib.pipeline.images.ImagesPipeline': 1,
 }
