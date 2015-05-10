@@ -258,6 +258,11 @@ class MafengwoTravelSpider(scrapy.Spider):
        # 丢弃游记内容是空的
        if all_content == '':
          return None
+        
+       try:
+          image_num = mj_cf.get_int('mafengwo_travel_spider','image_num_every_travel')
+       except: # 如果没有设置，或设置错误则抓取游记中的全部图片
+          image_num = None
 
        travel_item['travel_praisenum'] = travel_praisenum
        travel_item['travel_create_time'] = travel_create_time
@@ -275,7 +280,7 @@ class MafengwoTravelSpider(scrapy.Spider):
        travel_item['scenicspot_locus'] = meta.get('scenicspot_locus')
        travel_item['scenicspot_name'] = meta.get('scenicspot_name')
        travel_item['from_url'] = meta.get('from_url')
-       travel_item['image_urls'] = image_urls
+       travel_item['image_urls'] = image_urls[:image_num]
 
        return travel_item
 
