@@ -1,8 +1,9 @@
 #!/bin/bash
 
-SOURCE='/home/chunchen/Music/miaoji/zqtravel'
+#SOURCE='/home/chunchen/Music/miaoji/zqtravel'
 SOURCE_IMAGE='/home/scrapy/data/mafengwo_images'
 SOURCE_TRAVEL='/home/scrapy/data/mafengwo_travel'
+SOURCE_SCENICSPOT='/home/scrapy/data/mafengwo_scenicspot'
 ScpFile='load_to_db.py'
 shellFile='delete_duplicate_scenicspots.sh'
 sqlFile='*.sql'
@@ -11,8 +12,8 @@ DESTINATION_IMAGE='/home/images'
 USER='chency'
 PASSWd='(!@#QWE,,..)'
 
-#scp -r -p -P22 $SOURCE $DATA_SOURCE $USER@202.85.216.77:$DESTINATION
-scp -r -p -P22 $SOURCE_TRAVEL $SOURCE_IMAGE $USER@202.85.216.77:$DESTINATION_IMAGE
+scp -r -p -P22 $SOURCE $SOURCE_SCENICSPOT $USER@202.85.216.77:$DESTINATION
+#scp -r -p -P22 $SOURCE_TRAVEL $SOURCE_IMAGE $USER@202.85.216.77:$DESTINATION_IMAGE
 
 
 
