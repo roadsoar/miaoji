@@ -2,7 +2,7 @@
 
 from zqtravel.items import TravelItem, ScenicspotItem, ImageItem
 from zqtravel.lib.manufacture import ConfigMiaoJI
-from zqtravel.lib.common import remove_str, get_data_dir_with
+from zqtravel.lib.common import remove_str, get_data_dir_with, fetch_travel
 
 from scrapy.selector import Selector
 from scrapy.contrib.spiders import CrawlSpider, Rule
@@ -228,10 +228,10 @@ class MafengwoTravelSpider(scrapy.Spider):
        all_content = remove_str(remove_str(''.join(all_content).strip()),'\s{2,}')
 
        # 游记浏览数
-       b_count = ''.join(meta['numview']).strip()
+       numview = ''.join(meta['numview']).strip()
 
        # 游记评论数
-       c_count = ''.join(meta['numreply']).strip()
+       commentnum = ''.join(meta['numreply']).strip()
 
        # 游记被赞或顶的数量
        travel_praisenum = response.xpath('//div[@class="post-hd"]//div[@class="bar_share"]/div[@class="post-up"]/div[@class="num _j_up_num"]/text() |\
@@ -259,6 +259,14 @@ class MafengwoTravelSpider(scrapy.Spider):
        if all_content == '':
          return None
         
+       # 丢弃不包含图片的游记
+       if not image_urls:
+         return None
+      
+       # 丢弃3年以前或不符合抓取规则的游记
+       if not fetch_travel(travel_create_time, numview):
+          return None
+
        try:
           image_num = mj_cf.get_int('mafengwo_travel_spider','image_num_every_travel')
        except: # 如果没有设置，或设置错误则抓取游记中的全部图片
@@ -269,8 +277,8 @@ class MafengwoTravelSpider(scrapy.Spider):
        travel_item['travel_link'] = link
        travel_item['travel_title'] = title
        travel_item['travel_content'] = all_content
-       travel_item['travel_viewnum'] = b_count
-       travel_item['travel_commentnum'] = c_count
+       travel_item['travel_viewnum'] = numview
+       travel_item['travel_commentnum'] = commentnum
        travel_item['travel_time'] = travel_time
        travel_item['travel_people'] = travel_people
        travel_item['travel_cost'] = travel_cost

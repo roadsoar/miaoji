@@ -89,5 +89,33 @@ def max_id_from_db(id_results):
 def dict_data_from_db(data):
    if not data:
       return {}
-
    return dict(data)
+
+def format_time(str_time):
+    f_time = re.sub(r'[^\d :]', '/',str_time)
+    if re.match(r'.*:.*', f_time):
+       return f_time
+    return '%s %s' % (f_time, '00:00:00')
+
+def fetch_travel(travel_time, view_num):
+    str_time = format_time(travel_time)
+    date_now = datetime.datetime.now()
+    date_travel = datetime.datetime.strptime(str_time, "%Y/%m/%d %X")
+    interval_time = date_now - date_travel
+    interval_days = interval_time.days
+
+    mj_cf = manufacture.ConfigMiaoJI("./spider_settings.cfg")
+    threshold_viewnum_in_2year = mj_cf.get_int('mafengwo_travel_spider','threshold_viewnum_in_2year')
+    threshold_viewnum_in_3year = mj_cf.get_int('mafengwo_travel_spider','threshold_viewnum_in_3year')
+    threshold_viewnum = mj_cf.get_int('mafengwo_travel_spider','threshold_viewnum')
+
+    if 365 >= interval_days:
+       return True
+    elif 365*2 >= interval_days and int(view_num) >= threshold_viewnum_in_2year:
+       return True
+    elif 365*3 >= interval_days and int(view_num) >= threshold_viewnum_in_3year:
+       return True
+    elif int(view_num) >= threshold_viewnum:
+       return True
+  
+    return False
