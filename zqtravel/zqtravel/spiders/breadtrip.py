@@ -23,47 +23,37 @@ class BreadtripSpider(scrapy.Spider):
     start_urls = mj_cf.get_starturls('breadtrip_spider','start_urls')
 
     rules = [
-             Rule(LxmlLinkExtractor('/poi/youji*'),
-             callback='parse_travel_next_pages',
-             follow=True),
-             Rule(LxmlLinkExtractor('/i/\d+\.html'),
-             callback='parse_scenicspot_travel_item',
+             Rule(LxmlLinkExtractor('/destinations/'),
+             callback='parse',
              follow=True),
             ]
 
     def parse(self,response):
-        travel_urls_root_dir = mj_cf.get_str('mafengwo_travel_spider','travel_urls_dir')
-        travel_provinces = mj_cf.get_list('mafengwo_travel_spider','travel_provinces')
-        # 爬取所有省份
-        if 'all' in travel_provinces:
-           for dirpath, subdir_names, filenames in os.walk(travel_urls_root_dir):
-               if filenames:
-                  travel_urls_file = os.path.join(dirpath,filenames[0])
-                  travel_urls = self.trigger_travel_url_from(travel_urls_file)
-                  for travel_url in travel_urls:
-                      yield travel_url
-        # 爬取部分省份
-        else:
-            for province in travel_provinces:
-                travel_urls_file = os.path.join(travel_urls_root_dir, province, province+'_travel.urls')
-                travel_urls = self.trigger_travel_url_from(travel_urls_file)
-                for travel_url in travel_urls:
-                    yield travel_url
+        """获得目的地的地址, response.url => http://breadtrip.com/ """
 
-    def trigger_travel_url_from(self, travel_urls_file):
-        f_all_urls = open(travel_urls_file, 'r')
-        for line in f_all_urls.readlines():
-            line_list = line.split('|')
-            scenicspot_province = line_list[0]
-            scenicspot_locus = line_list[1]
-            scenicspot_name = line_list[2]
-            scenicspot_info = {}
-            scenicspot_info['scenicspot_province'] = scenicspot_province
-            scenicspot_info['scenicspot_locus'] = scenicspot_locus
-            scenicspot_info['scenicspot_name'] = scenicspot_name 
-            travel_url = line_list[-1].strip()
-            yield Request(travel_url, callback=self.parse_travel_next_pages, meta={'scenicspot_info':scenicspot_info})
-        f_all_urls.close()
+        url_prefix = self.get_url_prefix(response, splice_http=True)
+        dest_url = response.xpath('//div[@class="top-nav"]//div[@class="nav-bar float-left"]//a[@class="destination "]/@href').extract()
+        dest_url = ''.join(dest_url).strip()
+        url = '%s%s' % (url_prefix, dest_url)
+
+        yield Request(url, callback=self.parse_city)
+
+    def parse_city(self, response):
+        """获得城市的地址, response.url => http://breadtrip.com/destinations/ """
+
+        all_xpath = '//div[@id="domestic-dest-popup"]//div[@class="content"]//ul//li'
+        all_cities = response.xpath(all_xpath)
+
+        url_prefix = self.get_url_prefix(response, splice_http=True)
+        for sel_city in all_cities:
+            province_name = sel_city.xpath('div[@class="level-1 clear-both"]/text()').extract()
+            province_name = ''.join(province_name).strip()
+            city_list = sel_city.xpath('div[@class="level-2 float-left"]//a/span[@class="ellipsis_text"]/text()').extract()
+            href_list = sel_city.xpath('div[@class="level-2 float-left"]//a/@href').extract()
+            for city_name, href in zip(city_list, href_list):
+                city_name = city_name.strip()
+                url = '%s%s' % (url_prefix, href)
+                yield Request(url, callback=self.parse_travel_next_pages, meta={"province_name": province_name, "city_name":city_name})
 
     def parse_travel_next_pages(self,response):
         """获得游记下一页地址, response.url => http://www.mafengwo.cn/poi/youji-3452.html """
