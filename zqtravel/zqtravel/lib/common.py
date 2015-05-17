@@ -38,9 +38,9 @@ def get_dir_name_from_spider_item(item, spider):
   data_root_dir = mj_cf.get_str('global','spider_data_dir')
   file_path = data_root_dir
 
-  dir1 = dict_item.get("scenicspot_province")
-  dir2 = dict_item.get("scenicspot_locus")
-  dir3 = dict_item.get("scenicspot_name")
+  dir1 = dict_item.get("scenicspot_province", '')
+  dir2 = dict_item.get("scenicspot_locus", '')
+  dir3 = dict_item.get("scenicspot_name", '')
   if '' == dir2 or dir2 == dir3:
      dir3 = ''
 

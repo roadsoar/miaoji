@@ -1,9 +1,9 @@
 #!/bin/bash
 
-#SOURCE='/home/chunchen/Music/miaoji/zqtravel'
+SOURCE='/home/chunchen/Music/miaoji/zqtravel'
 SOURCE_IMAGE='/home/scrapy/data/mafengwo_images'
 SOURCE_TRAVEL='/home/scrapy/data/mafengwo_travel'
-SOURCE_SCENICSPOT='/home/scrapy/data/mafengwo_scenicspot'
+#SOURCE_SCENICSPOT='/home/scrapy/data/mafengwo_scenicspot'
 ScpFile='load_to_db.py'
 shellFile='delete_duplicate_scenicspots.sh'
 sqlFile='*.sql'

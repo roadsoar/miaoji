@@ -153,12 +153,28 @@ class ChanyoujiSpider(scrapy.Spider):
 
        pre_xpath_for_trip = '//div[@id="js-trip"]//article[@class="viewer"]//'
 
-       # 旅游路线, 如：['第1天','#day/90843','兵马俑','#nd/43920', ..., '第6天','#day/348923','华山','#nd/124859']
+       # 旅游路线, 如：['第1天','大雁塔','兵马俑', ..., '第6天','游乐园','华山']
        medium_xpath_for_map = 'header[@id="trips-header"]//div[@class="trips-header"]//div[@class="trips-header"]//div[@class="trips clearfix"]//'
-       xpath_for_map1 = '%s%s%s' % (pre_xpath_for_trip, medium_xpath_for_map,'a/@href')
-       xpath_for_map2 = '%s%s%s' % (pre_xpath_for_trip, medium_xpath_for_map,'a/@title')
-       trip_roadmap = response.xpath(xpath_for_map2 +'|'+ xpath_for_map1).extract()
-       trip_roadmap = ';'.join(trip_roadmap).strip()
+       xpath_for_map1 = '%s%s%s' % (pre_xpath_for_trip, 'div[@class="viewport-wrapper"]//div[@class="day-index"]/', 'text()')
+       xpath_for_map2 = '%s%s%s' % (pre_xpath_for_trip, 'div[@class="note node"]', '//div[@class="node-name"]/text()')
+       trip_roadmap = response.xpath(xpath_for_map1 +'|'+ xpath_for_map2).extract()
+       trip = ''
+       for i, roadmap in enumerate(trip_roadmap):
+           if u'天' in roadmap:
+              trip += ';'+roadmap if 0<i else roadmap
+           else:
+              trip += '|'+roadmap
+       trip_roadmap = trip
+
+       # 游记中涉及的景点
+       sel_scenicspot_in_trip = response.xpath('//div[@class="node-info"]')
+       scenicspot_in_trip = ''
+       for i, sel_trip in enumerate(sel_scenicspot_in_trip):
+           scenicspot_star = ''.join(sel_trip.xpath('.//i//@class').extract()).strip()
+           scenicspot_ticket = ''.join(sel_trip.xpath('.//div[@class="memo"]//span//text()').extract()).strip()
+           scenicspot_desc = ''.join(sel_trip.xpath('.//div[@class="desc"]//text()').extract()).strip()
+           scenicspot = '|'.join([scenicspot_star, scenicspot_ticket, scenicspot_desc])
+           scenicspot_in_trip += ';'+scenicspot if 0<i else scenicspot
 
        medium_xpath_for_content = 'div[@class="viewport-wrapper"]//div[@class="viewport"]//div[@class="slider"]//'
        # 游记内容
@@ -169,17 +185,24 @@ class ChanyoujiSpider(scrapy.Spider):
        roadmap_content = '|'.join([trip_roadmap, all_content])
 
        # 游记中的图片
-       xpath_for_image = '%s%s%s' % (pre_xpath_for_trip, medium_xpath_for_content,'img//@src')
+       xpath_for_image = '%s%s' % ('//div[@class="extra-toolbar s-box"]','/div[@class="share-icons"]/div/@data-img')
        image_urls = response.xpath(xpath_for_image).extract()
 
        # 丢弃游记内容是空的
        if roadmap_content == '':
          return None
 
+       # 设置游记中图片抓取的个数
+       try:
+          image_num = mj_cf.get_int('mafengwo_travel_spider','image_num_every_travel')
+       except: # 如果没有设置，或设置错误则抓取游记中的全部图片
+          image_num = None
+
        travel_item['travel_praisenum'] = favorites_num
        travel_item['travel_create_time'] = ''
        travel_item['travel_link'] = link
        travel_item['travel_title'] = title
+       travel_item['trip_roadmap'] = trip_roadmap
        travel_item['travel_content'] = roadmap_content
        travel_item['travel_viewnum'] = viewer_num
        travel_item['travel_commentnum'] = comments_num
@@ -190,7 +213,8 @@ class ChanyoujiSpider(scrapy.Spider):
        travel_item['travel_days'] = travel_days
        travel_item['scenicspot_province'] = response.meta.get('province_name')
        travel_item['from_url'] = response.meta.get('from_url')
-       travel_item['image_urls'] = image_urls
+       travel_item['image_urls'] = image_urls[:image_num]
+       travel_item['scenicspot_in_trip'] = scenicspot_in_trip
 
        return travel_item
 

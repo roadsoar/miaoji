@@ -26,7 +26,7 @@ ITEM_PIPELINES = {
 IMAGES_MIN_HEIGHT = 110
 IMAGES_MIN_WIDTH = 110
 IMAGES_EXPIRES = 90   # 90天的图片失效期限
-IMAGES_STORE = '/home/scrapy/data/mafengwo_images/'
+IMAGES_STORE = '/home/scrapy/data/chanyouji_images/'
 
 #DOWNLOAD_HANDLERS = {
 #    'http': 'zqtravel.scrapyjs.dhandler.WebkitDownloadHandler',

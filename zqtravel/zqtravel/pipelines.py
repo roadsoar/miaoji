@@ -44,7 +44,7 @@ class TravelPipeline(object):
         log.msg('Failed to write travel records to file', level=log.ERROR)
 
   def open_file(self, item, spider):
-    file_path = get_dir_name_from_spider_item(item, spider).decode('utf-8')
+    file_path = get_dir_name_from_spider_item(item, spider)#.decode('utf-8')
     # 保存游记的文件
     dict_item = dict(item)
     link = dict_item.get('travel_link')
@@ -131,11 +131,15 @@ class ImagesStorePipeline(ImagesPipeline):
     def get_media_requests(self, item, info):
          '''重写scrapy的默认函数，以传递自定义存储路径所需要的信息，如：省、市/县、景点名称'''
 
-         scenicspot_province = item['scenicspot_province']
-         scenicspot_locus = item['scenicspot_locus']
-         scenicspot_name = item['scenicspot_name']
-         link = item['travel_link']
-         link_id = link[link.rfind('/')+1:-5]
+         scenicspot_province = item.get('scenicspot_province','')
+         scenicspot_locus = item.get('scenicspot_locus','')
+         scenicspot_name = item.get('scenicspot_name','')
+         link = item.get('travel_link','')
+         if '.html' in link:
+            link_id = link[link.rfind('/')+1:-5]
+         else:
+            link_id = link[link.rfind('/')+1:]
+
          return [Request(x, \
                         meta={'scenicspot_province':scenicspot_province, \
                               'scenicspot_locus':scenicspot_locus, \

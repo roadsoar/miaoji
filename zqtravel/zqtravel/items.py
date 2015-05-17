@@ -31,12 +31,14 @@ class TravelItem(Item):
     travel_type = Field()             # 游玩的形式
     travel_days = Field()             # 游玩的天数
     travel_link = Field()             # 游记的链接
+    scenicspot_in_trip = Field()      # 游记中涉及的景点，针对蝉游记
     from_url = Field()                # 游记link是从from_url跳转过来的
     travel_content = Field()          # 游记的内容
     scenicspot_province = Field()     # 景点所在地，即所在的省
     scenicspot_name = Field()         # 景点名称
     scenicspot_locus = Field()        # 景点所在地，即所在的省/市/县
                                       # scenicspot_name和scenicspot_locus，是为了区分游记文件的路径
+    trip_roadmap = Field()            # 游记路线
     image_urls = Field()
     images = Field()
 
