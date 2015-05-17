@@ -30,8 +30,8 @@ class TravelPipeline(object):
         self.open_file(item, spider)
         dict_item = dict(item)
         # 删除images和images_urls字段，因为游记分析不需要且占很多空间
-        if 'image_urls' in dict_item.keys():
-           dict_item.pop('image_urls')
+        #if 'image_urls' in dict_item.keys():
+        #   dict_item.pop('image_urls')
         if 'images' in dict_item.keys():
            dict_item.pop('images')
 

@@ -167,13 +167,14 @@ class ChanyoujiSpider(scrapy.Spider):
        trip_roadmap = trip
 
        # 游记中涉及的景点
-       sel_scenicspot_in_trip = response.xpath('//div[@class="node-info"]')
+       sel_scenicspot_in_trip = response.xpath('//div[@class="node-content"]')
        scenicspot_in_trip = ''
        for i, sel_trip in enumerate(sel_scenicspot_in_trip):
-           scenicspot_star = ''.join(sel_trip.xpath('.//i//@class').extract()).strip()
-           scenicspot_ticket = ''.join(sel_trip.xpath('.//div[@class="memo"]//span//text()').extract()).strip()
-           scenicspot_desc = ''.join(sel_trip.xpath('.//div[@class="desc"]//text()').extract()).strip()
-           scenicspot = '|'.join([scenicspot_star, scenicspot_ticket, scenicspot_desc])
+           scenicspot_name = ''.join(sel_trip.xpath('.//div[@class="node-name"]/text()').extract()).strip()
+           scenicspot_star = ''.join(sel_trip.xpath('.//div[@class="node-info"]//i//@class').extract()).strip()
+           scenicspot_ticket = ''.join(sel_trip.xpath('.//div[@class="node-info"]//div[@class="memo"]//span//text()').extract()).strip()
+           scenicspot_desc = ''.join(sel_trip.xpath('.//div[@class="node-info"]//div[@class="desc"]//text()').extract()).strip()
+           scenicspot = '|'.join([scenicspot_name, scenicspot_star, scenicspot_ticket, scenicspot_desc])
            scenicspot_in_trip += ';'+scenicspot if 0<i else scenicspot
 
        medium_xpath_for_content = 'div[@class="viewport-wrapper"]//div[@class="viewport"]//div[@class="slider"]//'
