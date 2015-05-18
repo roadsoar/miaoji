@@ -51,8 +51,11 @@ class ConfigMiaoJI:
       return eval(dict_str)
 
   def get_list(self, field, key):
-      list_str = self.cfMJ.get(field, key)
-      return eval(list_str)
+      try:
+         list_str = self.cfMJ.get(field, key)
+         return eval(list_str)
+      except:
+         return None
 
   def get_str(self, field, key):
       field_value = ''.join(self.cfMJ.get(field, key))

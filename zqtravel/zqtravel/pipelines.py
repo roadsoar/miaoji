@@ -47,8 +47,11 @@ class TravelPipeline(object):
     file_path = get_dir_name_from_spider_item(item, spider)#.decode('utf-8')
     # 保存游记的文件
     dict_item = dict(item)
-    link = dict_item.get('travel_link')
-    link_id = link[link.rfind('/')+1:-5]
+    link = dict_item.get('travel_link','')
+    if '.html' in link:
+       link_id = link[link.rfind('/')+1:-5]
+    else:
+       link_id = link[link.rfind('/')+1:]
     travel_file = "_".join([dict_item.get('travel_praisenum'),dict_item.get('travel_viewnum'), dict_item.get('travel_commentnum'), link_id, 'json'])
 
     path_travel_file = os.path.join(file_path, travel_file)

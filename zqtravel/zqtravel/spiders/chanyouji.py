@@ -11,7 +11,7 @@ from scrapy.http import Request
 from scrapy import log 
 import codecs
 
-import scrapy
+import scrapy, urllib
 import re, os
 
 
@@ -49,10 +49,14 @@ class ChanyoujiSpider(scrapy.Spider):
 
         url_prefix = self.get_url_prefix(response, True)
 
+        travel_provinces = [unicode(s, 'utf-8') for s in mj_cf.get_list('breadtrip_spider','travel_provinces')]
         for index, href in enumerate(province_hrefs):
             province_name = province_names[index]
             province_url = '%s%s' % (url_prefix, href)
-            yield Request(province_url,callback=self.parse_travel_next_pages, meta={'province_name':province_name})
+            if not travel_provinces:
+               yield Request(province_url,callback=self.parse_travel_next_pages, meta={'province_name':province_name})
+            elif province_name in travel_provinces:
+               yield Request(province_url,callback=self.parse_travel_next_pages, meta={'province_name':province_name})
 
     def parse_travel_next_pages(self,response):
         """获得游记下一页地址, response.url => http://chanyouji.com/trips?destination_id=16&type=china"""
@@ -149,7 +153,7 @@ class ChanyoujiSpider(scrapy.Spider):
           if list_time[0].find(u'天') == -1:
              travel_time = list_time[0]
           else:
-             travel_days = list_time[0]
+             travel_days = re.sub(r'\[(.*)\]', '\g<1>', list_time[0])
 
        pre_xpath_for_trip = '//div[@id="js-trip"]//article[@class="viewer"]//'
 
@@ -160,11 +164,11 @@ class ChanyoujiSpider(scrapy.Spider):
        trip_roadmap = response.xpath(xpath_for_map1 +'|'+ xpath_for_map2).extract()
        trip = ''
        for i, roadmap in enumerate(trip_roadmap):
-           if u'天' in roadmap:
-              trip += ';'+roadmap if 0<i else roadmap
+           if re.match(u'第\d+天', roadmap):
+              trip += '|'+roadmap+':' if 0<i else roadmap+':'
            else:
-              trip += '|'+roadmap
-       trip_roadmap = trip
+              trip += roadmap+',' if i<len(trip_roadmap)-1 else roadmap
+       trip_roadmap = re.sub(r',\|', '|', trip)
 
        # 游记中涉及的景点
        sel_scenicspot_in_trip = response.xpath('//div[@class="node-content"]')
