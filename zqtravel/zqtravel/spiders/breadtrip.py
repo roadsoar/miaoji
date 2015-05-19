@@ -53,7 +53,17 @@ class BreadtripSpider(scrapy.Spider):
             for city_name, href in zip(city_list, href_list):
                 city_name = city_name.strip()
                 url = '%s%s' % (url_prefix, href)
-                yield Request(url, callback=self.parse_travel_next_pages, meta={"province_name": province_name, "city_name":city_name})
+                yield Request(url, callback=self.parse_scenicspot_next_pages, meta={"province_name": province_name, "city_name":city_name})
+
+    def parse_scenicspot_next_pages(self, response):
+        """获得景点页的地址, response.url => http://breadtrip.com/huangshan/ """
+
+        scenicspot_href = response.xpath('//div[@class="wrap"]//ul[@class="nav  nav-city"]//li[4]/a/@href').extract()
+        scenicspot_href = ''.join(scenicspot_href).strip().split('#')[0]
+        url_prefix = self.get_url_prefix(response, splice_http=True)       
+        for index in range(0, 10000):
+            url = '%s%s%s%s' % (url_prefix, scenicspot_href, 'more/?next_start=', str(index))
+            yield Request(url, callback=self.parse_travel_next_pages, meta=response.meta)
 
     def parse_travel_next_pages(self,response):
         """获得游记下一页地址, response.url => http://www.mafengwo.cn/poi/youji-3452.html """
