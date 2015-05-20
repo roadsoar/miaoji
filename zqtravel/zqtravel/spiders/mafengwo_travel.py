@@ -195,27 +195,20 @@ class MafengwoTravelSpider(scrapy.Spider):
 
        # 游记创建时间
        travel_create_time = response.xpath('//div[@class="post_item"]//div[@class="tools no-bg"]//div[@class="fl"]//span[@class="date"]/text() |\
-                                      //div[@class="view clearfix"]//div[@class="vc_title clearfix"]//div[@class="vc_time"]/span[@class="time"]/text()' \
+                                      //div[@class="view_title clearfix"]//div[@class="vt_center"]//div[@class="vc_time"]/span[@class="time"]/text()' \
                                     ).extract()
        travel_create_time = ''.join(travel_create_time).strip()
 
-       xpath_with_blank_pre = '//div[@class="post_wrap"]//div[@class="post_main no-border "]//div[@class="post_info"]//div[@id="exinfo-tripinfo"]//div[@class="basic-info"]//li[@class="%s"]//text()'
-       xpath_without_blank_pre = '//div[@class="post_wrap"]//div[@class="post_main no-border"]//div[@class="post_info"]//div[@id="exinfo-tripinfo"]//div[@class="basic-info"]//li[@class="%s"]//text()'
-       # 得到类似数据:[u'天数', u'7', u'天'],所以用[1:]截取后面的实际数值
-       travel_time = response.xpath(xpath_with_blank_pre % 'item-date'+'|'+xpath_without_blank_pre % 'item-date').extract()
-       travel_time = ''.join(travel_time[1:]).strip()
-
-       travel_people = response.xpath(xpath_with_blank_pre % 'item-people'+'|'+xpath_without_blank_pre % 'item-people').extract()
-       travel_people = ''.join(travel_people[1:]).strip()
-
-       travel_cost = response.xpath(xpath_with_blank_pre % 'item-cost'+'|'+xpath_without_blank_pre % 'item-cost').extract()
-       travel_cost = ''.join(travel_cost[1:]).strip()
-
-       travel_type= response.xpath(xpath_with_blank_pre % 'item-type'+'|'+xpath_without_blank_pre % 'item-type').extract()
-       travel_type = ''.join(travel_type[1:]).strip()
-
-       travel_days = response.xpath(xpath_with_blank_pre % 'item-days'+'|'+xpath_without_blank_pre % 'item-days').extract()
-       travel_days = ''.join(travel_days[1:]).strip()
+       #xpath_with_blank_pre = '//div[@class="post_wrap"]//div[@class="post_main no-border "]//div[@class="post_info"]//div[@id="exinfo-tripinfo"]//div[@class="basic-info"]//li[@class="%s"]//text()'
+       #xpath_without_blank_pre = '//div[@class="post_wrap"]//div[@class="post_main no-border"]//div[@class="post_info"]//div[@id="exinfo-tripinfo"]//div[@class="basic-info"]//li[@class="%s"]//text()'
+       travel_info_xpath = '//div[@class="main"]/div[@class="view clearfix"]//div[@class="travel_detail"]//li//a//strong//text()'
+       travel_info = response.xpath(travel_info_xpath).extract()
+      
+       travel_time = ''.join(travel_info[0]).strip() if len(travel_info)>=1 else ''
+       travel_people = ''.join(travel_info[1]).strip() if len(travel_info)>=2 else ''
+       travel_days = ''.join(travel_info[2]).strip() if len(travel_info)>=3 else ''
+       travel_type = ''.join(travel_info[3]).strip() if len(travel_info)>=4 else ''
+       travel_cost = ''.join(travel_info[4]).strip() if len(travel_info)>=5 else ''
 
        # 游记内容
        # 蚂蜂窝的游记页面使用了多种模板，所以对照的写了些xpath
@@ -244,9 +237,9 @@ class MafengwoTravelSpider(scrapy.Spider):
                                     //div[@class="view clearfix"]//div[@class="vc_article"]//div[@class="va_con"]//a//img/@src'\
                                   ).extract()
 
-       # 游记所在地
-       #scenicspot_locus = response.xpath('//div[@class="post-hd"]//div[@class="crumb"]//strong[last()-2]//a/text()').extract()
-       #scenicspot_locus = ''.join(scenicspot_locus).strip()[:-2]
+       roadmap_detail_xpath = '//div[@class="main"]/div[@class="view clearfix"]//div[@class="travel_detail"]//li[@class="edit detail"]/a/@href'
+       roadmap_href = response.xpath(roadmap_detail_xpath).extract()
+       roadmap_href = ''.join(roadmap_href).strip()
 
        # 如果设置并开启了爬取的开始时间，则将早于开始时间的游记丢弃
        enable_start_crawling_time = mj_cf.get_str('mafengwo_spider','enable_start_crawling_time')
@@ -290,5 +283,15 @@ class MafengwoTravelSpider(scrapy.Spider):
        travel_item['from_url'] = meta.get('from_url')
        travel_item['image_urls'] = image_urls[:image_num]
 
-       return travel_item
+       # 获取详细的行程信息
+       if roadmap_href:
+           url_prefix = self.get_url_prefix(response, splice_http=True)
+           url = '%s%s' % (url_prefix, roadmap_href)
+           yield Request(url, callback=self.parse_roadmap_detail, meta={'travel_item':travel_item})
+       else:
+           return travel_item
 
+def parse_roadmap_detail(self, response):
+    ''' 获取详细的行程信息, response.url => http://www.mafengwo.cn/schedule/242142.html '''
+    travel_item = response.meta.get('travel_item') 
+    trip_roadmap 
