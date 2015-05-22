@@ -294,4 +294,14 @@ class MafengwoTravelSpider(scrapy.Spider):
 def parse_roadmap_detail(self, response):
     ''' 获取详细的行程信息, response.url => http://www.mafengwo.cn/schedule/242142.html '''
     travel_item = response.meta.get('travel_item') 
-    trip_roadmap 
+
+    xpath_info = '//div[@class="container"]//div[@class="info clearfix"]//div[@class="des_detail"]//div[@class="des_list _j_list"]//ul//li'
+    sel_infos = response.xpath(xpath_info)
+
+    trip_roadmap_list = []
+    for index, sel_info in enumerate(sel_infos):
+        trip_detail = ''.join(sel_info.xpath('./text()').extract()).strip()
+        day_index = '%s%s%s' % u'第', str(index+1), u'天:')
+        roadmap = '%s%s' % (day_index, trip_detail)
+        trip_roadmap_list.append(roadmap)
+    trip_roadmap = '|'.join(trip_roadmap)

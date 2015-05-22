@@ -39,6 +39,7 @@ class TravelItem(Item):
     scenicspot_locus = Field()        # 景点所在地，即所在的省/市/县
                                       # scenicspot_name和scenicspot_locus，是为了区分游记文件的路径
     trip_roadmap = Field()            # 游记路线
+    roadmap_detail = Field()          # 详细的游记路线
     image_urls = Field()
     images = Field()
 
