@@ -284,12 +284,12 @@ class MafengwoTravelSpider(scrapy.Spider):
        travel_item['image_urls'] = image_urls[:image_num]
 
        # 获取详细的行程信息
-       if roadmap_href:
-           url_prefix = self.get_url_prefix(response, splice_http=True)
-           url = '%s%s' % (url_prefix, roadmap_href)
-           yield Request(url, callback=self.parse_roadmap_detail, meta={'travel_item':travel_item})
-       else:
+       if not roadmap_href:
            return travel_item
+       #else:
+       #    url_prefix = self.get_url_prefix(response, splice_http=True)
+       #    url = '%s%s' % (url_prefix, roadmap_href)
+       #    yield Request(url, callback=self.parse_roadmap_detail, meta={'travel_item':travel_item})
 
 def parse_roadmap_detail(self, response):
     ''' 获取详细的行程信息, response.url => http://www.mafengwo.cn/schedule/242142.html '''
@@ -301,7 +301,15 @@ def parse_roadmap_detail(self, response):
     trip_roadmap_list = []
     for index, sel_info in enumerate(sel_infos):
         trip_detail = ''.join(sel_info.xpath('./text()').extract()).strip()
-        day_index = '%s%s%s' % u'第', str(index+1), u'天:')
-        roadmap = '%s%s' % (day_index, trip_detail)
+        day_index = '%s%s%s' % (u'第', str(index+1), u'天')
+        roadmap = '%s%s%s' % (day_index, ':', trip_detail)
         trip_roadmap_list.append(roadmap)
     trip_roadmap = '|'.join(trip_roadmap)
+
+    xpath_detail = '//div[@class="container"]//div[@class="guide"]//div[@class="_j_dayscnt"]//div[@class="days _j_scrollitem _j_days"]'
+    sel_details = response.xpath(xpath_detail)
+    for sel_detail in sel_details:
+        day_num = ''.join(sel_detail.xpath('.//div[@class="day_num"]//text()|.//div[@class="day_num"]//span//text()').extract()).strip()
+        detail = ''.join(sel_detail.xpath('.//div[@class="day_item clearfix"]//div[@class="detail_title"]/text()|.//div[@class="day_item clearfix"]//div[@class="detail_title"]//a/text()').extract()).strip()
+
+    return travel_item
