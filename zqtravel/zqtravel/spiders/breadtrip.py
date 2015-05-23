@@ -84,7 +84,7 @@ class BreadtripSpider(scrapy.Spider):
         url_prefix = self.get_url_prefix(response, splice_http=True)
         for href in scenicspot_hrefs[1:]: # 第一个href是上一个页面的href，所以不需要
             url = '%s%s' % (url_prefix, href)
-            yield Resquest(url, callback=self.parse_travel_next_pages, meta=response.meta)
+            yield Request(url, callback=self.parse_travel_next_pages, meta=response.meta)
 
     def get_url_prefix(self, response, splice_http=False):
         page_url_prefix = ''
@@ -107,8 +107,8 @@ class BreadtripSpider(scrapy.Spider):
         travel_hrefs = re.findall(r'"encrypt_id": (\d+)', response.body)
         url_prefix = self.get_url_prefix(response, splice_http=True)
         for href in travel_hrefs:
-            url = '' % (url_prefix, '/trips/', href)
-            yield Resquest(url, callback=self.parse_scenicspot_travel_item, meta=response.meta)
+            url = '%s%s%s' % (url_prefix, '/trips/', href)
+            yield Request(url, callback=self.parse_scenicspot_travel_item, meta=response.meta)
 
     def parse_scenicspot_travel_item(self, response):
 
