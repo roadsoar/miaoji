@@ -77,7 +77,7 @@ class BreadtripSpider(scrapy.Spider):
             url = '%s%s%s' % (response.url, 'trip/more/?next_start=', str(index))
             yield Request(url, callback=self.parse_travel_pages, meta=meta_with_scenicstot)
 
-    def parse_scenicspot_page(self,response):
+    def parse_scenicspot_pages(self,response):
         """获得景点的地址, response.url => http://breadtrip.com/scenic/3/333/sight/more/?next_start=0 """
 
         scenicspot_hrefs = re.findall(r'(/scenic/\d+/\d+/)', response.body)
