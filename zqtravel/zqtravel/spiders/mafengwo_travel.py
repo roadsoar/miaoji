@@ -283,9 +283,10 @@ class MafengwoTravelSpider(scrapy.Spider):
        travel_item['from_url'] = meta.get('from_url')
        travel_item['image_urls'] = image_urls[:image_num]
 
+       return travel_item
        # 获取详细的行程信息
-       if not roadmap_href:
-           return travel_item
+       # if not roadmap_href:
+       #    return travel_item
        #else:
        #    url_prefix = self.get_url_prefix(response, splice_http=True)
        #    url = '%s%s' % (url_prefix, roadmap_href)
