@@ -104,11 +104,14 @@ class BreadtripSpider(scrapy.Spider):
     def parse_travel_pages(self, response):
         """获得游记的地址, response.url => http://breadtrip.com/scenic/3/333/trip/more/?next_start=0 """
         
+        meta_with_from_url = response.meta
+        meta_with_from_url['from_url'] = response.url
+
         travel_hrefs = re.findall(r'"encrypt_id": (\d+)', response.body)
         url_prefix = self.get_url_prefix(response, splice_http=True)
         for href in travel_hrefs:
             url = '%s%s%s' % (url_prefix, '/trips/', href)
-            yield Request(url, callback=self.parse_scenicspot_travel_item, meta=response.meta)
+            yield Request(url, callback=self.parse_scenicspot_travel_item, meta=meta_with_from_url)
 
     def parse_scenicspot_travel_item(self, response):
 
