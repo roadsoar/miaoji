@@ -61,7 +61,7 @@ class BreadtripSpider(scrapy.Spider):
         scenicspot_href = response.xpath('//div[@class="wrap"]//ul[@class="nav  nav-city"]//li[4]/a/@href').extract()
         scenicspot_href = ''.join(scenicspot_href).strip().split('#')[0]
         url_prefix = self.get_url_prefix(response, splice_http=True)       
-        for index in range(0, 230):
+        for index in range(230, -1, -1):
             url = '%s%s%s%s' % (url_prefix, scenicspot_href, 'more/?next_start=', str(index))
             yield Request(url, callback=self.parse_scenicspot_pages, meta=response.meta)
 
@@ -73,7 +73,7 @@ class BreadtripSpider(scrapy.Spider):
         meta_with_scenicstot = response.meta
         meta_with_scenicstot['scenicspot_name'] = scenicspot_name
 
-        for index in range(0, 320):
+        for index in range(320, -1, -1):
             url = '%s%s%s' % (response.url, 'trip/more/?next_start=', str(index))
             yield Request(url, callback=self.parse_travel_pages, meta=meta_with_scenicstot)
 
@@ -151,23 +151,17 @@ class BreadtripSpider(scrapy.Spider):
        # 游记内容
        # 蚂蜂窝的游记页面使用了多种模板，所以对照的写了些xpath
        pre_content_xpath = '//div[@id="content"]//div[@class="trip-wps"]//%s'
-       all_content = response.xpath(pre_content_xpath % 'p//text()' +'|'+ pre_content_xpath % 'a//@data-caption' ).extract()
+       all_content = response.xpath(pre_content_xpath % 'p//text()' +'|'+ pre_content_xpath % 'a//@data-caption' +'|'+ pre_content_xpath % 'h3//text()' +'|'+ pre_content_xpath % 'div//p/text()').extract()
        all_content = remove_str(remove_str(''.join(all_content).strip()),'\s{2,}')
 
        # 游记中的图片
-       image_urls = response.xpath('//div[@class="post_item"]//div[@id="pnl_contentinfo"]//a//img/@src |\
-                                    //div[@class="view clearfix"]//div[@class="vc_article"]//div[@class="va_con"]//a//img/@src'\
-                                  ).extract()
-
-       # 游记所在地
-       #scenicspot_locus = response.xpath('//div[@class="post-hd"]//div[@class="crumb"]//strong[last()-2]//a/text()').extract()
-       #scenicspot_locus = ''.join(scenicspot_locus).strip()[:-2]
+       image_urls = response.xpath(pre_content_xpath % 'div[@class="photo-ctn"]//a/@href').extract()
 
        # 如果设置并开启了爬取的开始时间，则将早于开始时间的游记丢弃
        enable_start_crawling_time = mj_cf.get_str('mafengwo_spider','enable_start_crawling_time')
        if enable_start_crawling_time == 'True':
           start_crawling_time = mj_cf.get_str('mafengwo_spider','start_crawling_time')
-          if travel_create_time < start_crawling_time:
+          if travel_time < start_crawling_time:
              return None
 
        # 丢弃游记内容是空的
@@ -179,7 +173,7 @@ class BreadtripSpider(scrapy.Spider):
          return None
       
        # 丢弃3年以前或不符合抓取规则的游记
-       if not fetch_travel(travel_create_time, numview):
+       if not fetch_travel(travel_time, numview):
           return None
 
        try:

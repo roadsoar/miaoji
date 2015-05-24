@@ -50,9 +50,12 @@ class TravelPipeline(object):
     link = dict_item.get('travel_link','')
     if '.html' in link:
        link_id = link[link.rfind('/')+1:-5]
+    elif link.endswith('/'):
+       link_id = link.split('/')[-2]
     else:
        link_id = link[link.rfind('/')+1:]
-    travel_file = "_".join([dict_item.get('travel_praisenum'),dict_item.get('travel_viewnum'), dict_item.get('travel_commentnum'), link_id, 'json'])
+    travel_file = link_id + '_json'
+    #travel_file = "_".join([dict_item.get('travel_praisenum'),dict_item.get('travel_viewnum'), dict_item.get('travel_commentnum'), link_id, 'json'])
 
     path_travel_file = os.path.join(file_path, travel_file)
 
@@ -85,11 +88,11 @@ class ScenicspotPipeline(object):
     file_path = get_dir_name_from_spider_item(item, spider)
     # 保存景点信息的文件
     dict_item = dict(item)
-    if 'scenicspot_grade' in dict_item:
-        scenicspot_grade = dict_item.get('scenicspot_grade')
-        scenicspot_info_file = '_'.join([scenicspot_grade, dict_item.get('scenicspot_name'), 'txt'])
-    else:
-        scenicspot_info_file = '_'.join([dict_item.get('scenicspot_name'), 'txt'])
+    #if 'scenicspot_grade' in dict_item:
+    #    scenicspot_grade = dict_item.get('scenicspot_grade')
+    #    scenicspot_info_file = '_'.join([scenicspot_grade, dict_item.get('scenicspot_name'), 'txt'])
+    #else:
+    scenicspot_info_file = '_'.join([dict_item.get('scenicspot_name'), 'txt'])
 
     path_scenicspot_info_file = os.path.join(file_path, scenicspot_info_file)
 
@@ -140,6 +143,8 @@ class ImagesStorePipeline(ImagesPipeline):
          link = item.get('travel_link','')
          if '.html' in link:
             link_id = link[link.rfind('/')+1:-5]
+         elif link.endswith('/'):
+            link_id = link.split('/')[-2]
          else:
             link_id = link[link.rfind('/')+1:]
 
