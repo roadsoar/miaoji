@@ -76,7 +76,7 @@ class ChanyoujiSpider(scrapy.Spider):
             yield travel_url
 
         url_prefix = self.get_url_prefix(response, True)
-        for page_index in range(2, travel_pages + 1):
+        for page_index in range(travel_pages, 1, -1):
             page_href = re.sub('(.*page=)\d+(.*)', '\g<1>'+str(page_index)+'\g<2>', last_page_href)
             url = '%s%s' % (url_prefix, page_href)
             yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
@@ -222,4 +222,3 @@ class ChanyoujiSpider(scrapy.Spider):
        travel_item['scenicspot_in_trip'] = scenicspot_in_trip
 
        return travel_item
-

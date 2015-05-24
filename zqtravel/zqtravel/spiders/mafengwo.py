@@ -124,7 +124,7 @@ class MafengwoSpider(CrawlSpider):
 #           first_href = ''.join(first_href).strip()
 #           url_prefix = self.get_url_prefix(response, True)
 #           url_medium = first_href[:first_href.rfind('-')+1]
-#         for page_index in range(1, scenicspot_pages + 1):
+#         for page_index in range(scenicspot_pages, 0, -1):
                #url = ''.join([url_prefix,url_medium,str(page_index), '.html'])
 #             url = ''.join([response.url,url_medium,str(page_index), '.html'])
 #             yield Request(url, callback=self.parse_scenicspot_next_page, meta=response.meta)
@@ -213,7 +213,7 @@ class MafengwoSpider(CrawlSpider):
         # 游记每一页url
         travel_id = response.url[response.url.rfind('/')+1:-5]
         url_prefix = self.get_url_prefix(response, True)
-        for page_index in range(1, travel_pages + 1):
+        for page_index in range(travel_pages, 0, -1):
             url = ''.join([url_prefix, '/yj/', travel_id, '/1-0-', str(page_index), '.html'])
             #yield Request(url, callback=self.parse_scenicspot_travel_pages, meta=response.meta)
         
@@ -251,7 +251,7 @@ class MafengwoSpider(CrawlSpider):
 
         # 景点每一页url
         url_prefix = response.url[:response.url.rfind('-')+1]
-        for page_index in range(1, scenicspot_pages + 1):
+        for page_index in range(scenicspot_pages, 0, -1):
             url = ''.join([url_prefix, str(page_index), '.html'])
             yield Request(url, callback=self.parse_scenicspot_pages, meta={'scenicspot_item':scenicspot_item})
 

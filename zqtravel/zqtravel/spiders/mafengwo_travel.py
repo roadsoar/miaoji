@@ -86,14 +86,14 @@ class MafengwoTravelSpider(scrapy.Spider):
         fetch_js = mj_cf.get_bool('mafengwo_travel_spider','fetch_js')
         # 抓取的动态网页
         if fetch_js:
-           for page_index in range(2, travel_pages + 1):
+           for page_index in range(travel_pages, 1, -1):
                url = re.sub(r'\d+\)',str(page_index)+')',js_travel_href)
                yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
         # 非动态网页
         else:
            poi_id = response.url[response.url.rfind('-')+1:-5]
            url_format = 'http://www.mafengwo.cn/gonglve/ajax.php?act=get_new_travellist&page=%s&poi_id=%s'
-           for page_index in range(1, travel_pages + 1):
+           for page_index in range(travel_pages, 0, -1):
                url = url_format % (str(page_index), poi_id)
                yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
 

@@ -54,7 +54,7 @@ class CtripSpider(CrawlSpider):
         # 下一页地址
         page_url_prefix = self.get_url_prefix(response)
 
-        for page_index in range(1, travels_pages + 1):
+        for page_index in range(travels_pages, 0, -1):
             url = ''.join([page_url_prefix,'/s3-p',str(page_index), '.html'])
             r = Request(url, callback=self.parse_travel_pages)
             req.append(r)
