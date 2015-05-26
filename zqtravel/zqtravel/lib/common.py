@@ -119,3 +119,18 @@ def fetch_travel(travel_time, view_num):
        return True
   
     return False
+
+def get_url_prefix(self, response, splice_http=False):
+        page_url_prefix = ''
+
+        if not splice_http:
+            for domain_name in self.allowed_domains:
+                if domain_name in response.url:
+                   page_url_prefix = response.url[0:-5]
+                   break
+        else:
+            for domain_name in self.allowed_domains:
+                if domain_name in response.url:
+                   page_url_prefix = 'http://www.' + domain_name
+                   break
+        return page_url_prefix
