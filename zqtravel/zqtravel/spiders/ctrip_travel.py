@@ -148,7 +148,6 @@ class CtripTravelSpider(scrapy.Spider):
        travel_create_time = response.xpath(content_xpath % 'h3//text()').extract()
        travel_create_time = ''.join(travel_create_time).strip()
        travel_create_time = ' '.join(travel_create_time.split()[-2:])
-       log.msg('--------sdfffffffffffffffffff-----'+travel_create_time)
 
        infos = ''.join(response.xpath(info_xpath % 'span').extract())
        # 游玩的时间
@@ -184,7 +183,7 @@ class CtripTravelSpider(scrapy.Spider):
        travel_praisenum = meta.get('numpraise','')
 
        # 游记中的图片
-       image_urls = response.xpath(content_xpath % 'p//a/@href').extract()
+       image_urls = response.xpath(content_xpath % 'p//a//img/@src').extract()
 
        # 如果设置并开启了爬取的开始时间，则将早于开始时间的游记丢弃
        enable_start_crawling_time = mj_cf.get_str('mafengwo_spider','enable_start_crawling_time')
