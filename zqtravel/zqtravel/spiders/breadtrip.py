@@ -61,9 +61,11 @@ class BreadtripSpider(scrapy.Spider):
         scenicspot_href = response.xpath('//div[@class="wrap"]//ul[@class="nav  nav-city"]//li[4]/a/@href').extract()
         scenicspot_href = ''.join(scenicspot_href).strip().split('#')[0]
         url_prefix = self.get_url_prefix(response, splice_http=True)       
-        for index in range(230, -1, -1):
-            url = '%s%s%s%s' % (url_prefix, scenicspot_href, 'more/?next_start=', str(index))
-            yield Request(url, callback=self.parse_scenicspot_pages, meta=response.meta)
+        #for index in range(900,-18, -18):
+            #url = '%s%s%s%s' % (url_prefix, scenicspot_href, 'more/?next_start=', str(index))
+            #yield Request(url, callback=self.parse_scenicspot_pages, meta=response.meta)
+        url = '%s%s%s%s' % (url_prefix, scenicspot_href, 'more/?next_start=', "0")
+        yield Request(url, callback=self.parse_scenicspot_pages, meta=response.meta)
 
     def parse_travel_next_pages(self, response):
         """获得游记页的地址, response.url => http://breadtrip.com/scenic/5/701732/ """
@@ -73,9 +75,11 @@ class BreadtripSpider(scrapy.Spider):
         meta_with_scenicstot = response.meta
         meta_with_scenicstot['scenicspot_name'] = scenicspot_name
 
-        for index in range(320, -1, -1):
-            url = '%s%s%s' % (response.url, 'trip/more/?next_start=', str(index))
-            yield Request(url, callback=self.parse_travel_pages, meta=meta_with_scenicstot)
+        #for index in range(180, -9, -9):
+            #url = '%s%s%s' % (response.url, 'trip/more/?next_start=', str(index))
+            #yield Request(url, callback=self.parse_travel_pages, meta=meta_with_scenicstot)
+        url = '%s%s%s' % (response.url, 'trip/more/?next_start=', "0")
+        yield Request(url, callback=self.parse_travel_pages, meta=meta_with_scenicstot)
 
     def parse_scenicspot_pages(self,response):
         """获得景点的地址, response.url => http://breadtrip.com/scenic/3/333/sight/more/?next_start=0 """
@@ -85,6 +89,9 @@ class BreadtripSpider(scrapy.Spider):
         for href in scenicspot_hrefs[1:]: # 第一个href是上一个页面的href，所以不需要
             url = '%s%s' % (url_prefix, href)
             yield Request(url, callback=self.parse_travel_next_pages, meta=response.meta)
+        if not scenicspot_hrefs[0]:
+            url = '%s%s' % (url_prefix,scenicspot_hrefs[0])
+            yield Request(url, callback=self.parse_scenicspot_pages, meta=response.meta)
 
     def get_url_prefix(self, response, splice_http=False):
         page_url_prefix = ''
@@ -106,21 +113,23 @@ class BreadtripSpider(scrapy.Spider):
         
         meta_with_from_url = response.meta
         meta_with_from_url['from_url'] = response.url
-
+        travel_url = re.findall(r'(/scenic/\d+/\d+/)', response.body)
         travel_hrefs = re.findall(r'"encrypt_id": (\d+)', response.body)
         url_prefix = self.get_url_prefix(response, splice_http=True)
         for href in travel_hrefs:
-            url = '%s%s%s' % (url_prefix, '/trips/', href, '/schedule_line/')
+            url = '%s%s%s%s' % (url_prefix, '/trips/', href,'/schedule_line/')
             yield Request(url, callback=self.parse_travel_schedule_line, meta=meta_with_from_url)
+        if not travel_url:
+            url = '%s%s' % (url_prefix,travel_url)
+            yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
 
     def parse_travel_schedule_line(self,response):
-        """获得游记的路线日程, response.url => http://breadtrip.com/trips/2386622467/schedule_line/ """
-
         meta_with_line = response.meta
         xpath_for_map1 = '%s%s' % ('//dt[@class="day-marker"]//span[2]/', 'text()')
         xpath_for_map2 = '%s%s' % ('//div[@class="city-info"]', '//p[@class="city-name fl"]//span/text()')
         xpath_for_map3 = '%s%s' % ('//ul[@class="poi"]', '//a/text()')
         trip_roadmap = response.xpath(xpath_for_map1 +'|'+ xpath_for_map2+'|'+ xpath_for_map3).extract()
+        scenicspot = response.xpath(xpath_for_map3).extract()
         trip = ''
         for i, roadmap in enumerate(trip_roadmap):
             if re.match(u'第\d+天', roadmap):
@@ -129,13 +138,14 @@ class BreadtripSpider(scrapy.Spider):
                 trip += roadmap+',' if i<len(trip_roadmap)-1 else roadmap
         trip_roadmap = re.sub(r',\|', '|', trip)
         meta_with_line['trip_roadmap'] = trip_roadmap
+        meta_with_line['scenicspot_in_trip']= scenicspot
         url = response.url
         item = url.split("/")
         url = "/".join(item[:-2])
         yield Request(url, callback=self.parse_scenicspot_travel_item, meta=meta_with_line)
+        
 
     def parse_scenicspot_travel_item(self, response):
-        """获得游记的内容, response.url => http://breadtrip.com/trips/2386622467 """
 
        travel_item = TravelItem()
        meta = response.meta
@@ -151,6 +161,8 @@ class BreadtripSpider(scrapy.Spider):
        # 旅游的天数 
        travel_days = response.xpath(pre_trip_info_xpath % 'p/span[2]/text()').extract()
        travel_days = ''.join(travel_days).strip()
+       if int(travel_days[:-1]) > 200:
+          return None
 
        # 旅游的开始时间
        travel_time = response.xpath(pre_trip_info_xpath % 'p/span[1]/text()').extract()
@@ -174,6 +186,7 @@ class BreadtripSpider(scrapy.Spider):
        travel_create_time = ''
 
        # 游记内容
+       # 蚂蜂窝的游记页面使用了多种模板，所以对照的写了些xpath
        pre_content_xpath = '//div[@id="content"]//div[@class="trip-wps"]//%s'
        all_content = response.xpath(pre_content_xpath % 'p//text()' +'|'+ pre_content_xpath % 'a//@data-caption' +'|'+ pre_content_xpath % 'h3//text()' +'|'+ pre_content_xpath % 'div//p/text()').extract()
        all_content = remove_str(remove_str(''.join(all_content).strip()),'\s{2,}')
@@ -201,7 +214,7 @@ class BreadtripSpider(scrapy.Spider):
           return None
 
        try:
-          image_num = mj_cf.get_int('mafengwo_travel_spider','image_num_every_travel')
+          image_num = mj_cf.get_int('breadtrip_spider','image_num_every_travel')
        except: # 如果没有设置，或设置错误则抓取游记中的全部图片
           image_num = None
 
@@ -213,12 +226,16 @@ class BreadtripSpider(scrapy.Spider):
        travel_item['travel_viewnum'] = numview
        travel_item['travel_commentnum'] = commentnum
        travel_item['travel_time'] = travel_time
+#       travel_item['travel_people'] = travel_people
+#       travel_item['travel_cost'] = travel_cost
+#       travel_item['travel_type'] = travel_type
        travel_item['travel_days'] = travel_days
-       travel_item['trip_roadmap'] = meta.get('trip_roadmap', '')
-       travel_item['scenicspot_province'] = meta.get('province_name', '')
-       travel_item['scenicspot_locus'] = meta.get('city_name', '')
-       travel_item['scenicspot_name'] = meta.get('scenicspot_name', '')
-       travel_item['from_url'] = meta.get('from_url', '')
+       travel_item['scenicspot_in_trip'] = meta.get('scenicspot_in_trip')
+       travel_item['trip_roadmap'] = meta.get('trip_roadmap')
+       travel_item['scenicspot_province'] = meta.get('province_name')
+       travel_item['scenicspot_locus'] = meta.get('city_name')
+       travel_item['scenicspot_name'] = meta.get('scenicspot_name')
+       travel_item['from_url'] = meta.get('from_url')
        travel_item['image_urls'] = image_urls[:image_num]
 
        return travel_item
