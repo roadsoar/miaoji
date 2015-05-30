@@ -58,22 +58,22 @@ class BreadtripSpider(scrapy.Spider):
     def parse_scenicspot_next_pages(self, response):
         """获得景点页的地址, response.url => http://breadtrip.com/scenic/3/333/sight/#nav """
 
-        scenicspot_href = response.xpath('//div[@class="wrap"]//ul[@class="nav  nav-city"]//li[4]/a/@href').extract()
+        scenicspot_href = response.xpath('//div[@class="wrap"]//ul[@class="nav  nav-city"]//li[3]/a/@href').extract()
         scenicspot_href = ''.join(scenicspot_href).strip().split('#')[0]
         url_prefix = self.get_url_prefix(response, splice_http=True)       
         #for index in range(900,-18, -18):
             #url = '%s%s%s%s' % (url_prefix, scenicspot_href, 'more/?next_start=', str(index))
             #yield Request(url, callback=self.parse_scenicspot_pages, meta=response.meta)
         url = '%s%s%s%s' % (url_prefix, scenicspot_href, 'more/?next_start=', "0")
-        yield Request(url, callback=self.parse_scenicspot_pages, meta=response.meta)
+        yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
 
     def parse_travel_next_pages(self, response):
         """获得游记页的地址, response.url => http://breadtrip.com/scenic/5/701732/ """
         
-        scenicspot_name = response.xpath('//div[@id="content"]//div[@class="hero-info"]/h1/text()').extract() 
-        scenicspot_name = ''.join(scenicspot_name).strip()
+        #scenicspot_name = response.xpath('//div[@id="content"]//div[@class="hero-info"]/h1/text()').extract() 
+        #scenicspot_name = ''.join(scenicspot_name).strip()
         meta_with_scenicstot = response.meta
-        meta_with_scenicstot['scenicspot_name'] = scenicspot_name
+        #meta_with_scenicstot['scenicspot_name'] = scenicspot_name
 
         #for index in range(180, -9, -9):
             #url = '%s%s%s' % (response.url, 'trip/more/?next_start=', str(index))
@@ -122,6 +122,8 @@ class BreadtripSpider(scrapy.Spider):
         if not travel_url:
             url = '%s%s' % (url_prefix,travel_url)
             yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
+            
+
 
     def parse_travel_schedule_line(self,response):
         meta_with_line = response.meta
@@ -234,7 +236,7 @@ class BreadtripSpider(scrapy.Spider):
        travel_item['trip_roadmap'] = meta.get('trip_roadmap')
        travel_item['scenicspot_province'] = meta.get('province_name')
        travel_item['scenicspot_locus'] = meta.get('city_name')
-       travel_item['scenicspot_name'] = meta.get('scenicspot_name')
+       #travel_item['scenicspot_name'] = meta.get('scenicspot_name')
        travel_item['from_url'] = meta.get('from_url')
        travel_item['image_urls'] = image_urls[:image_num]
 

@@ -63,6 +63,21 @@ class CtripSpider(CrawlSpider):
         scenicspot_pages = response.xpath(pre_xpath % 'div[@class="pager_v1"]/span/b/text()').extract()
         ## 如果没有获取到页数，则说明只有一页的景点
         scenicspot_pages = int(''.join(scenicspot_pages).strip()) if len(scenicspot_pages) >= 1 else 1
+
+        sel_locus_infos = response.xpath('//div[@class="content cf "]//div[@class="breadbar_v1 cf"]/ul/li')
+        province_name = sel_locus_infos[3].xpath('a/text()').extract()
+        province_name = ''.join(province_name).strip(u'省')
+        city_name = sel_locus_infos[-2].xpath('a/text()').extract()
+        city_name = ''.join(city_name).strip(u'市')
+
+        # 将城市的游记url写入文件
+        data_dir = get_data_dir_with(province_name)
+        file_name = '%s/%s' % (data_dir, province_name+'_travel.urls')
+        youji_file = codecs.open(file_name, "a", encoding='utf-8')
+        scenicspot_youji_url = re.sub(r'/sight/', '/travels/', response.url)
+        youji_file.write('%s|%s|%s\n' % (province_name, city_name, scenicspot_youji_url))
+        youji_file.flush()
+
         # 因为Scrapy的滤重，本页的景点也需要保证抓取到
         scenicspots = self.parse_scenicspot_pages(response, one_page=True, meta=response.meta)
         for scenicspot in scenicspots:
@@ -142,9 +157,9 @@ class CtripSpider(CrawlSpider):
         scenicspot_item['link'] = response.meta.get('link', '')
         scenicspot_item['scenicspot_intro'] = response.meta.get('content', '')
         
-        # 将游记的url写入文件
+        # 将景点的游记url写入文件
         data_dir = get_data_dir_with(province_name)
-        file_name = '%s/%s' % (data_dir, province_name+'_travel.urls')
+        file_name = '%s/%s' % (data_dir, province_name+'_travel_city.urls')
         youji_file = codecs.open(file_name, "a", encoding='utf-8')
         scenicspot_youji_url = re.sub(r'-traffic\.html.*', '-travels.html', response.url)
         youji_file.write('%s|%s|%s|%s\n' % (province_name, city_name, scenicspot_name, scenicspot_youji_url))

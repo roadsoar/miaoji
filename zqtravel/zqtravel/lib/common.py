@@ -40,7 +40,7 @@ def get_dir_name_from_spider_item(item, spider):
 
   dir1 = dict_item.get("scenicspot_province", '')
   dir2 = dict_item.get("scenicspot_locus", '')
-  dir3 = dict_item.get("scenicspot_name", '')
+  dir3 = '' #dict_item.get("scenicspot_name", '')
   if '' == dir2 or dir2 == dir3:
      dir3 = ''
 
@@ -93,8 +93,11 @@ def dict_data_from_db(data):
 
 def format_time(str_time):
     f_time = re.sub(r'[^\d :]', '/',str_time)
-    if re.match(r'.*:.*', f_time):
+    num_comma = len(re.findall(':', f_time))
+    if 2 == num_comma:
        return f_time
+    elif 1 == num_comma:
+       return '%s%s' % (f_time, ':00')
     return '%s %s' % (f_time, '00:00:00')
 
 def fetch_travel(travel_time, view_num):
@@ -105,17 +108,17 @@ def fetch_travel(travel_time, view_num):
     interval_days = interval_time.days
 
     mj_cf = manufacture.ConfigMiaoJI("./spider_settings.cfg")
-    threshold_viewnum_in_2year = mj_cf.get_int('mafengwo_travel_spider','threshold_viewnum_in_2year')
-    threshold_viewnum_in_3year = mj_cf.get_int('mafengwo_travel_spider','threshold_viewnum_in_3year')
-    threshold_viewnum = mj_cf.get_int('mafengwo_travel_spider','threshold_viewnum')
+    threshold_viewnum_in_2year = mj_cf.get_str('mafengwo_travel_spider','threshold_viewnum_in_2year')
+    threshold_viewnum_in_3year = mj_cf.get_str('mafengwo_travel_spider','threshold_viewnum_in_3year')
+    threshold_viewnum = mj_cf.get_str('mafengwo_travel_spider','threshold_viewnum')
 
     if 365 >= interval_days:
        return True
-    elif 365*2 >= interval_days and int(view_num) >= threshold_viewnum_in_2year:
+    elif 365*2 >= interval_days and view_num >= threshold_viewnum_in_2year:
        return True
-    elif 365*3 >= interval_days and int(view_num) >= threshold_viewnum_in_3year:
+    elif 365*3 >= interval_days and view_num >= threshold_viewnum_in_3year:
        return True
-    elif int(view_num) >= threshold_viewnum:
+    elif view_num >= threshold_viewnum:
        return True
   
     return False

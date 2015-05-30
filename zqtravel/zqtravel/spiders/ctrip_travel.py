@@ -33,7 +33,7 @@ class CtripTravelSpider(scrapy.Spider):
         travel_urls_root_dir = mj_cf.get_str('ctrip_travel_spider','travel_urls_dir')
         travel_provinces = mj_cf.get_list('ctrip_travel_spider','travel_provinces')
         # 爬取所有省份
-        if 'all' in travel_provinces:
+        if not travel_provinces:
            for dirpath, subdir_names, filenames in os.walk(travel_urls_root_dir):
                if filenames:
                   travel_urls_file = os.path.join(dirpath,filenames[0])
@@ -54,20 +54,20 @@ class CtripTravelSpider(scrapy.Spider):
             line_list = line.split('|')
             scenicspot_province = line_list[0]
             scenicspot_locus = line_list[1]
-            scenicspot_name = line_list[2]
             scenicspot_info = {}
             scenicspot_info['scenicspot_province'] = scenicspot_province
             scenicspot_info['scenicspot_locus'] = scenicspot_locus
-            scenicspot_info['scenicspot_name'] = scenicspot_name 
+            scenicspot_info['scenicspot_name'] = ''
             travel_url = line_list[-1].strip()
             yield Request(travel_url, callback=self.parse_travel_next_pages, meta={'scenicspot_info':scenicspot_info})
         f_all_urls.close()
 
     def parse_travel_next_pages(self,response):
-        """获得游记下一页地址, response.url => http://you.ctrip.com/sight/lijiang32/3056-travels.html """
+        """获得游记下一页地址, response.url => http://you.ctrip.com/travels/lijiang32/.html """
 
         # 游记的总页数
-        travel_pages = response.xpath('//div[@class="content cf dest_details"]//div[@class="journalslist cf"]//div[@class="pager_v1"]//span/b/text()').extract()
+        page_xpath = '//div[@class="content cf"]//div[@class="normalbox"]//div[@class="journalslist cf"]//div[@class="pager_v1"]//%s'
+        travel_pages = response.xpath(page_xpath % 'span/b/text()').extract()
         ## 如果没有获取到页数，则说明只有一页的游记
         travel_pages = int(''.join(travel_pages).strip()) if len(travel_pages)>=1 else 0
 
@@ -76,7 +76,7 @@ class CtripTravelSpider(scrapy.Spider):
         #js_travel_href = ''.join(js_travel_href).strip()
 
         # 为了抓取第一页面,直接调用获取游记页地址方法=>parse_travel_pages
-        travel_urls = self.parse_travel_pages_for_static(response)
+        travel_urls = self.parse_travel_pages(response)
         for travel_url in travel_urls:
             yield travel_url
 
@@ -88,48 +88,47 @@ class CtripTravelSpider(scrapy.Spider):
                yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
         # 非动态网页
         else:
-           poi_id = response.url[response.url.rfind('-')+1:-5]
-           url_format = 'http://www.mafengwo.cn/gonglve/ajax.php?act=get_new_travellist&page=%s&poi_id=%s'
+           page_xpath = '//div[@class="content cf"]//div[@class="normalbox"]//div[@class="journalslist cf"]//div[@class="pager_v1"]//%s'
+           template_href = response.xpath(page_xpath % 'a[@class="nextpage"]/@href').extract()
+           template_href = ''.join(template_href)
+           pre_url = get_url_prefix(response, self.allowed_domains)
            for page_index in range(travel_pages, 1, -1):
-               url = url_format % (str(page_index), poi_id)
+               href = re.sub(r'\d+\.html', str(page_index)+'.html', template_href)
+               url = '%s%s' % (pre_url, href)
                yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
 
-    def parse_travel_pages_for_static(self, response):
+    def parse_travel_pages(self, response):
         """获取游记页地址"""
+
+        # 所有游记链接
+        sel_xpath ='//div[@class="content cf"]//div[@class="normalbox"]//div[@class="journalslist cf"]//a[@class="journal-item cf"]'
+        sel_as = response.xpath(sel_xpath)
 
         tmp_item = response.meta.get('scenicspot_info')
         scenicspot_province = tmp_item.get('scenicspot_province')
         scenicspot_locus = tmp_item.get('scenicspot_locus')
         scenicspot_name = tmp_item.get('scenicspot_name')
 
-        # 所有游记链接
-        youji_pre_xpath ='//div[@class="wrapper"]//div[@class="p-content"]//div[@class="m-post"]//ul//li[@class="post-item clearfix"]//'
-        href_list = response.xpath(youji_pre_xpath + 'h2[@class="post-title yahei"]/a/@href').extract()
-
-        re_travel_href = re.compile('/i/\d+\.html')
-
-        numview_numreply = response.xpath(youji_pre_xpath + 'span[@class="status"]/text()').extract()
-        ## numview_numreply output format:
-        ##  numview numreply, numview numreply ...
-        ## [u'2824', u'13',  u'2462', u'27',   u'9594', u'24', u'2326', u'22', u'2345', u'7'] 
-        ## 浏览数和评论数的对数跟页面中游记连接条数是一致的, 如：http://www.mafengwo.cn/poi/youji-21100.html
-        url_prefix = self.get_url_prefix(response, splice_http=True)
-        num_index = 0
-        for href in href_list:
-            m = re_travel_href.match(href)
-            if m:
-                numview = numview_numreply[num_index]
-                numreply = numview_numreply[num_index+1]
-                num_index += 2 # 以及上面numview_numreply的输出格式，每次的步数为2
-                url = ''.join([url_prefix, href])
-                meta_data = {"numreply":numreply, \
-                             "numview":numview, \
-                             "scenicspot_province":scenicspot_province, \
-                             "scenicspot_locus":scenicspot_locus, \
-                             "scenicspot_name":scenicspot_name, \
-                             "from_url":response.url \
+        url_prefix = get_url_prefix(response, self.allowed_domains)
+        for sel_a in sel_as:
+            href = sel_a.xpath('@href').extract()
+            href = ''.join(href)
+            numview = sel_a.xpath('.//ul//i[@class="numview"]/text()').extract()
+            numview = ''.join(numview).strip()
+            numcomment = sel_a.xpath('.//ul//i[@class="numreply"]/text()').extract()
+            numcomment = ''.join(numcomment).strip()
+            numpraise = sel_a.xpath('.//ul//i[@class="want"]/text()').extract()
+            numpraise = ''.join(numpraise).strip()
+            url = '%s%s' % (url_prefix, href)
+            meta_data = {"numcomment":numcomment, \
+               "numview":numview, \
+               "numpraise":numpraise, \
+               "scenicspot_province":scenicspot_province, \
+               "scenicspot_locus":scenicspot_locus, \
+               "scenicspot_name":scenicspot_name, \
+               "from_url":response.url \
                             }
-                yield Request(url, callback=self.parse_scenicspot_travel_item,meta=meta_data)
+            yield Request(url, callback=self.parse_scenicspot_travel_item,meta=meta_data)
 
     def parse_scenicspot_travel_item(self, response):
 
@@ -140,58 +139,52 @@ class CtripTravelSpider(scrapy.Spider):
        link = response.url
 
        # 游记标题
-       title = response.xpath('//div[@class="post-hd"]//div[@class="post_title clearfix"]/h1/text() |\
-                              //div[@class="view_info"]//div[@class="vi_con"]/h1/text()' \
-                             ).extract()
-       title = remove_str(title[0],'[\r\n\s]') if len(title) >= 1 else ''
+       title = response.xpath('//div[@class="content ctd_head_box"]//div[@class="ctd_head_left"]/h2/text()').extract()
+       title = ''.join(title).strip()
 
+       info_xpath = '//div[@class="content cf"]//div[@class="ctd_content"]//div[@class="ctd_content_controls cf"]//%s'
+       content_xpath = '//div[@class="content cf"]//div[@class="ctd_content"]//%s'
        # 游记创建时间
-       travel_create_time = response.xpath('//div[@class="post_item"]//div[@class="tools no-bg"]//div[@class="fl"]//span[@class="date"]/text() |\
-                                      //div[@class="view_title clearfix"]//div[@class="vt_center"]//div[@class="vc_time"]/span[@class="time"]/text()' \
-                                    ).extract()
+       travel_create_time = response.xpath(content_xpath % 'h3//text()').extract()
        travel_create_time = ''.join(travel_create_time).strip()
+       travel_create_time = ' '.join(travel_create_time.split()[-2:])
+       log.msg('--------sdfffffffffffffffffff-----'+travel_create_time)
 
-       #xpath_with_blank_pre = '//div[@class="post_wrap"]//div[@class="post_main no-border "]//div[@class="post_info"]//div[@id="exinfo-tripinfo"]//div[@class="basic-info"]//li[@class="%s"]//text()'
-       #xpath_without_blank_pre = '//div[@class="post_wrap"]//div[@class="post_main no-border"]//div[@class="post_info"]//div[@id="exinfo-tripinfo"]//div[@class="basic-info"]//li[@class="%s"]//text()'
-       travel_info_xpath = '//div[@class="main"]/div[@class="view clearfix"]//div[@class="travel_detail"]//li//a//strong//text()'
-       travel_info = response.xpath(travel_info_xpath).extract()
-      
-       travel_time = ''.join(travel_info[0]).strip() if len(travel_info)>=1 else ''
-       travel_people = ''.join(travel_info[1]).strip() if len(travel_info)>=2 else ''
-       travel_days = ''.join(travel_info[2]).strip() if len(travel_info)>=3 else ''
-       travel_type = ''.join(travel_info[3]).strip() if len(travel_info)>=4 else ''
-       travel_cost = ''.join(travel_info[4]).strip() if len(travel_info)>=5 else ''
+       infos = ''.join(response.xpath(info_xpath % 'span').extract())
+       # 游玩的时间
+       rs_time = re.match(r'.*times.*?i>(.*?)</span',  infos)
+       travel_time = rs_time.group(1).strip() if rs_time else ''
+       # 游玩的人数
+       rs_people = re.match(r'.*whos.*?i>(.*?)</span',  infos)
+       travel_people = rs_people.group(1).strip() if rs_people else ''
+       # 游玩的天数
+       rs_days = re.match(r'.*days.*?i>(.*?)</span',  infos)
+       travel_days = rs_days.group(1).strip() if rs_days else ''
+       # 游玩的方式 eg:骑行，自由行等 
+       rs_type = re.match(r'.*plays.*?i>(.*?)</span',  infos)
+       travel_type = rs_type.group(1).strip() if rs_type else ''
+       # 人均费用
+       rs_cost = re.match(r'.*costs.*?i>(.*?)</span',  infos)
+       travel_cost = rs_cost.group(1).strip() if rs_cost else ''
 
        # 游记内容
-       # 蚂蜂窝的游记页面使用了多种模板，所以对照的写了些xpath
-       all_content = response.xpath('//div[@class="post_item"]//div[@id="pnl_contentinfo"]//p/text() |\
-                                     //div[@class="post_item"]//div[@id="pnl_contentinfo"]/text() |\
-                                     //div[@class="post_item"]//div[@id="pnl_contentinfo"]//br/text() |\
-                                     //div[@class="view clearfix"]//div[@class="vc_article"]//div[@class="va_con"]//p//text() |\
-                                     //div[@class="view clearfix"]//div[@class="vc_article"]//div[@class="va_con"]//a//text()' \
+       all_content = response.xpath(content_xpath % 'p//text()|'\
+                                   + content_xpath % 'p//strong/text()|'\
+                                   + content_xpath % 'p//a/text()' \
                                    ).extract()
        all_content = remove_str(remove_str(''.join(all_content).strip()),'\s{2,}')
 
        # 游记浏览数
-       numview = ''.join(meta['numview']).strip()
+       numview = meta.get('numview','')
 
        # 游记评论数
-       commentnum = ''.join(meta['numreply']).strip()
+       commentnum = meta.get('numcomment','')
 
        # 游记被赞或顶的数量
-       travel_praisenum = response.xpath('//div[@class="post-hd"]//div[@class="bar_share"]/div[@class="post-up"]/div[@class="num _j_up_num"]/text() |\
-                                           //div[@class="view clearfix"]//div[@class="ding"]/strong/text()' \
-                                         ).extract()
-       travel_praisenum = ''.join(travel_praisenum).strip()
+       travel_praisenum = meta.get('numpraise','')
 
        # 游记中的图片
-       image_urls = response.xpath('//div[@class="post_item"]//div[@id="pnl_contentinfo"]//a//img/@src |\
-                                    //div[@class="view clearfix"]//div[@class="vc_article"]//div[@class="va_con"]//a//img/@src'\
-                                  ).extract()
-
-       roadmap_detail_xpath = '//div[@class="main"]/div[@class="view clearfix"]//div[@class="travel_detail"]//li[@class="edit detail"]/a/@href'
-       roadmap_href = response.xpath(roadmap_detail_xpath).extract()
-       roadmap_href = ''.join(roadmap_href).strip()
+       image_urls = response.xpath(content_xpath % 'p//a/@href').extract()
 
        # 如果设置并开启了爬取的开始时间，则将早于开始时间的游记丢弃
        enable_start_crawling_time = mj_cf.get_str('mafengwo_spider','enable_start_crawling_time')
@@ -236,33 +229,3 @@ class CtripTravelSpider(scrapy.Spider):
        travel_item['image_urls'] = image_urls[:image_num]
 
        return travel_item
-       # 获取详细的行程信息
-       # if not roadmap_href:
-       #    return travel_item
-       #else:
-       #    url_prefix = self.get_url_prefix(response, splice_http=True)
-       #    url = '%s%s' % (url_prefix, roadmap_href)
-       #    yield Request(url, callback=self.parse_roadmap_detail, meta={'travel_item':travel_item})
-
-def parse_roadmap_detail(self, response):
-    ''' 获取详细的行程信息, response.url => http://www.mafengwo.cn/schedule/242142.html '''
-    travel_item = response.meta.get('travel_item') 
-
-    xpath_info = '//div[@class="container"]//div[@class="info clearfix"]//div[@class="des_detail"]//div[@class="des_list _j_list"]//ul//li'
-    sel_infos = response.xpath(xpath_info)
-
-    trip_roadmap_list = []
-    for index, sel_info in enumerate(sel_infos):
-        trip_detail = ''.join(sel_info.xpath('./text()').extract()).strip()
-        day_index = '%s%s%s' % (u'第', str(index+1), u'天')
-        roadmap = '%s%s%s' % (day_index, ':', trip_detail)
-        trip_roadmap_list.append(roadmap)
-    trip_roadmap = '|'.join(trip_roadmap)
-
-    xpath_detail = '//div[@class="container"]//div[@class="guide"]//div[@class="_j_dayscnt"]//div[@class="days _j_scrollitem _j_days"]'
-    sel_details = response.xpath(xpath_detail)
-    for sel_detail in sel_details:
-        day_num = ''.join(sel_detail.xpath('.//div[@class="day_num"]//text()|.//div[@class="day_num"]//span//text()').extract()).strip()
-        detail = ''.join(sel_detail.xpath('.//div[@class="day_item clearfix"]//div[@class="detail_title"]/text()|.//div[@class="day_item clearfix"]//div[@class="detail_title"]//a/text()').extract()).strip()
-
-    return travel_item
