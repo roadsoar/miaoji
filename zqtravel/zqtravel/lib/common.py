@@ -100,6 +100,25 @@ def format_time(str_time):
        return '%s%s' % (f_time, ':00')
     return '%s %s' % (f_time, '00:00:00')
 
+def a_more_than_b(left_a, right_b):
+    left_v = left_a.split(u'万')[0]
+    if len(left_v) == 1:
+        left_v = float(left_v) 
+    else:
+        left_v = float(left_v) * 10000
+
+    right_v = right_b.split(u'万')[0]
+    if len(right_v) == 1:
+        right_v = float(right_v)
+    else:
+        right_v = float(right_v) * 10000
+
+    if left_v >= right_v:
+       return True
+    else:
+       return False
+
+
 def fetch_travel(travel_time, view_num):
     str_time = format_time(travel_time)
     date_now = datetime.datetime.now()
@@ -114,14 +133,16 @@ def fetch_travel(travel_time, view_num):
 
     if 365 >= interval_days:
        return True
-    elif 365*2 >= interval_days and view_num >= threshold_viewnum_in_2year:
+    elif 365*2 >= interval_days and a_more_than_b(view_num, threshold_viewnum_in_2year):
        return True
-    elif 365*3 >= interval_days and view_num >= threshold_viewnum_in_3year:
+    elif 365*3 >= interval_days and a_more_than_b(view_num, threshold_viewnum_in_3year):
        return True
-    elif view_num >= threshold_viewnum:
+    elif a_more_than_b(view_num, threshold_viewnum):
        return True
   
     return False
+
+
 
 def get_url_prefix(response, allowed_domains, splice_http=False):
         page_url_prefix = ''

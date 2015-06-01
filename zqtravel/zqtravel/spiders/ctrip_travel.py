@@ -21,7 +21,7 @@ class CtripTravelSpider(scrapy.Spider):
 
     name = "ctrip_travel"
     allowed_domains = ["you.ctrip.com"]
-    start_urls = mj_cf.get_starturls('mafengwo_travel_spider','start_urls')
+    start_urls = mj_cf.get_starturls('ctrip_travel_spider','start_urls')
 
     rules = [
              Rule(LxmlLinkExtractor('/travels/'),
@@ -71,10 +71,6 @@ class CtripTravelSpider(scrapy.Spider):
         ## 如果没有获取到页数，则说明只有一页的游记
         travel_pages = int(''.join(travel_pages).strip()) if len(travel_pages)>=1 else 0
 
-        # 游记页码的href
-        #js_travel_href = response.xpath('//div[@class="wrapper"]//div[@class="page-hotel"]/a[@class="ti next"]/@href').extract()
-        #js_travel_href = ''.join(js_travel_href).strip()
-
         # 为了抓取第一页面,直接调用获取游记页地址方法=>parse_travel_pages
         travel_urls = self.parse_travel_pages(response)
         for travel_url in travel_urls:
@@ -98,7 +94,7 @@ class CtripTravelSpider(scrapy.Spider):
                yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
 
     def parse_travel_pages(self, response):
-        """获取游记页地址"""
+        """获取游记页地址, response.url => http://you.ctrip.com/travels/lijiang32/t3-p3.html"""
 
         # 所有游记链接
         sel_xpath ='//div[@class="content cf"]//div[@class="normalbox"]//div[@class="journalslist cf"]//a[@class="journal-item cf"]'
@@ -144,6 +140,7 @@ class CtripTravelSpider(scrapy.Spider):
 
        info_xpath = '//div[@class="content cf"]//div[@class="ctd_content"]//div[@class="ctd_content_controls cf"]//%s'
        content_xpath = '//div[@class="content cf"]//div[@class="ctd_content"]//%s'
+       content_xpath2 = '//div[@class="content cf"]//div[@class="ctd_content wtd_content"]//%s'
        # 游记创建时间
        travel_create_time = response.xpath(content_xpath % 'h3//text()').extract()
        travel_create_time = ''.join(travel_create_time).strip()
@@ -173,6 +170,16 @@ class CtripTravelSpider(scrapy.Spider):
                                    ).extract()
        all_content = remove_str(remove_str(''.join(all_content).strip()),'\s{2,}')
 
+       # 游记的评论
+       comment_xpath ='//div[@class="content cf"]//div[@class="ctd_comments"]//div[@id="replyboxid"]//div[@class="ctd_comments_box cf"]'
+       sel_comments = response.xpath(comment_xpath)
+       travel_comments = []
+       for sel_comment in sel_comments:
+           comments = sel_comment.xpath('.//div[@class="textarea_box fr"]//p//text()').extract()
+           comments = ''.join(comments).strip()
+           travel_comments.append(comments)
+       travel_comments = '|'.join(travel_comments)
+
        # 游记浏览数
        numview = meta.get('numview','')
 
@@ -183,7 +190,7 @@ class CtripTravelSpider(scrapy.Spider):
        travel_praisenum = meta.get('numpraise','')
 
        # 游记中的图片
-       image_urls = response.xpath(content_xpath % 'p//a//img/@src').extract()
+       image_urls = response.xpath(content_xpath % 'div//a//img/@src |' + content_xpath2 % 'div//a//img/@src').extract()
 
        # 如果设置并开启了爬取的开始时间，则将早于开始时间的游记丢弃
        enable_start_crawling_time = mj_cf.get_str('mafengwo_spider','enable_start_crawling_time')
@@ -226,5 +233,6 @@ class CtripTravelSpider(scrapy.Spider):
        travel_item['scenicspot_name'] = meta.get('scenicspot_name')
        travel_item['from_url'] = meta.get('from_url')
        travel_item['image_urls'] = image_urls[:image_num]
+       travel_item['travel_comments'] = travel_comments
 
        return travel_item

@@ -23,6 +23,7 @@ class TravelItem(Item):
     travel_praisenum = Field()        # 游记被赞的数量
     travel_viewnum = Field()          # 游记的浏览数量
     travel_commentnum = Field()       # 游记的评论数量
+    travel_comments = Field()         # 游记的评论
     travel_title = Field()            # 游记的标题
     travel_create_time = Field()      # 游记文章创建的时间
     travel_time = Field()             # 游玩的时间
