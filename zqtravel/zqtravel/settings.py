@@ -35,22 +35,19 @@ IMAGES_STORE = '/home/scrapy/data/ctrip_images/'
 
 #USER_AGENT = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.66 Safari/537.36'
 
-WEBKIT_DOWNLOADER=['mafengwo', 'mafengwo_scenicspot', 'mafengwo_province', 'ctrip', 'mafengwo_travel', 'chanyouji']
+WEBKIT_DOWNLOADER=['mafengwo', 'mafengwo_scenicspot', 'mafengwo_province', 'ctrip', 'ctrip_travel', 'mafengwo_travel', 'chanyouji']
 
 DOWNLOADER_MIDDLEWARES = {
 #    'zqtravel.downloader.WebkitDownloader': 1,
     'scrapy.contrib.downloadermiddleware.useragent.UserAgentMiddleware': None,
-    'zqtravel.middleware.rotate_useragent.RotateUserAgentMiddleware': 300,
+    'zqtravel.middleware.rotate_useragent.RotateUserAgentMiddleware': 100,
     #'zqtravel.scrapyjs.middleware.WebkitDownloader': 1,
 }
-
-# Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'zqtravel (+http://www.yourdomain.com)'
 
 # 启用AutoThrottle扩展
 AUTOTHROTTLE_ENABLED = True
 # 是否启用cookies middleware。如果关闭，cookies将不会发送给web server。
-COOKIES_ENABLED = True
+COOKIES_ENABLED = False
 # 单位是妙。下载器在下载同一个网站下一个页面前需要等待的时间。该选项可以用来限制爬取速度， 减轻服务器压力。同时也支持小数
 #DOWNLOAD_DELAY = 1
 
