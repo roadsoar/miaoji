@@ -53,45 +53,17 @@ class BreadtripSpider(scrapy.Spider):
             for city_name, href in zip(city_list, href_list):
                 city_name = city_name.strip()
                 url = '%s%s' % (url_prefix, href)
-                yield Request(url, callback=self.parse_scenicspot_next_pages, meta={"province_name": province_name, "city_name":city_name})
+                yield Request(url, callback=self.parse_travel_next_pages, meta={"province_name": province_name, "city_name":city_name})
 
-    def parse_scenicspot_next_pages(self, response):
-        """获得景点页的地址, response.url => http://breadtrip.com/scenic/3/333/sight/#nav """
+    def parse_travel_next_pages(self, response):
+        """获得游记页的地址, response.url => http://breadtrip.com/scenic/3/1/trip/#nav """
 
         scenicspot_href = response.xpath('//div[@class="wrap"]//ul[@class="nav  nav-city"]//li[3]/a/@href').extract()
         scenicspot_href = ''.join(scenicspot_href).strip().split('#')[0]
         url_prefix = self.get_url_prefix(response, splice_http=True)       
-        #for index in range(900,-18, -18):
-            #url = '%s%s%s%s' % (url_prefix, scenicspot_href, 'more/?next_start=', str(index))
-            #yield Request(url, callback=self.parse_scenicspot_pages, meta=response.meta)
         url = '%s%s%s%s' % (url_prefix, scenicspot_href, 'more/?next_start=', "0")
         yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
 
-    def parse_travel_next_pages(self, response):
-        """获得游记页的地址, response.url => http://breadtrip.com/scenic/5/701732/ """
-        
-        #scenicspot_name = response.xpath('//div[@id="content"]//div[@class="hero-info"]/h1/text()').extract() 
-        #scenicspot_name = ''.join(scenicspot_name).strip()
-        meta_with_scenicstot = response.meta
-        #meta_with_scenicstot['scenicspot_name'] = scenicspot_name
-
-        #for index in range(180, -9, -9):
-            #url = '%s%s%s' % (response.url, 'trip/more/?next_start=', str(index))
-            #yield Request(url, callback=self.parse_travel_pages, meta=meta_with_scenicstot)
-        url = '%s%s%s' % (response.url, 'trip/more/?next_start=', "0")
-        yield Request(url, callback=self.parse_travel_pages, meta=meta_with_scenicstot)
-
-    def parse_scenicspot_pages(self,response):
-        """获得景点的地址, response.url => http://breadtrip.com/scenic/3/333/sight/more/?next_start=0 """
-
-        scenicspot_hrefs = re.findall(r'(/scenic/\d+/\d+/)', response.body)
-        url_prefix = self.get_url_prefix(response, splice_http=True)
-        for href in scenicspot_hrefs[1:]: # 第一个href是上一个页面的href，所以不需要
-            url = '%s%s' % (url_prefix, href)
-            yield Request(url, callback=self.parse_travel_next_pages, meta=response.meta)
-        if not scenicspot_hrefs[0]:
-            url = '%s%s' % (url_prefix,scenicspot_hrefs[0])
-            yield Request(url, callback=self.parse_scenicspot_pages, meta=response.meta)
 
     def get_url_prefix(self, response, splice_http=False):
         page_url_prefix = ''
@@ -113,15 +85,17 @@ class BreadtripSpider(scrapy.Spider):
         
         meta_with_from_url = response.meta
         meta_with_from_url['from_url'] = response.url
-        travel_url = re.findall(r'(/scenic/\d+/\d+/)', response.body)
+        travel_url = re.findall(r'(/scenic/\d+/\d+/trip/more/\?next_start=\d+)', response.body)
+        travel_url = ''.join(travel_url).strip()
         travel_hrefs = re.findall(r'"encrypt_id": (\d+)', response.body)
         url_prefix = self.get_url_prefix(response, splice_http=True)
+        if  travel_url!='':
+            url = '%s%s' % (url_prefix,travel_url)
+            scrapy.log.msg(url)
+            yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
         for href in travel_hrefs:
             url = '%s%s%s%s' % (url_prefix, '/trips/', href,'/schedule_line/')
             yield Request(url, callback=self.parse_travel_schedule_line, meta=meta_with_from_url)
-        if not travel_url:
-            url = '%s%s' % (url_prefix,travel_url)
-            yield Request(url, callback=self.parse_travel_pages, meta=response.meta)
             
 
 

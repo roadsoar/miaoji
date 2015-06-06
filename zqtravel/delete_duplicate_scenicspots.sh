@@ -173,7 +173,7 @@ num  ) get_scenispot_num;;
 merge) merge_lines;;
 spec ) remove_specific_string;;
     *) echo 'Only accept "line", "file", "num", "merge", "spec"'
-       echo '"line": 删除景点文件中重复的行'
+       echo '"line": 删除文件中重复的行'
        echo '"file": 删除景点目录中重复的文件'
        echo '"num" : 计算景点的个数'
        echo '"merge": 将景点文件将多行合并成一行'

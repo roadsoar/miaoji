@@ -31,29 +31,50 @@ class CtripSpider(CrawlSpider):
     def parse(self, response):
         '''抓取目的地的url, response.url => http://you.ctrip.com/'''
 
-        place_href = response.xpath('//div[@class="gs-header cf"]//div[@class="gs-nav"]//li[@id="gs_nav_1"]/a/@href').extract()
-        place_href = ''.join(place_href)
+        place_hrefs = response.xpath('//div[@class="footerseo"]/div[@class="footerseo_con"][1]/div[2]/a')
         url_prefix = get_url_prefix(response, self.allowed_domains, False)
-        url = '%s%s' % (url_prefix, place_href)
-        yield Request(url, callback=self.parse_city_scenicspots)
+        for href in place_hrefs:
+            province_name = href.xpath('./text()').extract()
+            province_name = ''.join(province_name).strip()
+            province_url = href.xpath('./@href').extract()
+            province_url = ''.join(province_url).strip()
+            url = '%s%s' % (url_prefix, province_url)
+            yield Request(url, callback=self.parse_city,meta={"province_name": province_name})
 
-    def parse_city_scenicspots(self, response):
-        '''抓取城市景点的url, response.url => http://you.ctrip.com/place'''
+    def parse_city(self, response):
+        '''抓取省下的城市的url, response.url => http://you.ctrip.com/countrysightlist'''
 
-        sel_cities = response.xpath('//div[@class="desmap mod"]//div[@class="bd"]//dl[@class="item itempl-60"][2]//dd[@class="panel-con"]/ul//li')
+        url = response.url
         url_prefix = get_url_prefix(response, self.allowed_domains, False)
-        # 地区
-        for sel_city in sel_cities:
-            a_hrefs = sel_city.xpath('a')
-            city_count = len(a_hrefs)
-            # 地区下的城市
-            for index in range(city_count-1, -1, -1):
-                city_name = a_hrefs[index].xpath('./text()').extract()
-                city_name = ''.join(city_name).strip
-                city_href = a_hrefs[index].xpath('./@href').extract()
-                city_href = re.sub(r'/place/', '/sight/', ''.join(city_href))
-                url = '%s%s' % (url_prefix, city_href)
-                yield Request(url, callback=self.parse_scenicspot_next_pages, meta={"city_name": city_name})
+        province_name = response.meta.get('province_name', '')
+        province_name = ''.join(province_name).strip()
+        if province_name ==u"北京" or province_name ==u"上海" or province_name ==u"香港" or province_name ==u"澳门":
+            city_href = re.sub(r'/place/', '/sight/', ''.join(url))
+            yield Request(city_href, callback=self.parse_scenicspot_next_pages,meta={"city_name": province_name})
+        city_href = re.sub(r'/place/', '/countrysightlist/', ''.join(url))
+        #url = '%s%s' % (url_prefix, city_href)
+        yield Request(city_href, callback=self.parse_city_pages)
+
+    def parse_city_pages(self, response):
+        #城市总页数
+        city_pages = response.xpath('//div[@class="ttd_pager cf"]//b[@class="numpage"]/text()').extract()
+        city_pages = int(''.join(city_pages).strip()) if len(city_pages) >= 1 else 1
+        for page_index in range(1,city_pages+1):
+            url = '%s%s%s%s' % ('.'.join(response.url.split('.')[:-1]),'/p',str(page_index),'.html')
+            yield Request(url, callback=self.parse_city_scenicspot)
+
+    def parse_city_scenicspot(self,response):
+        #获取城市景点url
+        url_prefix = get_url_prefix(response, self.allowed_domains, False)
+        pre_xpath = '//div[@class="list_wide_mod1"]//%s'
+        city_pages = response.xpath(pre_xpath % 'dt/a')
+        for city in city_pages:
+            city_name = city.xpath('./text()').extract()
+            city_name = ''.join(city_name).strip()
+            city_url = city.xpath('./@href').extract()
+            city_href = re.sub(r'/place/', '/sight/', ''.join(city_url))
+            url = '%s%s' % (url_prefix, city_href)
+            yield Request(url, callback=self.parse_scenicspot_next_pages, meta={"city_name": city_name})
 
     def parse_scenicspot_next_pages(self, response):
         '''抓取城市景点页的url, response.url => http://you.ctrip.com/sight/lijiang32.html'''
@@ -86,8 +107,8 @@ class CtripSpider(CrawlSpider):
         # 景点每一页url
         url_prefix = get_url_prefix(response, self.allowed_domains, False)
         page_href = response.xpath(pre_xpath % 'div[@class="pager_v1"]/a[@class="nextpage"]/@href').extract()
-        page_href = ''.join(page_href)
-        for page_index in range(scenicspot_pages, 1, -1):
+        page_href = ''.join(page_href).strip()
+        for page_index in range(1,scenicspot_pages+1):
             href = re.sub(r'-p\d+','-p'+str(page_index),page_href)
             url = '%s%s' % (url_prefix, href)
             yield Request(url, callback=self.parse_scenicspot_pages, meta=response.meta)
@@ -108,10 +129,10 @@ class CtripSpider(CrawlSpider):
     def parse_scenicspot_content(self, response):
         '''解析景点信息, response.url => http://you.ctrip.com/sight/jiuzhaigou25/1681356.html'''
 
-        pre_xpath = '//div[@class="content cf dest_details"]//div[@class="normalbox boxsight_v1"]//%s'
+        pre_xpath = '//div[@class="normalbox boxsight_v1"]//div[@class="toggle_l"]//%s'
         # 景点介绍
-        content = response.xpath(pre_xpath % 'li//text()' +'|' + 'p//text()').extract()
-        content = ''.join(content)
+        content = response.xpath(pre_xpath % 'p//text()').extract()
+        content = ''.join(content).strip()
         meta_with_content = response.meta
         meta_with_content['content'] = content
         meta_with_content['link'] = response.url
@@ -125,8 +146,8 @@ class CtripSpider(CrawlSpider):
         
         pre_xpath1 = '//div[@class="content cf dest_details"]//div[@class="normalbox current"]//%s'
         # 去景点的交通
-        traffic = response.xpath(pre_xpath1 % 'div[@class="text_style"]//text()').extract()
-        traffic = ''.join(traffic)
+        traffic = response.xpath(pre_xpath1 % 'div[@class="text_style"]//p//text()').extract()
+        traffic = ''.join(traffic).strip()
 
         pre_xpath2 = '//div[@class="content cf dest_details"]//div[@class="detailtop cf normalbox"]//ul[@class="detailtop_r_info"]//%s'
         # 景点的评分
@@ -146,7 +167,34 @@ class CtripSpider(CrawlSpider):
         # 景点的名称
         scenicspot_name = sel_locus_info[-2].xpath('a/text()').extract()
         scenicspot_name = ''.join(scenicspot_name).strip()
+        #景区地址
+        scenicspot_address = response.xpath('//div[@class="s_sight_infor"]//p[@class="s_sight_addr"]/text()').extract()
+        scenicspot_address = ''.join(scenicspot_address).strip()
+        #景点类型
+        scenicspot_tag = response.xpath('//div[@class="s_sight_infor"]//ul[@class="s_sight_in_list"]/li[1]//a/text()').extract()
+        scenicspot_tag = '|'.join(scenicspot_tag).strip()
 
+        scenicspot_infos = response.xpath('//div[@class="s_sight_infor"]//ul[@class="s_sight_in_list"]//span[@class="s_sight_con"]/text()').extract()
+        scenicspot_class = response.xpath('//div[@class="s_sight_infor"]//ul[@class="s_sight_in_list"]//span[@class="s_sight_classic"]/text()').extract()
+        scenicspot_usedtime = ''
+        scenicspot_webaddress = ''
+        scenicspot_tel = ''
+        for index, s_class in enumerate(scenicspot_class):
+            if s_class.encode('utf-8').find('时间')>=0:
+                scenicspot_usedtime = scenicspot_infos[index+1].strip()
+            elif s_class.encode('utf-8').find('网站')>=0:
+                scenicspot_webaddress = response.xpath('//div[@class="s_sight_infor"]//ul[@class="s_sight_in_list"]/li[last()]//a/text()').extract()
+                scenicspot_webaddress = ''.join(scenicspot_webaddress).strip()
+            elif s_class.encode('utf-8').find('话')>=0:
+                scenicspot_tel = scenicspot_infos[index+1].strip()
+
+        #开放时间
+        scenicspot_opentime = response.xpath('//div[@class="s_sight_infor"]//dl[@class="s_sight_in_list"][1]/dd/text()').extract()
+        scenicspot_opentime = ''.join(scenicspot_opentime).strip()
+        #门票
+        scenicspot_ticket = response.xpath('//div[@class="s_sight_infor"]//dl[@class="s_sight_in_list"][2]/dd/text()').extract()
+        scenicspot_ticket = ''.join(scenicspot_ticket).strip()
+        
         scenicspot_item['scenicspot_province'] = province_name
         scenicspot_item['scenicspot_locus'] = city_name 
         scenicspot_item['scenicspot_name'] = scenicspot_name
@@ -154,6 +202,13 @@ class CtripSpider(CrawlSpider):
         scenicspot_item['traffic'] = traffic
         scenicspot_item['scenicspot_commentnum'] = comment_num
         scenicspot_item['from_url'] = response.url
+        scenicspot_item['scenicspot_address'] = scenicspot_address
+        scenicspot_item['scenicspot_tag'] = scenicspot_tag
+        scenicspot_item['scenicspot_usedtime'] = scenicspot_usedtime
+        scenicspot_item['scenicspot_tel'] = scenicspot_tel
+        scenicspot_item['scenicspot_webaddress'] = scenicspot_webaddress
+        scenicspot_item['scenicspot_opentime'] = scenicspot_opentime
+        scenicspot_item['scenicspot_ticket'] = scenicspot_ticket
         scenicspot_item['link'] = response.meta.get('link', '')
         scenicspot_item['scenicspot_intro'] = response.meta.get('content', '')
         
