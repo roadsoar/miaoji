@@ -271,7 +271,7 @@ class MafengwoScenicspotSpider(scrapy.Spider):
                 youji_file.write(''.join([province,'|', city, '|', scenicspot_name, '|', scenicspot_youji_url, '\n']))
                 youji_file.flush()
 
-                scenicspot_meta['scenicspot_name'] = scenicspot_name.strip()
+                scenicspot_meta['scenicspot_name'] = re.sub(u'[“”‘’"\']', '', scenicspot_name.strip())
                 scenicspot_meta['scenicspot_grade'] = href_grade_group.get(href).strip()
                 scenicspot_meta['helpful_num'] = href_num_group.get(href).strip()
                 yield Request(scenicspot_info_url, callback=self.parse_scenicspot_info_item, meta={'scenicspot_item':scenicspot_meta})

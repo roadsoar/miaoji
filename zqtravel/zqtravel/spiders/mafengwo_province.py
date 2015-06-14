@@ -296,6 +296,7 @@ class MafengwoProvinceSpider(scrapy.Spider):
            scenicspot_item['scenicspot_locus'] = scenicspot_locus
         else:
            scenicspot_item['scenicspot_locus'] = scenicspot_item['scenicspot_province']
+        scenicspot_name = re.sub(u'[“”‘’"\']', '', scenicspot_name)
         scenicspot_item['scenicspot_name'] = scenicspot_name
         scenicspot_item['scenicspot_intro'] = scenicspot_intro
         scenicspot_item['scenicspot_address'] = scenicspot_address

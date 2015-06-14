@@ -439,6 +439,7 @@ class MafengwoSpider(CrawlSpider):
                               //div[@class="view_info"]//div[@class="vi_con"]/h1/text()' \
                              ).extract()
        title = remove_str(title[0],'[\r\n\s]') if len(title) >= 1 else ''
+       title = re.sub(u'[“”‘’"\']', '',title)
 
        # 游记发布时间
        travels_time = response.xpath('//div[@class="post_item"]//div[@class="tools no-bg"]//div[@class="fl"]//span[@class="date"]/text() |\
@@ -506,7 +507,8 @@ class MafengwoSpider(CrawlSpider):
        travel_item['travels_commentnum'] = c_count
        travel_item['scenicspot_province'] = meta.get('scenicspot_province')
        travel_item['scenicspot_locus'] = meta.get('scenicspot_locus')
-       travel_item['scenicspot_name'] = meta.get('scenicspot_name')
+       scenicspot_name = re.sub(u'[“”‘’"\']', '',meta.get('scenicspot_name'))
+       travel_item['scenicspot_name'] = scenicspot_name
        #travel_item['image_urls'] = image_urls
        
 #       image_item = ImageItem()

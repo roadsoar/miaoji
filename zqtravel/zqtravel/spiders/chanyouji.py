@@ -122,6 +122,7 @@ class ChanyoujiSpider(scrapy.Spider):
        # 游记标题 meta clearfix
        title = response.xpath(pre_xpath + 'h1[@id="js-cover-title"]//span[@class="inner-text"]/text()').extract()
        title = ''.join(title).strip()
+       title = re.sub(u'[“”‘’"\']', '', title)
 
        # 游记浏览数
        viewer_num = response.xpath(pre_xpath + 'div[@class="meta clearfix"]//div[@class="counter"]//span[@class="viewer-num"]/span/text()').extract()

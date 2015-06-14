@@ -198,6 +198,7 @@ class CtripSpider(CrawlSpider):
         
         scenicspot_item['scenicspot_province'] = province_name
         scenicspot_item['scenicspot_locus'] = city_name 
+        scenicspot_name = re.sub(u'[“”‘’"\']', '', scenicspot_name)
         scenicspot_item['scenicspot_name'] = scenicspot_name
         scenicspot_item['scenicspot_grade'] = grade
         scenicspot_item['traffic'] = traffic

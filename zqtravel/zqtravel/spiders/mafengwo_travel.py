@@ -192,6 +192,7 @@ class MafengwoTravelSpider(scrapy.Spider):
                               //div[@class="view_info"]//div[@class="vi_con"]/h1/text()' \
                              ).extract()
        title = remove_str(title[0],'[\r\n\s]') if len(title) >= 1 else ''
+       title = re.sub(u'[“”‘’"\']', '', title)
 
        # 游记创建时间
        travel_create_time = response.xpath('//div[@class="post_item"]//div[@class="tools no-bg"]//div[@class="fl"]//span[@class="date"]/text() |\
@@ -280,6 +281,7 @@ class MafengwoTravelSpider(scrapy.Spider):
        travel_item['travel_days'] = travel_days
        travel_item['scenicspot_province'] = meta.get('scenicspot_province')
        travel_item['scenicspot_locus'] = meta.get('scenicspot_locus')
+       scenicspot_name = re.sub(u'[“”‘’"\']', '', scenicspot_name)
        travel_item['scenicspot_name'] = meta.get('scenicspot_name')
        travel_item['from_url'] = meta.get('from_url')
        travel_item['image_urls'] = image_urls[:image_num]

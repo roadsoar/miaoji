@@ -137,6 +137,7 @@ class CtripTravelSpider(scrapy.Spider):
        # 游记标题
        title = response.xpath('//div[@class="content ctd_head_box"]//div[@class="ctd_head_left"]/h2/text()').extract()
        title = ''.join(title).strip()
+       title = re.sub(u'[“”‘’"\']', '', title)
 
        info_xpath = '//div[@class="content cf"]//div[@class="ctd_content"]//div[@class="ctd_content_controls cf"]//%s'
        # 游记中涉及的景点
@@ -234,7 +235,8 @@ class CtripTravelSpider(scrapy.Spider):
        travel_item['travel_days'] = travel_days
        travel_item['scenicspot_province'] = meta.get('scenicspot_province')
        travel_item['scenicspot_locus'] = meta.get('scenicspot_locus')
-       travel_item['scenicspot_name'] = meta.get('scenicspot_name')
+       scenicspot_name = re.sub(u'[“”‘’"\']', '', meta.get('scenicspot_name'))
+       travel_item['scenicspot_name'] = scenicspot_name
        travel_item['from_url'] = meta.get('from_url')
        travel_item['image_urls'] = image_urls[:image_num]
        travel_item['travel_comments'] = travel_comments

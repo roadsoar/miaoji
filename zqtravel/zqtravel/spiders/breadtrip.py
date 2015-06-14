@@ -133,6 +133,7 @@ class BreadtripSpider(scrapy.Spider):
        # 游记标题
        title = response.xpath(pre_trip_info_xpath % 'h2/text()').extract()
        title = ''.join(title).strip()
+       title = re.sub(u'[“”‘’"\']', '', title)
 
        # 旅游的天数 
        travel_days = response.xpath(pre_trip_info_xpath % 'p/span[2]/text()').extract()
