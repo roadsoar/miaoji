@@ -186,6 +186,7 @@ class ChanyoujiSpider(scrapy.Spider):
        xpath_for_content = '%s%s%s' % (pre_xpath_for_trip, medium_xpath_for_content,'p//text()')
        all_content = response.xpath(xpath_for_content).extract()
        all_content = remove_str(remove_str(''.join(all_content).strip()),'\s{2,}')
+       all_content = re.sub(u'[“”‘’"\']', '', all_content)
 
        roadmap_content = '|'.join([trip_roadmap, all_content])
 

@@ -133,6 +133,7 @@ class CtripSpider(CrawlSpider):
         # 景点介绍
         content = response.xpath(pre_xpath % 'p//text()').extract()
         content = ''.join(content).strip()
+        content = re.sub(u'[“”‘’"\']', '', content)
         meta_with_content = response.meta
         meta_with_content['content'] = content
         meta_with_content['link'] = response.url

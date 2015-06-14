@@ -33,6 +33,7 @@ class TravelItem(Item):
     travel_days = Field()             # 游玩的天数
     travel_link = Field()             # 游记的链接
     scenicspot_in_trip = Field()      # 游记中涉及的景点，针对蝉游记
+    scenicspot_in_trip = Field()      # 游记中涉及的景点，针对蝉游记
     from_url = Field()                # 游记link是从from_url跳转过来的
     travel_content = Field()          # 游记的内容
     scenicspot_province = Field()     # 景点所在地，即所在的省

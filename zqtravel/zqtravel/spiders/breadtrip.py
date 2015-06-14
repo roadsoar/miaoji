@@ -166,6 +166,7 @@ class BreadtripSpider(scrapy.Spider):
        pre_content_xpath = '//div[@id="content"]//div[@class="trip-wps"]//%s'
        all_content = response.xpath(pre_content_xpath % 'p//text()' +'|'+ pre_content_xpath % 'a//@data-caption' +'|'+ pre_content_xpath % 'h3//text()' +'|'+ pre_content_xpath % 'div//p/text()').extract()
        all_content = remove_str(remove_str(''.join(all_content).strip()),'\s{2,}')
+       all_content = re.sub(u'[“”‘’"\']', '', all_content)
 
        # 游记中的图片
        image_urls = response.xpath(pre_content_xpath % 'div[@class="photo-ctn"]//a/@href').extract()

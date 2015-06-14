@@ -139,12 +139,8 @@ class CtripTravelSpider(scrapy.Spider):
        title = ''.join(title).strip()
 
        info_xpath = '//div[@class="content cf"]//div[@class="ctd_content"]//div[@class="ctd_content_controls cf"]//%s'
-       content_xpath = '//div[@class="content cf"]//div[@class="ctd_content"]//%s'
-       content_xpath2 = '//div[@class="content cf"]//div[@class="ctd_content wtd_content"]//%s'
-       # 游记创建时间
-       travel_create_time = response.xpath(content_xpath % 'h3//text()').extract()
-       travel_create_time = ''.join(travel_create_time).strip()
-       travel_create_time = ' '.join(travel_create_time.split()[-2:])
+       # 游记中涉及的景点
+       scenicspot_in_trip = response.xpath(info_xpath % 'div[@class="author_poi"]//dd//a/@title').extract()
 
        infos = ''.join(response.xpath(info_xpath % 'span').extract())
        # 游玩的时间
@@ -163,12 +159,20 @@ class CtripTravelSpider(scrapy.Spider):
        rs_cost = re.match(r'.*costs.*?i>(.*?)</span',  infos)
        travel_cost = rs_cost.group(1).strip() if rs_cost else ''
 
+       content_xpath = '//div[@class="content cf"]//div[@class="ctd_content"]//%s'
+       content_xpath2 = '//div[@class="content cf"]//div[@class="ctd_content wtd_content"]//%s'
+       # 游记创建时间
+       travel_create_time = response.xpath(content_xpath % 'h3//text()').extract()
+       travel_create_time = ''.join(travel_create_time).strip()
+       travel_create_time = ' '.join(travel_create_time.split()[-2:])
+
        # 游记内容
        all_content = response.xpath(content_xpath % 'p//text()|'\
                                    + content_xpath % 'p//strong/text()|'\
                                    + content_xpath % 'p//a/text()' \
                                    ).extract()
        all_content = remove_str(remove_str(''.join(all_content).strip()),'\s{2,}')
+       all_content = re.sub(u'[“”‘’"\']', '', all_content)
 
        # 游记的评论
        comment_xpath ='//div[@class="content cf"]//div[@class="ctd_comments"]//div[@id="replyboxid"]//div[@class="ctd_comments_box cf"]'
@@ -234,5 +238,6 @@ class CtripTravelSpider(scrapy.Spider):
        travel_item['from_url'] = meta.get('from_url')
        travel_item['image_urls'] = image_urls[:image_num]
        travel_item['travel_comments'] = travel_comments
+       travel_item['scenicspot_in_trip'] = scenicspot_in_trip
 
        return travel_item

@@ -219,6 +219,7 @@ class MafengwoTravelSpider(scrapy.Spider):
                                      //div[@class="view clearfix"]//div[@class="vc_article"]//div[@class="va_con"]//a//text()' \
                                    ).extract()
        all_content = remove_str(remove_str(''.join(all_content).strip()),'\s{2,}')
+       all_content = re.sub(u'[“”‘’"\']', '', all_content)
 
        # 游记浏览数
        numview = ''.join(meta['numview']).strip()

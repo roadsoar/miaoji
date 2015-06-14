@@ -259,6 +259,7 @@ class MafengwoProvinceSpider(scrapy.Spider):
         # 景点介绍
         scenicspot_intro = response.xpath('//div[@class="row row-overview"]//div[@class="wrapper"]//dl[@class="intro"]//dt//p//span//text()').extract()
         scenicspot_intro = ''.join(scenicspot_intro).strip()
+        scenicspot_intro = re.sub(u'[“”‘’"\']', '', scenicspot_intro)
 
         # 景点的地址
         scenicspot_address = response.xpath('//div[@class="r-title"][1]/div/text()').extract()
