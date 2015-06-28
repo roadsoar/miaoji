@@ -20,3 +20,6 @@ mafengwo_province_zj => {u'浙江':'10111', }
 121.41.20.59 -p 12301
 
 travel_bj => ['北京', '西藏', '上海', '河南', '香港', '新疆']
+
+baidu_key="Pk0CeOPzsErMLmnbcY80uGWE"
+    api_addr="http://api.map.baidu.com/?qt=gc&wd=%s&cn=%s&ie=utf-8&oue=1&fromproduct=jsapi&res=api&callback=BMap._rd._cbk62300"%(quote_addr, s)

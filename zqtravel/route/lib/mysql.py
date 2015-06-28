@@ -1,27 +1,26 @@
 # -*- coding: utf-8 -*-
 
-#from zqtravel.lib.manufacture import ConfigMiaoJI
-
-import os
+import os, sys
 import MySQLdb  
 import codecs  
 
-class LoadToMysql(object):
+class Mysql(object):
    def __init__(self, host='localhost', port=3306, user='root', passwd='123456', database=''):
       self.host = host
       self.db_port= port
       self.db_user = user
       self.db_passwd = passwd
-      self.database= database
+      self.db_name = database
       self.conn = None
 
    # 连接数据库  
    def connect(self):
       try:  
-         self.conn = MySQLdb.connect(host=self.host, user=self.db_user, passwd=self.db_passwd, db=self.database, port=self.db_port, charset='utf8')
+         self.conn = MySQLdb.connect(host=self.host, user=self.db_user, passwd=self.db_passwd, db=self.db_name, port=self.db_port, charset='utf8')
       except Exception, e:  
-         print e  
+         print "Failed to connect DB '%s' hosted %s:%s with user '%s'" % (self.db_name, self.host, self.db_port, self.db_user) 
          self.close()
+         sys.exit(-1)
     
    # 关闭数据库
    def close(self):
