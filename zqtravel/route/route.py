@@ -46,7 +46,7 @@ class RouteAnalyzer:
   def run(self):
     addrs = self.query_cities()  
     for addr in addrs:
-        mercator = self.get_mercator(addr)
+        mercator = self.get_mercator(addr.replace('.',''))
         if mercator:
             wgs = self.mercator2wgs84(mercator)
         else:
@@ -77,7 +77,7 @@ class RouteAnalyzer:
       data = self.my_db.selectall(sql)
       addr_list = []
       for dt in data:
-        addr = ''.join(dt)
+        addr = '.'.join(dt)
         addr_list.append(addr)       
       return addr_list
   
