@@ -1,6 +1,4 @@
 Traceback (most recent call last):
-  File "route.py", line 49, in get_mercator
-    self.write_to_file(resolved_city_file, addr+'\n')
-  File "route.py", line 73, in write_to_file
-    f.write(line)
-UnicodeEncodeError: 'ascii' codec can't encode characters in position 0-1: ordinal not in range(128)
+  File "route.py", line 74, in get_location
+    x = re.findall(pattern_x,''.join(content, content2, content3))
+TypeError: join() takes exactly one argument (3 given)
