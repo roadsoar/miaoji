@@ -51,7 +51,7 @@ class RouteAnalyzer:
     except Exception as e:
       log_file = self.db_cf.get_str('logging','log')
       print "Occur broken errors, please logs (%s)." % (log_file) 
-      traceback.print_exc(file=open(log_file,'w'))
+      traceback.print_exc(file=open(log_file,'a+'))
       sys.exit(-1)
   
   def get_location(self, addr):

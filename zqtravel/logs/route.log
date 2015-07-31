@@ -1,4 +1,14 @@
 Traceback (most recent call last):
   File "route.py", line 74, in get_location
-    x = re.findall(pattern_x,''.join(content, content2, content3))
-TypeError: join() takes exactly one argument (3 given)
+    req2 = requests.get(api_addr2)
+  File "/usr/lib/python2.7/site-packages/requests-2.7.0-py2.7.egg/requests/api.py", line 69, in get
+    return request('get', url, params=params, **kwargs)
+  File "/usr/lib/python2.7/site-packages/requests-2.7.0-py2.7.egg/requests/api.py", line 50, in request
+    response = session.request(method=method, url=url, **kwargs)
+  File "/usr/lib/python2.7/site-packages/requests-2.7.0-py2.7.egg/requests/sessions.py", line 465, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/usr/lib/python2.7/site-packages/requests-2.7.0-py2.7.egg/requests/sessions.py", line 573, in send
+    r = adapter.send(request, **kwargs)
+  File "/usr/lib/python2.7/site-packages/requests-2.7.0-py2.7.egg/requests/adapters.py", line 415, in send
+    raise ConnectionError(err, request=request)
+ConnectionError: ('Connection aborted.', error(101, 'Network is unreachable'))

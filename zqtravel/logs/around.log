@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "around.py", line 43, in evaluate_location_around
+    distance = calcDistance(latitude, longitude, latitudeB, longitudeB)
+  File "/home/chunchen/Music/miaoji/zqtravel/route/lib/common_function.py", line 263, in calcDistance
+    xx = acos(sin(pA) * sin(pB) + cos(pA) * cos(pB) * cos(rad_lng_A - rad_lng_B))
+ValueError: math domain error
+海南三亚兰花谷-18.257776-109.522771,海南三亚槟榔河-18.257776-109.522771
