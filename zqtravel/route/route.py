@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 
+# date: 07/23/2015
+# author: Chen Chunyun
+# program: Analyze routes
+
 import os, re, sys, signal
 from lib.mysql import Mysql
 from lib.manufacture import ConfigMiaoJI
+from lib.common_function import num_scenicspot_for_day
 import requests
 import urllib
-import math
+import math, random
 import traceback, logging
   
 class RouteAnalyzer:
@@ -13,95 +18,126 @@ class RouteAnalyzer:
       self.db_cf = ConfigMiaoJI("./conf/route.conf")
       self.my_db = self.connect_mysql()
 
-  def mercator2wgs84(self, mercator):
-    point_x = mercator[0]
-    point_y = mercator[1]
-    x = point_x / 20037508.3319992 * 180
-    y = point_y / 20037509.3427892 * 180
-    y = 180/math.pi*(2*math.atan(math.exp(y*math.pi/180))-math.pi/2)
-    return (x, y)
-  
-  def get_mercator(self, addr):
-    pattern_x = re.compile(r'"x":(".+?")')
-    pattern_y = re.compile(r'"y":(".+?")')
-    if isinstance(addr, unicode):
-       quote_addr = urllib.quote(addr.replace('.','').encode('utf-8'))
-    else:
-       quote_addr = urllib.quote(addr.replace('.',''))
-    s = urllib.quote(u'北京市'.encode('utf8'))
-    try:
-      resolved_city_file = self.db_cf.get_str('storage','resolved_city_file')
-      api_addr = "http://api.map.baidu.com/?qt=gc&wd=%s&cn=%s&ie=utf-8&oue=1&fromproduct=jsapi&res=api&callback=BMap._rd._cbk62300"%(quote_addr, s)
-      req = requests.get(api_addr)
-      content = req.content
-      x = re.findall(pattern_x,content)
-      y = re.findall(pattern_y,content)
-      if x:
-        x=x[0]
-        y=y[0] 
-        x=x[1:-1]
-        y=y[1:-1]
-        x=float(x)
-        y=float(y)
-        location = (x,y)
+  def update_lonlat_for_route(self):
+    originid_sql = 'select id from Travelnotes_copy  where travels_score > "77"'
+    lon_lat_sql1 = 'select Scenicspot_lon,Scenicspot_lat from Scenicspot where Scenicspot_name like "%s"'
+    lon_lat_sql2 = 'select City_lon,City_lat from City where City_name like "%s"'
+    route_sql = "select id,route,is_perfect from TravelRoute"
+    originids = [x[0] for x in self.query_all_data(originid_sql)]
+    routes = self.query_all_data(route_sql)
+    for index, route in enumerate(routes):
+      if index % 1000 == 0:
+        print "Have dealed with: %d" % index if index != 0 else "Start update routes ..."
+      did = route[0]
+      scenicspots = route[1].replace(';',',').split(',')
+      mid_num = len(scenicspots)/2 + len(scenicspots)%2 - 1
+      mid_scenicspot = scenicspots[mid_num] if ":" not in scenicspots[mid_num] else scenicspots[mid_num].split(':')[1]
+      lonlats = self.query_all_data(lon_lat_sql1 % mid_scenicspot)
+      if not lonlats:
+        lonlats = self.query_all_data(lon_lat_sql2 % mid_scenicspot)
+      if lonlats and None not in lonlats[0]:
+        lon, lat = lonlats[0]
       else:
-        location=()
-      self.write_to_file(resolved_city_file, addr+'\n')
-      return location
-    except Exception as e:
-      log_file = self.db_cf.get_str('logging','log')
-      print "Occur broken errors, please logs (%s)." % (log_file) 
-      traceback.print_exc(file=open(log_file,'a+'))
-      sys.exit(-1)
-  
-  def get_location(self, addr):
-    pattern_x = re.compile(r'"lng":(\d+.\d+)')
-    pattern_y = re.compile(r'"lat":(\d+.\d+)')
-    addr_list = addr.split('.')
-    city_name = addr_list[1]
-    province_name = addr_list[0]
-    if len(addr_list) == 3:
-       city_name = addr_list[2]
-       province_name = addr_list[1]
-    api_addr = 'http://api.map.baidu.com/geocoder/v2/?address=%s&output=json&ak=Pk0CeOPzsErMLmnbcY80uGWE&callback=showLocation' % addr.replace('.','')
-    api_addr2 = 'http://api.map.baidu.com/geocoder/v2/?address=%s&city=%s&output=json&ak=Pk0CeOPzsErMLmnbcY80uGWE&callback=showLocation' % (city_name, province_name)
-    api_addr3 = 'http://api.map.baidu.com/geocoder/v2/?address=%s&output=json&ak=Pk0CeOPzsErMLmnbcY80uGWE&callback=showLocation' % (city_name)
+        lon, lat = (0,0)
+      is_perfect = "yes" if did in originids else "no"
+      if route[2] is None:
+        update_route_sql = 'update TravelRoute set lon=%f,lat=%f,is_perfect="%s" where id="%s"' % (lon, lat, is_perfect, did)
+        self.update_from_db(update_route_sql, True)
+    print "Done!"
+    self.close_mysql()
 
-    try:
-      resolved_city_file = self.db_cf.get_str('storage','resolved_city_file')
-      req = requests.get(api_addr)
-      content = req.content
-      req2 = requests.get(api_addr2)
-      content2 = req2.content
-      req3 = requests.get(api_addr3)
-      content3 = req3.content
-      x = re.findall(pattern_x,''.join([content, content2, content3]))
-      y = re.findall(pattern_y,''.join([content, content2, content3]))
-      if x:
-        x=x[0]
-        y=y[0]
-        location = (x,y)
+  def update_route_fromDB(self):
+    '''更新路线表（TravelRoute）'''
+    route_sql = "select id,route from TravelRoute"      
+    routes = self.query_all_data(route_sql)
+    for index, route in enumerate(routes):
+      if index % 1000 == 0:
+        print "Have dealed with: %d" % index if index != 0 else "Start update routes ..."
+      did = route[0]
+      scenicspots = route[1].split('->')
+      if 1 >= len(scenicspots):
+        del_route_sql = 'delete from TravelRoute where id = "%s"' % (did)
+        self.delete_from_db(del_route_sql, True)
       else:
-        location=()
-      self.write_to_file(resolved_city_file, addr+'\n')
-      return location
-    except Exception as e:
-      log_file = self.db_cf.get_str('logging','log')
-      print "Occur broken errors, please logs (%s)." % (log_file)
-      traceback.print_exc(file=open(log_file,'w'))
-      sys.exit(-1)
+        list_droute = []
+        map_num_day = num_scenicspot_for_day(len(scenicspots))
+        i=0
+        while i < map_num_day["4scenicspots_day"]:
+          j=i
+          i += 1
+          scenic_day = ','.join(scenicspots[4*j:4*i])
+          list_droute.append(scenic_day)
+        scenicspots_3 = scenicspots[map_num_day["4scenicspots_day"]*4:]
+        i=0
+        while i < map_num_day["3scenicspots_day"]:
+          j=i
+          i += 1
+          scenic_day = ','.join(scenicspots_3[3*j:3*i])
+          list_droute.append(scenic_day)
+        scenicspots_2 = scenicspots[map_num_day["4scenicspots_day"]*4+map_num_day["3scenicspots_day"]*3:]
+        i=0
+        while i < map_num_day["2scenicspots_day"]:
+          j=i
+          i += 1
+          scenic_day = ','.join(scenicspots_2[2*j:2*i])
+          list_droute.append(scenic_day)
+        random.shuffle(list_droute)
+        title = u"%s%d天游" % (list_droute[0].split(',')[0], len(list_droute))
+        days = u"%d天" % (len(list_droute))
+        ddroute = ";".join([u"第"+str(i+1)+u"天:"+droute for i,droute in enumerate(list_droute)])
+        update_route_sql = 'update TravelRoute set line_title="%s",route="%s",day_num="%s" where id="%s"' % (title, ddroute, days, did)
+        self.update_from_db(update_route_sql, True)
+    print "Done!"
+    self.close_mysql()
 
+  def analyze_origin_route(self):
+      '''从Travelnotes_copy表中获取原始数据，处理得到路线信息'''
+      route_location_file = self.db_cf.get_str('storage','route_location')
+      route_sql = "select id,travels_title,travels_tips,scenicspot_locus from Travelnotes_copy"
+      origin_routes = self.query_all_data(route_sql)
+      tag_sql = "select Tag_name from Tag"
+      tags = self.query_all_data(tag_sql)
+      for index, o_route in enumerate(origin_routes):
+          if index % 100 == 0:
+             print "Have dealed with: %d" % index if index != 0 else "Starting analyzing routes ..."
+          did = o_route[0]
+          dline_title = o_route[1]
+          dcity = o_route[3]
+          droute = o_route[2].replace(',','->')
+          dcrowd = 0
+          dtag = set()
+          scenic_pattern = re.compile(',')
+          counts_of_scenicspot = len(scenic_pattern.findall(o_route[2]))
+          if u'天' in droute:
+             continue
+
+          if 3 >= counts_of_scenicspot:
+             dday_num = u"1天"
+          if 5 >= counts_of_scenicspot > 3:
+             dday_num = u"2天"
+          if 8 >= counts_of_scenicspot > 5:
+             dday_num = u"3天"
+          if 11 >= counts_of_scenicspot > 8:
+             dday_num = u"5天"
+          if 12 <= counts_of_scenicspot:
+             dday_num = u"7天+"
+
+          for tag in tags:
+              is_tag = set(droute) & set(tag[0])
+              if is_tag:
+                 dtag.add(tag[0])
+          insert_sql = 'insert into TravelRoute(id,line_title,city,route,crowd,day_num,tag) values("%s","%s","%s","%s",%d,"%s","%s")' % (did,dline_title,dcity,droute,dcrowd,dday_num,','.join(dtag))
+          try:
+            self.instert_to_db(insert_sql)
+          except:
+            pass
+      print "Done!"
+      self.close_mysql()
+  
   def run(self):
-    addrs = self.get_unresolved_city()  
-    print "Dealing with longitude and latitude for City/Scenicspot.."
-    addr_location_file = self.db_cf.get_str('storage','addr_location')
-    for addr in addrs:
-        mercator = self.get_location(addr)
-        if not mercator:
-           mercator = ('NotFound','NotFound')
-        location = "%s,%s,%s\n"%(addr,mercator[0],mercator[1])
-        self.write_to_file(addr_location_file, location)
-    print "Done! Have %d City/Scenicspots." % len(addrs)
+      #self.analyze_origin_route()
+      #self.update_route_fromDB()
+      self.update_lonlat_for_route()
 
   def write_to_file(self, file_name, line, f_mode='a+'):
       f = open(file_name, f_mode)
@@ -122,37 +158,19 @@ class RouteAnalyzer:
       db.connect()
       return db
 
-  def query_cities(self):
-      addr_list = []
-      city_file = self.db_cf.get_str('storage','city_file')
-      if os.path.isfile(city_file):
-         print "Generating Scenicspot from local city file.."
-         f = open(city_file)
-         addr_list = [unicode(x.replace('\n',''),'utf-8') for x in f.readlines()]
-         f.close()
-      if not addr_list:
-         print "Generating Scenicspot from database.."
-         sql = "select Province.Province_name, City.City_name from Province, City where City.Province_no = Province.Province_no"
-         #sql = "select Province.Province_name, City.City_name, Scenicspot_name from Province, City, Scenicspot where Scenicspot.City_no = City.City_no and City.Province_no = Province.Province_no"
-         data = self.my_db.selectall(sql)
-         self.close_mysql()
-         for dt in data:
-             addr = '.'.join(dt)
-             addr_list.append(addr)       
-         self.write_to_file(city_file, '\n'.join(addr_list))
-      return addr_list
+  def instert_to_db(self, sql):
+      self.my_db.insertone(sql)
 
-  def get_unresolved_city(self):
-      addr_list = self.query_cities()
-      resolved_list = []
-      resolved_city_file = self.db_cf.get_str('storage','resolved_city_file')
+  def query_all_data(self, sql):
+      data = self.my_db.selectall(sql)
+      return data
 
-      if os.path.isfile(resolved_city_file):
-         f = open(resolved_city_file)
-         resolved_list = [unicode(x.replace('\n',''),'utf-8') for x in f.readlines()]
-         f.close() 
-      return list(set(addr_list) - set(resolved_list)) 
-  
+  def delete_from_db(self, sql, isAutoCommit=False):
+      self.my_db.execute(sql, isAutoCommit)
+
+  def update_from_db(self, sql, isAutoCommit=False):
+      self.my_db.execute(sql, isAutoCommit)
+
   def close_mysql(self):
       self.my_db.close()
   
@@ -160,5 +178,5 @@ class RouteAnalyzer:
       print "Interrupted by user!"
 
 if __name__ == "__main__":
-   ra = RouteAnalyzer()
-   ra.run()
+   analyzer = RouteAnalyzer()
+   analyzer.run()

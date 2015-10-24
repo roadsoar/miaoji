@@ -36,12 +36,12 @@ class Mysql(object):
       cursor.close()
       return alldata
 
-   #提交事务
+   # 提交事务
    def commit(self):
       self.conn.commit()
 
    # 只插入一条记录
-   def insertone(self, sql, isAutoCommit=False):
+   def insertone(self, sql, isAutoCommit=True):
       cursor = self.conn.cursor()
       cursor.execute(sql)
       if isAutoCommit == True:
@@ -56,3 +56,10 @@ class Mysql(object):
          self.commit()
       cursor.close()
 
+   # 执行sql语句
+   def execute(self, sql, isAutoCommit=False):
+      cursor = self.conn.cursor()
+      cursor.execute(sql)
+      if isAutoCommit == True:
+         self.commit()
+      cursor.close()

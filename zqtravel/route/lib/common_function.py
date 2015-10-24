@@ -7,6 +7,21 @@ import time
 import hashlib
 from math import *
 
+def num_scenicspot_for_day(tatal_scenic):
+    num_day = {"4scenicspots_day": 0, "3scenicspots_day": 0, "2scenicspots_day": 0}
+    if 16 <= tatal_scenic:
+       num_day["4scenicspots_day"] = 2
+    elif 10 <= tatal_scenic:
+       num_day["4scenicspots_day"] = 1
+    num_remained = tatal_scenic - 4 * num_day["4scenicspots_day"]
+    num_day["3scenicspots_day"] = num_remained / 3
+    if 0 != num_remained % 3 % 2:
+      num_day["3scenicspots_day"] -= 1
+      num_day["2scenicspots_day"] = 2
+    elif 0 != num_remained % 3:
+      num_day["2scenicspots_day"] = 1
+    return num_day
+
 #double check创建目录, 当exit_if_failure 取值为True时，程序失败退出
 def makeDirsWithDoubleCheck(dir_name, exit_if_failure=True):
     if not os.path.exists(dir_name):
