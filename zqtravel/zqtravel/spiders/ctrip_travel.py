@@ -195,7 +195,7 @@ class CtripTravelSpider(scrapy.Spider):
        travel_praisenum = meta.get('numpraise','')
 
        # 游记中的图片
-       image_urls = response.xpath(content_xpath % 'div//a//img/@src |' + content_xpath2 % 'div//a//img/@src').extract()
+       image_urls = response.xpath(content_xpath % 'div[@class="img"]//a//@href |' + content_xpath2 % 'div[@class="img"]//a//@href').extract()
 
        # 如果设置并开启了爬取的开始时间，则将早于开始时间的游记丢弃
        enable_start_crawling_time = mj_cf.get_str('mafengwo_spider','enable_start_crawling_time')
@@ -218,6 +218,11 @@ class CtripTravelSpider(scrapy.Spider):
 
        try:
           image_num = mj_cf.get_int('mafengwo_travel_spider','image_num_every_travel')
+          for image_url in image_urls:
+             if not re.match(r'.*\d+x\d+\.gif',image_url): # 过滤超小文件
+                travel_item['image_urls'].append(image_url)
+             if len(travel_item['image_urls']) > image_num:
+                break
        except: # 如果没有设置，或设置错误则抓取游记中的全部图片
           image_num = None
 
@@ -238,7 +243,7 @@ class CtripTravelSpider(scrapy.Spider):
        scenicspot_name = re.sub(u'[“”‘’"\']', '', meta.get('scenicspot_name'))
        travel_item['scenicspot_name'] = scenicspot_name
        travel_item['from_url'] = meta.get('from_url')
-       travel_item['image_urls'] = image_urls[:image_num]
+       #travel_item['image_urls'] = image_urls[:image_num]
        travel_item['travel_comments'] = travel_comments
        travel_item['scenicspot_in_trip'] = scenicspot_in_trip
 
