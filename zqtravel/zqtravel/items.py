@@ -86,3 +86,20 @@ class ScenicspotItem(Item):
     scenicspot_comments = Field()      # 对景点的前6条评论
     scenicspot_dressing = Field()      # 去景点时的穿衣建议
 
+class POIItem(Item):
+    '''信息点条目,如餐馆·旅店'''
+
+    province = Field()
+    city = Field()
+    from_url = Field()
+    poi_name = Field()             # 名称
+    poi_star = Field()            # poi的星级
+    poi_commentnum = Field()      # 对poi的评论数
+    poi_cost = Field()            # 在poi的消费
+    poi_catalog = Field()         # poi的类别
+    poi_addr = Field()            # poi的地址
+    poi_kouwei = Field()          # 口味
+    poi_huanjing = Field()        # poi的环境
+    poi_service = Field()         # poi的服务水平
+    poi_pic = Field()             # poi的图片
+    poi_link = Field()            # poi的链接
